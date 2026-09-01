@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>Mr K Burgers POS</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#111;
+  color:#f5f1e8;
+  font-family:Arial,Helvetica,sans-serif;
+}
+button,input{
+  font:inherit;
+}
+button{
+  cursor:pointer;
+}
+.app{
+  min-height:100vh;
+  padding:24px;
+  max-width:1100px;
+  margin:auto;
+}
+.logo{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+.logo span{
+  display:block;
+  color:#f3a51b;
+  font-size:11px;
+  letter-spacing:3px;
+  margin-top:4px;
+}
+.panel{
+  background:#1b1b1b;
+  border:1px solid #373737;
+  border-radius:16px;
+  padding:20px;
+  margin-top:18px;
+}
+h1,h2,h3{margin-top:0}
+button{
+  border:1px solid #444;
+  background:#252525;
+  color:white;
+  border-radius:12px;
+  padding:15px 20px;
+}
+.primary{
+  background:#f3a51b;
+  color:#111;
+  border-color:#f3a51b;
+  font-weight:bold;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+.card{
+  background:#242424;
+  border:1px solid #373737;
+  border-radius:14px;
+  padding:20px;
+}
+.card button{width:100%;margin-top:15px}
+.form{
+  display:grid;
+  gap:12px;
+  max-width:550px;
+}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#0d0d0d;
+  color:white;
+}
+.muted{color:#aaa}
+.badge{
+  color:#f3a51b;
+  font-size:11px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+.hidden{display:none}
+.login{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:20px;
+}
+.loginbox{
+  width:min(430px,100%);
+  background:#191919;
+  border:1px solid #373737;
+  border-radius:18px;
+  padding:30px;
+}
+.back{
+  margin-bottom:20px;
+}
+@media(max-width:700px){
+  .app{padding:16px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script>
+
+let loggedIn=false;
+let orderType="";
+let customer={
+  name:"",
+  phone:"",
+  address:""
+};
+
+const burgers=[
+"Mr K Classic",
+"Mushroom & Swiss",
+"Honky Tonk",
+"Philly Cheesesteak",
+"Only The Brave",
+"Bohemian",
+"Chicken Chimichurri"
+];
+
+function render(){
+
+if(!loggedIn){
+
+document.getElementById("root").innerHTML=`
+
+<div class="login">
+<div class="loginbox">
+
+<div class="logo">
+MR K BURGERS
+<span>POS PROTOTYPE</span>
+</div>
+
+<div class="form" style="margin-top:30px">
+
+<label>Cashier ID</label>
+<input id="user" value="cashier01">
+
+<label>PIN</label>
+<input id="pin" type="password" value="1234">
+
+<button class="primary" onclick="login()">
+LOGIN
+</button>
+
+<p class="muted">
+Prototype login: cashier01 / 1234
+</p>
+
+</div>
+
+</div>
+</div>
+
+`;
+
+return;
+}
+
+home();
+
+}
+
+function login(){
+
+if(
+document.getElementById("user").value==="cashier01" &&
+document.getElementById("pin").value==="1234"
+){
+loggedIn=true;
+render();
+}else{
+alert("Incorrect Cashier ID or PIN.");
+}
+
+}
+
+function home(){
+
+document.getElementById("root").innerHTML=`
+
+<div class="app">
+
+<div class="logo">
+MR K BURGERS
+<span>CASHIER POS</span>
+</div>
+
+<div class="panel">
+
+<h1>Cashier Home</h1>
+
+<p class="muted">
+Ready to take the next order.
+</p>
+
+<button class="primary" onclick="newOrder()">
+＋ NEW ORDER
+</button>
+
+</div>
+
+<div class="grid">
+
+<div class="card">
+<div class="badge">ACTIVE ORDERS</div>
+<h2>0</h2>
+</div>
+
+<div class="card">
+<div class="badge">TODAY'S ORDERS</div>
+<h2>0</h2>
+</div>
+
+<div class="card">
+<div class="badge">TODAY'S SALES</div>
+<h2>0 CFA</h2>
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function newOrder(){
+
+document.getElementById("root").innerHTML=`
+
+<div class="app">
+
+<button class="back" onclick="home()">
+← Back
+</button>
+
+<div class="logo">
+MR K BURGERS
+<span>NEW ORDER</span>
+</div>
+
+<div class="panel">
+
+<h2>Choose Order Type</h2>
+
+<div class="grid">
+
+<button onclick="customerForm('Dine In')">
+<h3>🍽️ DINE IN</h3>
+<span class="muted">Restaurant order</span>
+</button>
+
+<button onclick="customerForm('Takeaway')">
+<h3>🥡 TAKEAWAY</h3>
+<span class="muted">Customer pickup</span>
+</button>
+
+<button onclick="customerForm('Delivery')">
+<h3>🛵 DELIVERY</h3>
+<span class="muted">Delivery order</span>
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function customerForm(type){
+
+orderType=type;
+
+document.getElementById("root").innerHTML=`
+
+<div class="app">
+
+<button class="back" onclick="newOrder()">
+← Back
+</button>
+
+<div class="logo">
+MR K BURGERS
+<span>${type.toUpperCase()}</span>
+</div>
+
+<div class="panel">
+
+<h2>Customer</h2>
+
+<div class="form">
+
+<label>Customer Name</label>
+<input id="name" placeholder="Customer name">
+
+<label>
+Phone ${type==="Delivery" ? "(required)" : "(optional)"}
+</label>
+
+<input id="phone" placeholder="+223 ...">
+
+${
+type==="Delivery"
+?
+`
+<label>Delivery Address</label>
+<input id="address" placeholder="Delivery address">
+`
+:""
+}
+
+<button class="primary" onclick="goToMenu()">
+CONTINUE TO MENU →
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function goToMenu(){
+
+customer.name=document.getElementById("name").value.trim();
+customer.phone=document.getElementById("phone").value.trim();
+
+if(orderType==="Delivery"){
+customer.address=document.getElementById("address").value.trim();
+}
+
+if(!customer.name){
+alert("Please enter the customer's name.");
+return;
+}
+
+if(
+orderType==="Delivery" &&
+(!customer.phone || !customer.address)
+){
+alert("Delivery requires phone number and address.");
+return;
+}
+
+menu();
+
+}
+
+function menu(){
+
+document.getElementById("root").innerHTML=`
+
+<div class="app">
+
+<button class="back" onclick="customerForm(orderType)">
+← Back
+</button>
+
+<div class="logo">
+MR K BURGERS
+<span>MENU</span>
+</div>
+
+<div class="panel">
+
+<h2>Burgers</h2>
+
+<div class="grid">
+
+${burgers.map((burger,index)=>`
+
+<div class="card">
+
+<div class="badge">
+BURGER ${index+1}
+</div>
+
+<h3>${burger}</h3>
+
+<p class="muted">
+Select this burger to continue.
+</p>
+
+<button class="primary"
+onclick="selectBurger('${burger}')">
+SELECT
+</button>
+
+</div>
+
+`).join("")}
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+function selectBurger(name){
+
+alert(
+name+
+" selected.\n\n"+
+"Next build: customization, extras and cart."
+);
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
