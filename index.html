@@ -16,199 +16,41 @@
 
 *{box-sizing:border-box}
 
-body{
-
-  margin:0;
-
-  background:#111;
-
-  color:#f5f1e8;
-
-  font-family:Arial,Helvetica,sans-serif;
-
-}
+body{margin:0;background:#111;color:#f5f1e8;font-family:Arial,Helvetica,sans-serif}
 
 button,input{font:inherit}
 
-button{
+button{cursor:pointer;border:1px solid #444;background:#252525;color:white;border-radius:12px;padding:15px 20px}
 
-  cursor:pointer;
+.primary{background:#f3a51b;color:#111;border-color:#f3a51b;font-weight:bold}
 
-  border:1px solid #444;
+.app{min-height:100vh;padding:24px;max-width:1100px;margin:auto}
 
-  background:#252525;
+.logo{font-size:28px;font-weight:800}
 
-  color:white;
+.logo span{display:block;color:#f3a51b;font-size:11px;letter-spacing:3px;margin-top:4px}
 
-  border-radius:12px;
+.panel{background:#1b1b1b;border:1px solid #373737;border-radius:16px;padding:20px;margin-top:18px}
 
-  padding:15px 20px;
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
 
-}
+.card{background:#242424;border:1px solid #373737;border-radius:14px;padding:20px}
 
-.primary{
+.card button{width:100%;margin-top:15px}
 
-  background:#f3a51b;
+.category{min-height:150px;text-align:left}
 
-  color:#111;
+.form{display:grid;gap:12px;max-width:550px}
 
-  border-color:#f3a51b;
-
-  font-weight:bold;
-
-}
-
-.app{
-
-  min-height:100vh;
-
-  padding:24px;
-
-  max-width:1100px;
-
-  margin:auto;
-
-}
-
-.logo{
-
-  font-size:28px;
-
-  font-weight:800;
-
-}
-
-.logo span{
-
-  display:block;
-
-  color:#f3a51b;
-
-  font-size:11px;
-
-  letter-spacing:3px;
-
-  margin-top:4px;
-
-}
-
-.panel{
-
-  background:#1b1b1b;
-
-  border:1px solid #373737;
-
-  border-radius:16px;
-
-  padding:20px;
-
-  margin-top:18px;
-
-}
-
-.grid{
-
-  display:grid;
-
-  grid-template-columns:repeat(3,1fr);
-
-  gap:15px;
-
-}
-
-.card{
-
-  background:#242424;
-
-  border:1px solid #373737;
-
-  border-radius:14px;
-
-  padding:20px;
-
-}
-
-.card button{
-
-  width:100%;
-
-  margin-top:15px;
-
-}
-
-.category{
-
-  min-height:150px;
-
-  text-align:left;
-
-}
-
-.form{
-
-  display:grid;
-
-  gap:12px;
-
-  max-width:550px;
-
-}
-
-input{
-
-  width:100%;
-
-  padding:14px;
-
-  border-radius:10px;
-
-  border:1px solid #444;
-
-  background:#0d0d0d;
-
-  color:white;
-
-}
+input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white}
 
 .muted{color:#aaa}
 
-.badge{
+.badge{color:#f3a51b;font-size:11px;font-weight:bold;letter-spacing:1px}
 
-  color:#f3a51b;
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
 
-  font-size:11px;
-
-  font-weight:bold;
-
-  letter-spacing:1px;
-
-}
-
-.login{
-
-  min-height:100vh;
-
-  display:grid;
-
-  place-items:center;
-
-  padding:20px;
-
-}
-
-.loginbox{
-
-  width:min(430px,100%);
-
-  background:#191919;
-
-  border:1px solid #373737;
-
-  border-radius:18px;
-
-  padding:30px;
-
-}
+.loginbox{width:min(430px,100%);background:#191919;border:1px solid #373737;border-radius:18px;padding:30px}
 
 .back{margin-bottom:20px}
 
@@ -234,13 +76,7 @@ input{
 
 }
 
-.option input{
-
-  width:22px;
-
-  height:22px;
-
-}
+.option input{width:22px;height:22px}
 
 .qty{
 
@@ -271,6 +107,68 @@ input{
   text-align:center;
 
   font-size:24px;
+
+}
+
+.extra-row{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:15px;
+
+  background:#202020;
+
+  border:1px solid #3b3b3b;
+
+  border-radius:12px;
+
+  padding:14px;
+
+  margin:10px 0;
+
+}
+
+.extra-name{
+
+  flex:1;
+
+  font-weight:bold;
+
+}
+
+.extra-qty{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+}
+
+.extra-qty button{
+
+  width:42px;
+
+  height:42px;
+
+  padding:0;
+
+  font-size:22px;
+
+}
+
+.extra-qty strong{
+
+  min-width:28px;
+
+  text-align:center;
+
+  font-size:20px;
 
 }
 
@@ -314,6 +212,8 @@ let currentCategory="";
 
 let currentQty=1;
 
+let currentExtraQty={};
+
 let cart=[];
 
 let customer={
@@ -326,7 +226,11 @@ let customer={
 
 };
 
-/* MENU */
+/* =========================
+
+   MENU
+
+========================= */
 
 const burgers=[
 
@@ -400,7 +304,11 @@ const sauces=[
 
 ];
 
-/* BURGER BASE RECIPES */
+/* =========================
+
+   BURGER RECIPES
+
+========================= */
 
 const burgerDetails={
 
@@ -616,7 +524,11 @@ const loadedFries=[
 
 ];
 
-/* LOGIN */
+/* =========================
+
+   LOGIN
+
+========================= */
 
 function render(){
 
@@ -696,7 +608,11 @@ function login(){
 
 }
 
-/* HOME */
+/* =========================
+
+   HOME
+
+========================= */
 
 function home(){
 
@@ -764,7 +680,11 @@ function home(){
 
 }
 
-/* NEW ORDER */
+/* =========================
+
+   NEW ORDER
+
+========================= */
 
 function newOrder(){
 
@@ -822,7 +742,11 @@ function newOrder(){
 
 }
 
-/* CUSTOMER */
+/* =========================
+
+   CUSTOMER
+
+========================= */
 
 function customerForm(type){
 
@@ -884,13 +808,7 @@ function customerForm(type){
 
           }
 
-          <button
-
-            class="primary"
-
-            onclick="continueToMenu()"
-
-          >
+          <button class="primary" onclick="continueToMenu()">
 
             CONTINUE TO MENU →
 
@@ -950,7 +868,11 @@ function continueToMenu(){
 
 }
 
-/* CATEGORIES */
+/* =========================
+
+   CATEGORIES
+
+========================= */
 
 function categories(){
 
@@ -1024,7 +946,11 @@ function categoryButton(icon,name,count){
 
 }
 
-/* CATEGORY ITEMS */
+/* =========================
+
+   CATEGORY
+
+========================= */
 
 function showCategory(category){
 
@@ -1106,8 +1032,6 @@ function showCategory(category){
 
 }
 
-/* SELECT */
-
 function selectItem(name){
 
   if(currentCategory==="Burgers"){
@@ -1136,7 +1060,121 @@ function selectItem(name){
 
 }
 
-/* BURGER CUSTOMIZATION */
+/* =========================
+
+   EXTRA QUANTITY SYSTEM
+
+========================= */
+
+function resetExtras(extras){
+
+  currentExtraQty={};
+
+  extras.forEach(extra=>{
+
+    currentExtraQty[extra]=0;
+
+  });
+
+}
+
+function extraRows(extras){
+
+  return extras.map(extra=>`
+
+    <div class="extra-row">
+
+      <div class="extra-name">
+
+        ${extra}
+
+      </div>
+
+      <div class="extra-qty">
+
+        <button
+
+          onclick="changeExtraQty('${extra}',-1)"
+
+        >
+
+          −
+
+        </button>
+
+        <strong
+
+          id="extra-${safeId(extra)}"
+
+        >
+
+          0
+
+        </strong>
+
+        <button
+
+          onclick="changeExtraQty('${extra}',1)"
+
+        >
+
+          ＋
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+function safeId(text){
+
+  return text
+
+    .replace(/[^a-zA-Z0-9]/g,"-")
+
+    .toLowerCase();
+
+}
+
+function changeExtraQty(extra,change){
+
+  currentExtraQty[extra]=
+
+    Math.max(
+
+      0,
+
+      (currentExtraQty[extra] || 0)+change
+
+    );
+
+  const element=
+
+    document.getElementById(
+
+      "extra-"+safeId(extra)
+
+    );
+
+  if(element){
+
+    element.textContent=
+
+      currentExtraQty[extra];
+
+  }
+
+}
+
+/* =========================
+
+   BURGER CUSTOMIZATION
+
+========================= */
 
 function burgerCustomizer(name){
 
@@ -1151,6 +1189,8 @@ function burgerCustomizer(name){
     : beefExtras;
 
   currentQty=1;
+
+  resetExtras(extras);
 
   document.getElementById("root").innerHTML=`
 
@@ -1224,29 +1264,7 @@ function burgerCustomizer(name){
 
           </div>
 
-          ${
-
-            extras.map(extra=>`
-
-              <label class="option">
-
-                <span>${extra}</span>
-
-                <input
-
-                  type="checkbox"
-
-                  class="extra"
-
-                  value="${extra}"
-
-                >
-
-              </label>
-
-            `).join("")
-
-          }
+          ${extraRows(extras)}
 
         </div>
 
@@ -1274,11 +1292,23 @@ function burgerCustomizer(name){
 
 }
 
-/* LOADED FRIES */
+/* =========================
+
+   LOADED FRIES
+
+========================= */
 
 function loadedFriesCustomizer(name){
 
   currentQty=1;
+
+  const extras=[
+
+    "Extra grated cheese"
+
+  ];
+
+  resetExtras(extras);
 
   document.getElementById("root").innerHTML=`
 
@@ -1316,21 +1346,7 @@ function loadedFriesCustomizer(name){
 
           </div>
 
-          <label class="option">
-
-            <span>Extra grated cheese</span>
-
-            <input
-
-              type="checkbox"
-
-              class="extra"
-
-              value="Extra grated cheese"
-
-            >
-
-          </label>
+          ${extraRows(extras)}
 
         </div>
 
@@ -1358,7 +1374,11 @@ function loadedFriesCustomizer(name){
 
 }
 
-/* SIMPLE ITEM QUANTITY */
+/* =========================
+
+   SIMPLE ITEMS
+
+========================= */
 
 function quantityOnly(name){
 
@@ -1416,7 +1436,11 @@ function quantityOnly(name){
 
 }
 
-/* QUANTITY */
+/* =========================
+
+   PRODUCT QUANTITY
+
+========================= */
 
 function quantityControls(){
 
@@ -1426,7 +1450,7 @@ function quantityControls(){
 
       <div class="badge">
 
-        QUANTITY
+        PRODUCT QUANTITY
 
       </div>
 
@@ -1460,13 +1484,15 @@ function quantityControls(){
 
 function changeQty(change){
 
-  currentQty=Math.max(
+  currentQty=
 
-    1,
+    Math.max(
 
-    currentQty+change
+      1,
 
-  );
+      currentQty+change
+
+    );
 
   document.getElementById("qty")
 
@@ -1474,7 +1500,11 @@ function changeQty(change){
 
 }
 
-/* CART */
+/* =========================
+
+   CART
+
+========================= */
 
 function addCustomizedItem(name){
 
@@ -1488,15 +1518,19 @@ function addCustomizedItem(name){
 
   ].map(x=>x.value);
 
-  const extras=[
+  const extras=
 
-    ...document.querySelectorAll(
+    Object.entries(currentExtraQty)
 
-      ".extra:checked"
+    .filter(([name,qty])=>qty>0)
 
-    )
+    .map(([name,qty])=>({
 
-  ].map(x=>x.value);
+      name:name,
+
+      qty:qty
+
+    }));
 
   cart.push({
 
@@ -1540,7 +1574,7 @@ function cartSummary(){
 
   }
 
-  let totalQty=
+  const totalQty=
 
     cart.reduce(
 
@@ -1562,7 +1596,9 @@ function cartSummary(){
 
       <h3>
 
-        ${totalQty} item${totalQty!==1?"s":""}
+        ${totalQty}
+
+        item${totalQty!==1?"s":""}
 
       </h3>
 
@@ -1640,13 +1676,21 @@ function viewCart(){
 
                 `
 
-                <p class="muted">
+                <div class="muted">
 
-                  Extras:
+                  <strong>Extras:</strong>
 
-                  ${item.extras.join(", ")}
+                  ${item.extras.map(extra=>`
 
-                </p>
+                    <div>
+
+                      ${extra.qty} × ${extra.name}
+
+                    </div>
+
+                  `).join("")}
+
+                </div>
 
                 `
 
