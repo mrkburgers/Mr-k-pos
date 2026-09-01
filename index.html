@@ -28,11 +28,7 @@ body{
 
 }
 
-button,input{
-
-  font:inherit;
-
-}
+button,input{font:inherit}
 
 button{
 
@@ -156,11 +152,7 @@ button{
 
 }
 
-.category h2{
-
-  margin:8px 0;
-
-}
+.category h2{margin:8px 0}
 
 .form{
 
@@ -188,11 +180,7 @@ input{
 
 }
 
-.muted{
-
-  color:#aaa;
-
-}
+.muted{color:#aaa}
 
 .badge{
 
@@ -232,25 +220,13 @@ input{
 
 }
 
-.back{
-
-  margin-bottom:20px;
-
-}
+.back{margin-bottom:20px}
 
 @media(max-width:700px){
 
-  .app{
+  .app{padding:16px}
 
-    padding:16px;
-
-  }
-
-  .grid{
-
-    grid-template-columns:1fr;
-
-  }
+  .grid{grid-template-columns:1fr}
 
 }
 
@@ -300,19 +276,23 @@ const sides=[
 
   "French Fries",
 
-  "Onion Rings",
-
   "Plantain Tostones",
+
+  "Onion Rings",
 
   "Cheese Fries",
 
-  "Crispy Chicken Fries"
+  "Fajita Cheese Fries",
+
+  "Dirty Fries"
 
 ];
 
 const salads=[
 
-  "Mr K Coleslaw"
+  "Mr K Coleslaw",
+
+  "Cheeseburger Salad"
 
 ];
 
@@ -554,13 +534,7 @@ function customerForm(type){
 
           <label>Customer Name</label>
 
-          <input
-
-            id="name"
-
-            placeholder="Customer name"
-
-          >
+          <input id="name" placeholder="Customer name">
 
           <label>
 
@@ -568,13 +542,7 @@ function customerForm(type){
 
           </label>
 
-          <input
-
-            id="phone"
-
-            placeholder="+223 ..."
-
-          >
+          <input id="phone" placeholder="+223 ...">
 
           ${
 
@@ -626,9 +594,7 @@ function goToCategories(){
 
   if(orderType==="Delivery"){
 
-    customer.address=
-
-      document.getElementById("address").value.trim();
+    customer.address=document.getElementById("address").value.trim();
 
   }
 
@@ -648,11 +614,7 @@ function goToCategories(){
 
   ){
 
-    alert(
-
-      "Delivery requires phone number and address."
-
-    );
+    alert("Delivery requires phone number and address.");
 
     return;
 
@@ -702,11 +664,7 @@ function categories(){
 
           >
 
-            <div class="badge">
-
-              CATEGORY 01
-
-            </div>
+            <div class="badge">CATEGORY 01</div>
 
             <h2>🍔 Burgers</h2>
 
@@ -726,11 +684,7 @@ function categories(){
 
           >
 
-            <div class="badge">
-
-              CATEGORY 02
-
-            </div>
+            <div class="badge">CATEGORY 02</div>
 
             <h2>🍟 Sides</h2>
 
@@ -750,17 +704,13 @@ function categories(){
 
           >
 
-            <div class="badge">
-
-              CATEGORY 03
-
-            </div>
+            <div class="badge">CATEGORY 03</div>
 
             <h2>🥗 Salads</h2>
 
             <span class="muted">
 
-              ${salads.length} salad
+              ${salads.length} salads
 
             </span>
 
@@ -774,11 +724,7 @@ function categories(){
 
           >
 
-            <div class="badge">
-
-              CATEGORY 04
-
-            </div>
+            <div class="badge">CATEGORY 04</div>
 
             <h2>🥤 Soft Drinks</h2>
 
@@ -804,29 +750,13 @@ function showCategory(category){
 
   let items=[];
 
-  if(category==="Burgers"){
+  if(category==="Burgers") items=burgers;
 
-    items=burgers;
+  if(category==="Sides") items=sides;
 
-  }
+  if(category==="Salads") items=salads;
 
-  if(category==="Sides"){
-
-    items=sides;
-
-  }
-
-  if(category==="Salads"){
-
-    items=salads;
-
-  }
-
-  if(category==="Soft Drinks"){
-
-    items=drinks;
-
-  }
+  if(category==="Soft Drinks") items=drinks;
 
   document.getElementById("root").innerHTML=`
 
