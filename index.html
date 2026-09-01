@@ -150,14 +150,6 @@ button{
 
 }
 
-.card button{
-
-  width:100%;
-
-  margin-top:15px;
-
-}
-
 .clickable{
 
   cursor:pointer;
@@ -177,6 +169,14 @@ button{
   min-height:150px;
 
   text-align:left;
+
+}
+
+.category-icon{
+
+  font-size:38px;
+
+  margin-bottom:12px;
 
 }
 
@@ -616,7 +616,9 @@ let customer={
 
   phone:"",
 
-  address:""
+  address:"",
+
+  table:""
 
 };
 
@@ -928,6 +930,56 @@ const loadedFries=[
 
 /* =========================
 
+   HELPERS
+
+========================= */
+
+function escapeValue(value){
+
+  return String(value || "")
+
+    .replace(/&/g,"&amp;")
+
+    .replace(/"/g,"&quot;")
+
+    .replace(/</g,"&lt;")
+
+    .replace(/>/g,"&gt;");
+
+}
+
+function padOrder(number){
+
+  return String(number).padStart(3,"0");
+
+}
+
+function orderLabel(order){
+
+  if(order.type==="DINE IN"){
+
+    return `Table ${order.customer.table}`;
+
+  }
+
+  return order.customer.name || order.type;
+
+}
+
+function currentCustomerLabel(){
+
+  if(orderType==="DINE IN"){
+
+    return `Table ${customer.table}`;
+
+  }
+
+  return customer.name;
+
+}
+
+/* =========================
+
    STORAGE
 
 ========================= */
@@ -1060,6 +1112,14 @@ function home(){
 
   stopTimerRefresh();
 
+  const newestOrders=
+
+    [...activeOrders].sort(
+
+      (a,b)=>b.number-a.number
+
+    );
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
@@ -1112,11 +1172,7 @@ function home(){
 
           </div>
 
-          <h2>
-
-            ${draftOrders.length}
-
-          </h2>
+          <h2>${draftOrders.length}</h2>
 
           <div class="muted">
 
@@ -1140,11 +1196,7 @@ function home(){
 
           </div>
 
-          <h2>
-
-            ${activeOrders.length}
-
-          </h2>
+          <h2>${activeOrders.length}</h2>
 
           <div class="muted">
 
@@ -1162,11 +1214,7 @@ function home(){
 
           </div>
 
-          <h2>
-
-            ${activeOrders.length}
-
-          </h2>
+          <h2>${activeOrders.length}</h2>
 
         </div>
 
@@ -1174,7 +1222,7 @@ function home(){
 
       ${
 
-        activeOrders.length
+        newestOrders.length
 
         ?
 
@@ -1188,7 +1236,9 @@ function home(){
 
           </div>
 
-          ${activeOrders.map(order=>`
+          <h2>Current Timers</h2>
+
+          ${newestOrders.map(order=>`
 
             <div
 
@@ -1210,7 +1260,7 @@ function home(){
 
                   <div class="muted">
 
-                    ${order.customer.name}
+                    ${orderLabel(order)} • ${order.type}
 
                   </div>
 
@@ -1294,7 +1344,9 @@ function resetCurrentOrder(){
 
     phone:"",
 
-    address:""
+    address:"",
+
+    table:""
 
   };
 
@@ -1316,7 +1368,13 @@ function showOrderType(){
 
     <div class="app">
 
-      <button class="back" onclick="home()">
+      <button
+
+        class="back"
+
+        onclick="home()"
+
+      >
 
         ← HOME
 
@@ -1344,6 +1402,8 @@ function showOrderType(){
 
           >
 
+            <div class="category-icon">🍽️</div>
+
             <div class="badge">ORDER TYPE</div>
 
             <h2>DINE IN</h2>
@@ -1358,6 +1418,8 @@ function showOrderType(){
 
           >
 
+            <div class="category-icon">🥡</div>
+
             <div class="badge">ORDER TYPE</div>
 
             <h2>TAKEAWAY</h2>
@@ -1371,6 +1433,8 @@ function showOrderType(){
             onclick="selectOrderType('DELIVERY')"
 
           >
+
+            <div class="category-icon">🛵</div>
 
             <div class="badge">ORDER TYPE</div>
 
@@ -1398,11 +1462,81 @@ function selectOrderType(type){
 
 /* =========================
 
-   CUSTOMER
+   CUSTOMER / TABLE
 
 ========================= */
 
 function customerForm(){
+
+  if(orderType==="DINE IN"){
+
+    document.getElementById("root").innerHTML=`
+
+      <div class="app">
+
+        <button
+
+          class="back"
+
+          onclick="showOrderType()"
+
+        >
+
+          ← BACK
+
+        </button>
+
+        <div class="logo">
+
+          MR K BURGERS
+
+          <span>DINE IN</span>
+
+        </div>
+
+        <div class="panel">
+
+          <h1>Table Number</h1>
+
+          <div class="form">
+
+            <label>Table Number *</label>
+
+            <input
+
+              id="tableNumber"
+
+              inputmode="numeric"
+
+              value="${escapeValue(customer.table)}"
+
+              placeholder="Example: 6"
+
+            >
+
+            <button
+
+              class="primary"
+
+              onclick="saveCustomer()"
+
+            >
+
+              CONTINUE TO MENU
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
 
   document.getElementById("root").innerHTML=`
 
@@ -1434,11 +1568,7 @@ function customerForm(){
 
         <div class="form">
 
-          <label>
-
-            Customer Name
-
-          </label>
+          <label>Customer Name *</label>
 
           <input
 
@@ -1524,6 +1654,38 @@ function customerForm(){
 
 function saveCustomer(){
 
+  if(orderType==="DINE IN"){
+
+    const table=
+
+      document.getElementById("tableNumber").value.trim();
+
+    if(!table){
+
+      alert("Table number is required.");
+
+      return;
+
+    }
+
+    customer={
+
+      name:"",
+
+      phone:"",
+
+      address:"",
+
+      table
+
+    };
+
+    showCategories();
+
+    return;
+
+  }
+
   const name=
 
     document.getElementById("customerName").value.trim();
@@ -1570,7 +1732,9 @@ function saveCustomer(){
 
     phone,
 
-    address
+    address,
+
+    table:""
 
   };
 
@@ -1598,7 +1762,7 @@ function showCategories(){
 
       >
 
-        ← CUSTOMER
+        ← ${orderType==="DINE IN" ? "TABLE" : "CUSTOMER"}
 
       </button>
 
@@ -1620,7 +1784,7 @@ function showCategories(){
 
             <p class="muted">
 
-              ${customer.name} · ${orderType}
+              ${currentCustomerLabel()} · ${orderType}
 
             </p>
 
@@ -1642,85 +1806,55 @@ function showCategories(){
 
         <div class="grid">
 
-          <button
+          ${menuCategoryCard(
 
-            class="category"
+            "🍔",
 
-            onclick="showCategory('Burgers')"
+            "Burgers",
 
-          >
+            burgers.length
 
-            <div class="badge">CATEGORY</div>
+          )}
 
-            <h2>Burgers</h2>
+          ${menuCategoryCard(
 
-            <p>${burgers.length} items</p>
+            "🍟",
 
-          </button>
+            "Sides",
 
-          <button
+            sides.length
 
-            class="category"
+          )}
 
-            onclick="showCategory('Sides')"
+          ${menuCategoryCard(
 
-          >
+            "🥗",
 
-            <div class="badge">CATEGORY</div>
+            "Salads",
 
-            <h2>Sides</h2>
+            salads.length
 
-            <p>${sides.length} items</p>
+          )}
 
-          </button>
+          ${menuCategoryCard(
 
-          <button
+            "🥤",
 
-            class="category"
+            "Soft Drinks",
 
-            onclick="showCategory('Salads')"
+            drinks.length
 
-          >
+          )}
 
-            <div class="badge">CATEGORY</div>
+          ${menuCategoryCard(
 
-            <h2>Salads</h2>
+            "🥫",
 
-            <p>${salads.length} items</p>
+            "Extra Sauces",
 
-          </button>
+            sauces.length
 
-          <button
-
-            class="category"
-
-            onclick="showCategory('Soft Drinks')"
-
-          >
-
-            <div class="badge">CATEGORY</div>
-
-            <h2>Soft Drinks</h2>
-
-            <p>${drinks.length} items</p>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="showCategory('Extra Sauces')"
-
-          >
-
-            <div class="badge">CATEGORY</div>
-
-            <h2>Extra Sauces</h2>
-
-            <p>${sauces.length} items</p>
-
-          </button>
+          )}
 
         </div>
 
@@ -1755,6 +1889,48 @@ function showCategories(){
       </div>
 
     </div>
+
+  `;
+
+}
+
+function menuCategoryCard(icon,name,count){
+
+  return `
+
+    <button
+
+      class="category"
+
+      onclick='showCategory(${JSON.stringify(name)})'
+
+    >
+
+      <div class="category-icon">
+
+        ${icon}
+
+      </div>
+
+      <div class="badge">
+
+        CATEGORY
+
+      </div>
+
+      <h2>
+
+        ${name}
+
+      </h2>
+
+      <p>
+
+        ${count} items
+
+      </p>
+
+    </button>
 
   `;
 
@@ -1888,6 +2064,110 @@ function selectMenuItem(name){
 
 /* =========================
 
+   EXTRA QUANTITY SYSTEM
+
+========================= */
+
+function resetExtras(extras){
+
+  currentExtraQty={};
+
+  extras.forEach(extra=>{
+
+    currentExtraQty[extra]=0;
+
+  });
+
+}
+
+function safeId(text){
+
+  return text
+
+    .replace(/[^a-zA-Z0-9]/g,"_");
+
+}
+
+function extraRows(extras){
+
+  return extras.map(extra=>`
+
+    <div class="extra-row">
+
+      <div class="extra-name">
+
+        ${extra}
+
+      </div>
+
+      <div class="extra-qty">
+
+        <button
+
+          onclick='changeExtraQty(${JSON.stringify(extra)},-1)'
+
+        >
+
+          −
+
+        </button>
+
+        <strong id="extra_${safeId(extra)}">
+
+          ${currentExtraQty[extra] || 0}
+
+        </strong>
+
+        <button
+
+          onclick='changeExtraQty(${JSON.stringify(extra)},1)'
+
+        >
+
+          +
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+function changeExtraQty(extra,change){
+
+  currentExtraQty[extra]=
+
+    Math.max(
+
+      0,
+
+      (currentExtraQty[extra] || 0)+change
+
+    );
+
+  const element=
+
+    document.getElementById(
+
+      "extra_"+safeId(extra)
+
+    );
+
+  if(element){
+
+    element.textContent=
+
+      currentExtraQty[extra];
+
+  }
+
+}
+
+/* =========================
+
    BURGER CUSTOMIZER
 
 ========================= */
@@ -1896,7 +2176,9 @@ function customizeBurger(name){
 
   currentQty=1;
 
-  const details=burgerDetails[name];
+  const details=
+
+    burgerDetails[name];
 
   const extras=
 
@@ -1942,7 +2224,7 @@ function customizeBurger(name){
 
         </div>
 
-        ${details.ingredients.map((ingredient,index)=>`
+        ${details.ingredients.map(ingredient=>`
 
           <label class="option">
 
@@ -1968,7 +2250,13 @@ function customizeBurger(name){
 
         `).join("")}
 
-        <div style="margin-top:25px" class="badge">
+        <div
+
+          class="badge"
+
+          style="margin-top:25px"
+
+        >
 
           EXTRA INGREDIENTS
 
@@ -1976,13 +2264,25 @@ function customizeBurger(name){
 
         ${extraRows(extras)}
 
-        <div style="margin-top:25px" class="badge">
+        <div
+
+          class="badge"
+
+          style="margin-top:25px"
+
+        >
 
           PRODUCT QUANTITY
 
         </div>
 
-        <div class="qty" style="margin-top:10px">
+        <div
+
+          class="qty"
+
+          style="margin-top:10px"
+
+        >
 
           <button onclick="changeQty(-1)">
 
@@ -2080,13 +2380,25 @@ function customizeLoadedFries(name){
 
         ${extraRows(extras)}
 
-        <div style="margin-top:25px" class="badge">
+        <div
+
+          class="badge"
+
+          style="margin-top:25px"
+
+        >
 
           PRODUCT QUANTITY
 
         </div>
 
-        <div class="qty" style="margin-top:10px">
+        <div
+
+          class="qty"
+
+          style="margin-top:10px"
+
+        >
 
           <button onclick="changeQty(-1)">
 
@@ -2112,7 +2424,7 @@ function customizeLoadedFries(name){
 
           class="primary"
 
-          style="margin-top:25px;width:100%"
+          style="width:100%;margin-top:25px"
 
           onclick='addCustomizedItem(${JSON.stringify(name)})'
 
@@ -2140,6 +2452,8 @@ function simpleItem(name){
 
   currentQty=1;
 
+  currentExtraQty={};
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
@@ -2148,11 +2462,11 @@ function simpleItem(name){
 
         class="back"
 
-        onclick="showCategory(currentCategory)"
+        onclick='showCategory(${JSON.stringify(currentCategory)})'
 
       >
 
-        ← BACK
+        ← ${currentCategory.toUpperCase()}
 
       </button>
 
@@ -2174,7 +2488,13 @@ function simpleItem(name){
 
         </div>
 
-        <div class="qty" style="margin-top:10px">
+        <div
+
+          class="qty"
+
+          style="margin-top:10px"
+
+        >
 
           <button onclick="changeQty(-1)">
 
@@ -2200,7 +2520,7 @@ function simpleItem(name){
 
           class="primary"
 
-          style="margin-top:25px;width:100%"
+          style="width:100%;margin-top:25px"
 
           onclick='addSimpleItem(${JSON.stringify(name)})'
 
@@ -2218,12 +2538,6 @@ function simpleItem(name){
 
 }
 
-/* =========================
-
-   QUANTITY
-
-========================= */
-
 function changeQty(change){
 
   currentQty=
@@ -2236,125 +2550,13 @@ function changeQty(change){
 
     );
 
-  const display=
+  const element=
 
     document.getElementById("qtyDisplay");
 
-  if(display){
+  if(element){
 
-    display.textContent=currentQty;
-
-  }
-
-}
-
-function resetExtras(extras){
-
-  currentExtraQty={};
-
-  extras.forEach(extra=>{
-
-    currentExtraQty[extra]=0;
-
-  });
-
-}
-
-function safeId(text){
-
-  return text
-
-    .replace(/[^a-z0-9]/gi,"_")
-
-    .toLowerCase();
-
-}
-
-function extraRows(extras){
-
-  return extras.map(extra=>{
-
-    const id=
-
-      "extra_"+safeId(extra);
-
-    return `
-
-      <div class="extra-row">
-
-        <div class="extra-name">
-
-          ${extra}
-
-        </div>
-
-        <div class="extra-qty">
-
-          <button
-
-            onclick='changeExtraQty(${JSON.stringify(extra)},-1)'
-
-          >
-
-            −
-
-          </button>
-
-          <strong id="${id}">
-
-            0
-
-          </strong>
-
-          <button
-
-            onclick='changeExtraQty(${JSON.stringify(extra)},1)'
-
-          >
-
-            +
-
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }).join("");
-
-}
-
-function changeExtraQty(extra,change){
-
-  const current=
-
-    currentExtraQty[extra] || 0;
-
-  currentExtraQty[extra]=
-
-    Math.max(
-
-      0,
-
-      current+change
-
-    );
-
-  const display=
-
-    document.getElementById(
-
-      "extra_"+safeId(extra)
-
-    );
-
-  if(display){
-
-    display.textContent=
-
-      currentExtraQty[extra];
+    element.textContent=currentQty;
 
   }
 
@@ -2374,11 +2576,15 @@ function addCustomizedItem(name){
 
     .querySelectorAll(".ingredientCheck")
 
-    .forEach(box=>{
+    .forEach(check=>{
 
-      if(!box.checked){
+      if(!check.checked){
 
-        removed.push(box.dataset.name);
+        removed.push(
+
+          check.dataset.name
+
+        );
 
       }
 
@@ -2386,15 +2592,15 @@ function addCustomizedItem(name){
 
   const extras=
 
-    Object.keys(currentExtraQty)
+    Object.entries(currentExtraQty)
 
-      .filter(name=>currentExtraQty[name]>0)
+      .filter(([,qty])=>qty>0)
 
-      .map(name=>({
+      .map(([name,qty])=>({
 
         name,
 
-        qty:currentExtraQty[name]
+        qty
 
       }));
 
@@ -2466,73 +2672,25 @@ function viewCart(){
 
       <div class="panel">
 
-        <h1>View Order</h1>
+        <div class="order-top">
 
-        <div class="summary">
+          <div>
 
-          <div class="info-row">
+            <h1>Order Summary</h1>
 
-            <span>Customer</span>
+            <p class="muted">
 
-            <strong>${customer.name}</strong>
+              ${currentCustomerLabel()} · ${orderType}
 
-          </div>
-
-          <div class="info-row">
-
-            <span>Order Type</span>
-
-            <strong>${orderType}</strong>
+            </p>
 
           </div>
 
-          ${
+          <span class="draft-status">
 
-            customer.phone
+            EDITABLE
 
-            ?
-
-            `
-
-            <div class="info-row">
-
-              <span>Phone</span>
-
-              <strong>${customer.phone}</strong>
-
-            </div>
-
-            `
-
-            :
-
-            ""
-
-          }
-
-          ${
-
-            customer.address
-
-            ?
-
-            `
-
-            <div class="info-row">
-
-              <span>Address</span>
-
-              <strong>${customer.address}</strong>
-
-            </div>
-
-            `
-
-            :
-
-            ""
-
-          }
+          </span>
 
         </div>
 
@@ -2544,17 +2702,17 @@ function viewCart(){
 
           cart.map((item,index)=>`
 
-            <div class="order-card">
+            <div class="summary">
 
               <div class="order-top">
 
                 <div>
 
-                  <div class="order-number">
+                  <strong>
 
                     ${item.qty} × ${item.name}
 
-                  </div>
+                  </strong>
 
                 </div>
 
@@ -2574,19 +2732,21 @@ function viewCart(){
 
               ${
 
-                item.removed?.length
+                item.removed &&
+
+                item.removed.length
 
                 ?
 
                 `
 
-                <div class="system-note">
+                <p class="muted">
 
-                  <strong>Removed:</strong><br>
+                  Removed:
 
-                  ${item.removed.join("<br>")}
+                  ${item.removed.join(", ")}
 
-                </div>
+                </p>
 
                 `
 
@@ -2598,21 +2758,25 @@ function viewCart(){
 
               ${
 
-                item.extras?.length
+                item.extras &&
+
+                item.extras.length
 
                 ?
 
                 `
 
-                <div class="system-note">
+                <div style="margin-top:10px">
 
-                  <strong>Extras:</strong><br>
+                  ${item.extras.map(extra=>`
 
-                  ${item.extras.map(extra=>
+                    <div class="muted">
 
-                    `${extra.qty} × ${extra.name}`
+                      + ${extra.qty} × ${extra.name}
 
-                  ).join("<br>")}
+                    </div>
+
+                  `).join("")}
 
                 </div>
 
@@ -2632,11 +2796,11 @@ function viewCart(){
 
           `
 
-            <div class="system-note">
+          <div class="system-note">
 
-              No items added yet.
+            No items added yet.
 
-            </div>
+          </div>
 
           `
 
@@ -2645,8 +2809,6 @@ function viewCart(){
         <div class="actions">
 
           <button
-
-            class="secondary"
 
             onclick="showCategories()"
 
@@ -2706,9 +2868,25 @@ function removeCartItem(index){
 
 function saveAndHoldOrder(){
 
-  if(!customer.name || !orderType){
+  if(!orderType){
 
-    alert("Customer details are required before holding an order.");
+    alert("Order type is required.");
+
+    return;
+
+  }
+
+  if(orderType==="DINE IN" && !customer.table){
+
+    alert("Table number is required.");
+
+    return;
+
+  }
+
+  if(orderType!=="DINE IN" && !customer.name){
+
+    alert("Customer details are required.");
 
     return;
 
@@ -2730,7 +2908,9 @@ function saveAndHoldOrder(){
 
       phone:customer.phone,
 
-      address:customer.address
+      address:customer.address,
+
+      table:customer.table
 
     },
 
@@ -2784,6 +2964,14 @@ function showDraftOrders(){
 
   stopTimerRefresh();
 
+  const newestDrafts=
+
+    [...draftOrders].sort(
+
+      (a,b)=>b.savedAt-a.savedAt
+
+    );
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
@@ -2820,11 +3008,11 @@ function showDraftOrders(){
 
         ${
 
-          draftOrders.length
+          newestDrafts.length
 
           ?
 
-          draftOrders.map(order=>`
+          newestDrafts.map(order=>`
 
             <div class="order-card">
 
@@ -2834,7 +3022,7 @@ function showDraftOrders(){
 
                   <div class="order-number">
 
-                    ${order.customer.name}
+                    ${orderLabel(order)}
 
                   </div>
 
@@ -2854,7 +3042,13 @@ function showDraftOrders(){
 
               </div>
 
-              <div class="info-row" style="margin-top:15px">
+              <div
+
+                class="info-row"
+
+                style="margin-top:15px"
+
+              >
 
                 <span>Items</span>
 
@@ -2908,11 +3102,11 @@ function showDraftOrders(){
 
           `
 
-            <div class="system-note">
+          <div class="system-note">
 
-              No orders are currently on hold.
+            No orders are currently on hold.
 
-            </div>
+          </div>
 
           `
 
@@ -2948,11 +3142,13 @@ function resumeDraftOrder(id){
 
   customer={
 
-    name:draft.customer.name,
+    name:draft.customer.name || "",
 
-    phone:draft.customer.phone,
+    phone:draft.customer.phone || "",
 
-    address:draft.customer.address
+    address:draft.customer.address || "",
+
+    table:draft.customer.table || ""
 
   };
 
@@ -2988,7 +3184,7 @@ function deleteDraftOrder(id){
 
     !confirm(
 
-      `Delete the held order for ${draft.customer.name}?`
+      `Delete the held order for ${orderLabel(draft)}?`
 
     )
 
@@ -3042,7 +3238,9 @@ function checkoutOrder(){
 
       phone:customer.phone,
 
-      address:customer.address
+      address:customer.address,
+
+      table:customer.table
 
     },
 
@@ -3122,9 +3320,25 @@ function checkoutSuccess(order){
 
           <div class="info-row">
 
-            <span>Customer</span>
+            <span>
 
-            <strong>${order.customer.name}</strong>
+              ${order.type==="DINE IN" ? "Table" : "Customer"}
+
+            </span>
+
+            <strong>
+
+              ${
+
+                order.type==="DINE IN"
+
+                ? order.customer.table
+
+                : order.customer.name
+
+              }
+
+            </strong>
 
           </div>
 
@@ -3212,6 +3426,14 @@ function showActiveOrders(){
 
   stopTimerRefresh();
 
+  const newestOrders=
+
+    [...activeOrders].sort(
+
+      (a,b)=>b.number-a.number
+
+    );
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
@@ -3248,11 +3470,11 @@ function showActiveOrders(){
 
         ${
 
-          activeOrders.length
+          newestOrders.length
 
           ?
 
-          activeOrders.map(order=>`
+          newestOrders.map(order=>`
 
             <div
 
@@ -3274,7 +3496,7 @@ function showActiveOrders(){
 
                   <div class="muted">
 
-                    ${order.customer.name}
+                    ${orderLabel(order)}
 
                   </div>
 
@@ -3294,7 +3516,13 @@ function showActiveOrders(){
 
               </div>
 
-              <div class="info-row" style="margin-top:12px">
+              <div
+
+                class="info-row"
+
+                style="margin-top:12px"
+
+              >
 
                 <span>Type</span>
 
@@ -3320,7 +3548,7 @@ function showActiveOrders(){
 
               </div>
 
-              <div style="margin-top:14px">
+              <div style="margin-top:12px">
 
                 <span class="status">
 
@@ -3330,7 +3558,7 @@ function showActiveOrders(){
 
                 <span class="locked">
 
-                  CASHIER READ ONLY
+                  READ ONLY
 
                 </span>
 
@@ -3344,11 +3572,11 @@ function showActiveOrders(){
 
           `
 
-            <div class="system-note">
+          <div class="system-note">
 
-              No active kitchen orders.
+            No active orders.
 
-            </div>
+          </div>
 
           `
 
@@ -3377,6 +3605,8 @@ function viewActiveOrder(id){
     );
 
   if(!order){
+
+    home();
 
     return;
 
@@ -3424,6 +3654,12 @@ function viewActiveOrder(id){
 
             </h1>
 
+            <p class="muted">
+
+              ${orderLabel(order)} · ${order.type}
+
+            </p>
+
           </div>
 
           <div
@@ -3440,7 +3676,7 @@ function viewActiveOrder(id){
 
         </div>
 
-        <div style="margin-bottom:15px">
+        <div style="margin-top:15px">
 
           <span class="status">
 
@@ -3450,7 +3686,7 @@ function viewActiveOrder(id){
 
           <span class="locked">
 
-            🔒 CASHIER READ ONLY
+            CASHIER READ ONLY
 
           </span>
 
@@ -3458,25 +3694,9 @@ function viewActiveOrder(id){
 
         <div class="summary">
 
-          <div class="info-row">
-
-            <span>Customer</span>
-
-            <strong>${order.customer.name}</strong>
-
-          </div>
-
-          <div class="info-row">
-
-            <span>Order Type</span>
-
-            <strong>${order.type}</strong>
-
-          </div>
-
           ${
 
-            order.customer.phone
+            order.type==="DINE IN"
 
             ?
 
@@ -3484,9 +3704,9 @@ function viewActiveOrder(id){
 
             <div class="info-row">
 
-              <span>Phone</span>
+              <span>Table Number</span>
 
-              <strong>${order.customer.phone}</strong>
+              <strong>${order.customer.table}</strong>
 
             </div>
 
@@ -3494,13 +3714,31 @@ function viewActiveOrder(id){
 
             :
 
-            ""
+            `
+
+            <div class="info-row">
+
+              <span>Customer</span>
+
+              <strong>${order.customer.name}</strong>
+
+            </div>
+
+            <div class="info-row">
+
+              <span>Phone</span>
+
+              <strong>${order.customer.phone || "—"}</strong>
+
+            </div>
+
+            `
 
           }
 
           ${
 
-            order.customer.address
+            order.type==="DELIVERY"
 
             ?
 
@@ -3522,85 +3760,9 @@ function viewActiveOrder(id){
 
           }
 
-        </div>
-
-        <h2 style="margin-top:25px">
-
-          Order Items
-
-        </h2>
-
-        ${order.items.map(item=>`
-
-          <div class="order-card">
-
-            <div class="order-number">
-
-              ${item.qty} × ${item.name}
-
-            </div>
-
-            ${
-
-              item.removed?.length
-
-              ?
-
-              `
-
-              <div class="system-note">
-
-                <strong>Removed:</strong><br>
-
-                ${item.removed.join("<br>")}
-
-              </div>
-
-              `
-
-              :
-
-              ""
-
-            }
-
-            ${
-
-              item.extras?.length
-
-              ?
-
-              `
-
-              <div class="system-note">
-
-                <strong>Extras:</strong><br>
-
-                ${item.extras.map(extra=>
-
-                  `${extra.qty} × ${extra.name}`
-
-                ).join("<br>")}
-
-              </div>
-
-              `
-
-              :
-
-              ""
-
-            }
-
-          </div>
-
-        `).join("")}
-
-        <div class="summary">
-
           <div class="info-row">
 
-            <span>Kitchen tablet</span>
+            <span>Kitchen</span>
 
             <strong>SENT</strong>
 
@@ -3614,13 +3776,87 @@ function viewActiveOrder(id){
 
           </div>
 
-          <div class="info-row">
+        </div>
 
-            <span>Cashier access</span>
+        <div class="panel">
 
-            <strong>READ ONLY</strong>
+          <div class="badge">
+
+            ORDER ITEMS
 
           </div>
+
+          ${order.items.map(item=>`
+
+            <div class="summary">
+
+              <strong>
+
+                ${item.qty} × ${item.name}
+
+              </strong>
+
+              ${
+
+                item.removed &&
+
+                item.removed.length
+
+                ?
+
+                `
+
+                <p class="muted">
+
+                  Removed:
+
+                  ${item.removed.join(", ")}
+
+                </p>
+
+                `
+
+                :
+
+                ""
+
+              }
+
+              ${
+
+                item.extras &&
+
+                item.extras.length
+
+                ?
+
+                `
+
+                <div style="margin-top:10px">
+
+                  ${item.extras.map(extra=>`
+
+                    <div class="muted">
+
+                      + ${extra.qty} × ${extra.name}
+
+                    </div>
+
+                  `).join("")}
+
+                </div>
+
+                `
+
+                :
+
+                ""
+
+              }
+
+            </div>
+
+          `).join("")}
 
         </div>
 
@@ -3640,15 +3876,9 @@ function viewActiveOrder(id){
 
 ========================= */
 
-function padOrder(number){
-
-  return String(number).padStart(3,"0");
-
-}
-
 function formatTimer(startedAt){
 
-  const elapsed=
+  const seconds=
 
     Math.max(
 
@@ -3664,23 +3894,15 @@ function formatTimer(startedAt){
 
   const hours=
 
-    Math.floor(
-
-      elapsed/3600
-
-    );
+    Math.floor(seconds/3600);
 
   const minutes=
 
-    Math.floor(
+    Math.floor((seconds%3600)/60);
 
-      (elapsed%3600)/60
+  const secs=
 
-    );
-
-  const seconds=
-
-    elapsed%60;
+    seconds%60;
 
   if(hours>0){
 
@@ -3694,7 +3916,7 @@ function formatTimer(startedAt){
 
       +":"
 
-      +String(seconds).padStart(2,"0")
+      +String(secs).padStart(2,"0")
 
     );
 
@@ -3706,7 +3928,7 @@ function formatTimer(startedAt){
 
     +":"
 
-    +String(seconds).padStart(2,"0")
+    +String(secs).padStart(2,"0")
 
   );
 
@@ -3716,21 +3938,17 @@ function updateVisibleTimers(){
 
   document
 
-    .querySelectorAll("[data-start]")
+    .querySelectorAll(".timer[data-start]")
 
-    .forEach(element=>{
+    .forEach(timer=>{
 
-      const start=
+      timer.textContent=
 
-        Number(
+        formatTimer(
 
-          element.dataset.start
+          Number(timer.dataset.start)
 
         );
-
-      element.textContent=
-
-        formatTimer(start);
 
     });
 
@@ -3763,26 +3981,6 @@ function stopTimerRefresh(){
     timerInterval=null;
 
   }
-
-}
-
-/* =========================
-
-   UTILITIES
-
-========================= */
-
-function escapeValue(value){
-
-  return String(value || "")
-
-    .replace(/&/g,"&amp;")
-
-    .replace(/"/g,"&quot;")
-
-    .replace(/</g,"&lt;")
-
-    .replace(/>/g,"&gt;");
 
 }
 
