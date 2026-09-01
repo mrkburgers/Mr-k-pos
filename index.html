@@ -6,7 +6,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <meta name="theme-color" content="#111111">
 
@@ -14,11 +14,7 @@
 
 <style>
 
-*{
-
-  box-sizing:border-box;
-
-}
+*{box-sizing:border-box}
 
 body{
 
@@ -32,11 +28,7 @@ body{
 
 }
 
-button,input{
-
-  font:inherit;
-
-}
+button,input{font:inherit}
 
 button{
 
@@ -83,8 +75,6 @@ button{
   font-size:28px;
 
   font-weight:800;
-
-  letter-spacing:1px;
 
 }
 
@@ -148,21 +138,9 @@ button{
 
 .category{
 
-  min-height:160px;
+  min-height:150px;
 
   text-align:left;
-
-  display:flex;
-
-  flex-direction:column;
-
-  justify-content:center;
-
-}
-
-.category h2{
-
-  margin:8px 0;
 
 }
 
@@ -192,11 +170,7 @@ input{
 
 }
 
-.muted{
-
-  color:#aaa;
-
-}
+.muted{color:#aaa}
 
 .badge{
 
@@ -236,29 +210,25 @@ input{
 
 }
 
-.back{
-
-  margin-bottom:20px;
-
-}
+.back{margin-bottom:20px}
 
 .option{
 
   display:flex;
 
-  align-items:center;
-
   justify-content:space-between;
 
-  gap:12px;
+  align-items:center;
 
-  padding:14px;
+  gap:15px;
 
   background:#202020;
 
   border:1px solid #3b3b3b;
 
   border-radius:12px;
+
+  padding:14px;
 
   margin:10px 0;
 
@@ -296,11 +266,11 @@ input{
 
 .qty strong{
 
-  font-size:24px;
-
   min-width:30px;
 
   text-align:center;
+
+  font-size:24px;
 
 }
 
@@ -318,33 +288,11 @@ input{
 
 }
 
-.notice{
-
-  padding:12px;
-
-  border-radius:10px;
-
-  background:#2a210f;
-
-  border:1px solid #6b5015;
-
-  color:#f3a51b;
-
-}
-
 @media(max-width:700px){
 
-  .app{
+  .app{padding:16px}
 
-    padding:16px;
-
-  }
-
-  .grid{
-
-    grid-template-columns:1fr;
-
-  }
+  .grid{grid-template-columns:1fr}
 
 }
 
@@ -364,9 +312,9 @@ let orderType="";
 
 let currentCategory="";
 
-let cart=[];
-
 let currentQty=1;
+
+let cart=[];
 
 let customer={
 
@@ -378,11 +326,7 @@ let customer={
 
 };
 
-/* =========================
-
-   MENU
-
-========================= */
+/* MENU */
 
 const burgers=[
 
@@ -428,25 +372,49 @@ const salads=[
 
 const drinks=[
 
-  "Soft Drinks"
+  "Small Water",
+
+  "Big Water",
+
+  "Coca Cola",
+
+  "Sprite",
+
+  "Fanta"
 
 ];
 
-/* =========================
+const sauces=[
 
-   BURGER INGREDIENTS
+  "Mr K Sauce",
 
-========================= */
+  "Chimichurri",
+
+  "Ketchup",
+
+  "Mayonnaise",
+
+  "Honey Mustard",
+
+  "Honey BBQ"
+
+];
+
+/* BURGER BASE RECIPES */
 
 const burgerDetails={
 
   "Mr K Classic":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "120g fresh beef steak",
+      "Beef steak 120g",
 
-      "Rocket lettuce (when available)",
+      "Burger bun",
+
+      "Rocket lettuce",
 
       "Tomato",
 
@@ -462,13 +430,21 @@ const burgerDetails={
 
   "Mushroom & Swiss":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "Fresh beef steak",
+      "Beef steak 120g",
+
+      "Burger bun",
 
       "Mushrooms",
 
-      "Swiss cheese"
+      "Swiss cheese",
+
+      "Rocket lettuce",
+
+      "Sauce"
 
     ]
 
@@ -476,9 +452,25 @@ const burgerDetails={
 
   "Honky Tonk":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "Fresh beef steak"
+      "Beef steak 120g",
+
+      "Burger bun",
+
+      "Bacon",
+
+      "Swiss cheese",
+
+      "Cheddar cheese",
+
+      "Rocket lettuce",
+
+      "Sauce",
+
+      "Onion rings"
 
     ]
 
@@ -486,11 +478,23 @@ const burgerDetails={
 
   "Philly Cheesesteak":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "Fresh beef steak",
+      "Beef steak 120g",
 
-      "Cheesesteak-style toppings"
+      "Burger bun",
+
+      "Mozzarella cheese",
+
+      "Cheddar cheese",
+
+      "Sautéed beef tenderloin 100g",
+
+      "Rocket lettuce",
+
+      "Sauce"
 
     ]
 
@@ -498,9 +502,21 @@ const burgerDetails={
 
   "Only The Brave":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "3 fresh beef patties"
+      "Beef steak 120g ×3",
+
+      "Burger bun",
+
+      "Cheddar cheese ×3",
+
+      "Bacon",
+
+      "Rocket lettuce",
+
+      "Sauce"
 
     ]
 
@@ -508,9 +524,21 @@ const burgerDetails={
 
   "Bohemian":{
 
+    meat:"beef",
+
     ingredients:[
 
-      "Fresh beef steak"
+      "Beef steak 120g",
+
+      "Burger bun",
+
+      "Mozzarella cheese",
+
+      "Smoked turkey",
+
+      "Rocket lettuce",
+
+      "Sauce"
 
     ]
 
@@ -518,11 +546,23 @@ const burgerDetails={
 
   "Chicken Chimichurri":{
 
+    meat:"chicken",
+
     ingredients:[
 
-      "Chicken",
+      "Chicken steak 120g",
 
-      "Chimichurri"
+      "Burger bun",
+
+      "Mozzarella cheese",
+
+      "Cheddar cheese",
+
+      "Chimichurri",
+
+      "Rocket lettuce",
+
+      "Sauce"
 
     ]
 
@@ -530,39 +570,101 @@ const burgerDetails={
 
 };
 
-/* =========================
+const beefExtras=[
 
-   EXTRA SAUCES
+  "Extra beef patty",
 
-========================= */
+  "Extra cheddar cheese",
 
-const extraSauces=[
+  "Extra mozzarella cheese",
 
-  "Mr K sauce",
+  "Extra Swiss cheese",
 
-  "Chimichurri",
+  "Extra mushroom",
 
-  "Ketchup",
+  "Extra onion rings",
 
-  "Mayonnaise",
-
-  "Honey Mustard",
-
-  "Honey BBQ"
+  "Extra bacon"
 
 ];
 
-/* =========================
+const chickenExtras=[
 
-   START
+  "Extra chicken steak",
 
-========================= */
+  "Extra cheddar cheese",
+
+  "Extra mozzarella cheese",
+
+  "Extra Swiss cheese",
+
+  "Extra mushroom",
+
+  "Extra onion rings",
+
+  "Extra bacon"
+
+];
+
+const loadedFries=[
+
+  "Cheese Fries",
+
+  "Fajita Cheese Fries",
+
+  "Dirty Fries"
+
+];
+
+/* LOGIN */
 
 function render(){
 
   if(!loggedIn){
 
-    loginPage();
+    document.getElementById("root").innerHTML=`
+
+      <div class="login">
+
+        <div class="loginbox">
+
+          <div class="logo">
+
+            MR K BURGERS
+
+            <span>POS PROTOTYPE</span>
+
+          </div>
+
+          <div class="form" style="margin-top:30px">
+
+            <label>Cashier ID</label>
+
+            <input id="user" value="cashier01">
+
+            <label>PIN</label>
+
+            <input id="pin" type="password" value="1234">
+
+            <button class="primary" onclick="login()">
+
+              LOGIN
+
+            </button>
+
+            <p class="muted">
+
+              Prototype: cashier01 / 1234
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
 
     return;
 
@@ -572,101 +674,13 @@ function render(){
 
 }
 
-/* =========================
-
-   LOGIN
-
-========================= */
-
-function loginPage(){
-
-  document.getElementById("root").innerHTML=`
-
-    <div class="login">
-
-      <div class="loginbox">
-
-        <div class="logo">
-
-          MR K BURGERS
-
-          <span>POS PROTOTYPE</span>
-
-        </div>
-
-        <div
-
-          class="form"
-
-          style="margin-top:30px"
-
-        >
-
-          <label>Cashier ID</label>
-
-          <input
-
-            id="user"
-
-            value="cashier01"
-
-          >
-
-          <label>PIN</label>
-
-          <input
-
-            id="pin"
-
-            type="password"
-
-            value="1234"
-
-          >
-
-          <button
-
-            class="primary"
-
-            onclick="login()"
-
-          >
-
-            LOGIN
-
-          </button>
-
-          <p class="muted">
-
-            Prototype login: cashier01 / 1234
-
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
 function login(){
-
-  const user=
-
-    document.getElementById("user").value;
-
-  const pin=
-
-    document.getElementById("pin").value;
 
   if(
 
-    user==="cashier01" &&
+    document.getElementById("user").value==="cashier01" &&
 
-    pin==="1234"
+    document.getElementById("pin").value==="1234"
 
   ){
 
@@ -676,21 +690,13 @@ function login(){
 
   }else{
 
-    alert(
-
-      "Incorrect Cashier ID or PIN."
-
-    );
+    alert("Incorrect Cashier ID or PIN.");
 
   }
 
 }
 
-/* =========================
-
-   HOME
-
-========================= */
+/* HOME */
 
 function home(){
 
@@ -716,13 +722,7 @@ function home(){
 
         </p>
 
-        <button
-
-          class="primary"
-
-          onclick="newOrder()"
-
-        >
+        <button class="primary" onclick="newOrder()">
 
           ＋ NEW ORDER
 
@@ -734,11 +734,7 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">
-
-            ACTIVE ORDERS
-
-          </div>
+          <div class="badge">ACTIVE ORDERS</div>
 
           <h2>0</h2>
 
@@ -746,11 +742,7 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">
-
-            TODAY'S ORDERS
-
-          </div>
+          <div class="badge">TODAY'S ORDERS</div>
 
           <h2>0</h2>
 
@@ -758,11 +750,7 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">
-
-            TODAY'S SALES
-
-          </div>
+          <div class="badge">TODAY'S SALES</div>
 
           <h2>0 CFA</h2>
 
@@ -776,25 +764,17 @@ function home(){
 
 }
 
-/* =========================
-
-   NEW ORDER
-
-========================= */
+/* NEW ORDER */
 
 function newOrder(){
+
+  cart=[];
 
   document.getElementById("root").innerHTML=`
 
     <div class="app">
 
-      <button
-
-        class="back"
-
-        onclick="home()"
-
-      >
+      <button class="back" onclick="home()">
 
         ← Back
 
@@ -814,51 +794,21 @@ function newOrder(){
 
         <div class="grid">
 
-          <button
-
-            onclick="customerForm('Dine In')"
-
-          >
+          <button onclick="customerForm('Dine In')">
 
             <h3>🍽️ DINE IN</h3>
 
-            <span class="muted">
-
-              Restaurant order
-
-            </span>
-
           </button>
 
-          <button
-
-            onclick="customerForm('Takeaway')"
-
-          >
+          <button onclick="customerForm('Takeaway')">
 
             <h3>🥡 TAKEAWAY</h3>
 
-            <span class="muted">
-
-              Customer pickup
-
-            </span>
-
           </button>
 
-          <button
-
-            onclick="customerForm('Delivery')"
-
-          >
+          <button onclick="customerForm('Delivery')">
 
             <h3>🛵 DELIVERY</h3>
-
-            <span class="muted">
-
-              Delivery order
-
-            </span>
 
           </button>
 
@@ -872,11 +822,7 @@ function newOrder(){
 
 }
 
-/* =========================
-
-   CUSTOMER
-
-========================= */
+/* CUSTOMER */
 
 function customerForm(type){
 
@@ -886,13 +832,7 @@ function customerForm(type){
 
     <div class="app">
 
-      <button
-
-        class="back"
-
-        onclick="newOrder()"
-
-      >
+      <button class="back" onclick="newOrder()">
 
         ← Back
 
@@ -902,11 +842,7 @@ function customerForm(type){
 
         MR K BURGERS
 
-        <span>
-
-          ${type.toUpperCase()}
-
-        </span>
+        <span>${type.toUpperCase()}</span>
 
       </div>
 
@@ -916,43 +852,17 @@ function customerForm(type){
 
         <div class="form">
 
-          <label>
+          <label>Customer Name</label>
 
-            Customer Name
-
-          </label>
-
-          <input
-
-            id="name"
-
-            placeholder="Customer name"
-
-          >
+          <input id="name" placeholder="Customer name">
 
           <label>
 
-            Phone
-
-            ${
-
-              type==="Delivery"
-
-              ? "(required)"
-
-              : "(optional)"
-
-            }
+            Phone ${type==="Delivery" ? "(required)" : "(optional)"}
 
           </label>
 
-          <input
-
-            id="phone"
-
-            placeholder="+223 ..."
-
-          >
+          <input id="phone" placeholder="+223 ...">
 
           ${
 
@@ -962,19 +872,9 @@ function customerForm(type){
 
             `
 
-              <label>
+            <label>Delivery Address</label>
 
-                Delivery Address
-
-              </label>
-
-              <input
-
-                id="address"
-
-                placeholder="Delivery address"
-
-              >
+            <input id="address" placeholder="Delivery address">
 
             `
 
@@ -988,7 +888,7 @@ function customerForm(type){
 
             class="primary"
 
-            onclick="goToCategories()"
+            onclick="continueToMenu()"
 
           >
 
@@ -1006,37 +906,27 @@ function customerForm(type){
 
 }
 
-function goToCategories(){
+function continueToMenu(){
 
   customer.name=
 
-    document.getElementById("name")
-
-    .value.trim();
+    document.getElementById("name").value.trim();
 
   customer.phone=
 
-    document.getElementById("phone")
-
-    .value.trim();
+    document.getElementById("phone").value.trim();
 
   if(orderType==="Delivery"){
 
     customer.address=
 
-      document.getElementById("address")
-
-      .value.trim();
+      document.getElementById("address").value.trim();
 
   }
 
   if(!customer.name){
 
-    alert(
-
-      "Please enter the customer's name."
-
-    );
+    alert("Please enter the customer's name.");
 
     return;
 
@@ -1050,27 +940,17 @@ function goToCategories(){
 
   ){
 
-    alert(
-
-      "Delivery requires phone number and address."
-
-    );
+    alert("Delivery requires phone number and address.");
 
     return;
 
   }
 
-  cart=[];
-
   categories();
 
 }
 
-/* =========================
-
-   CATEGORIES
-
-========================= */
+/* CATEGORIES */
 
 function categories(){
 
@@ -1078,13 +958,7 @@ function categories(){
 
     <div class="app">
 
-      <button
-
-        class="back"
-
-        onclick="customerForm(orderType)"
-
-      >
+      <button class="back" onclick="customerForm(orderType)">
 
         ← Back
 
@@ -1100,125 +974,19 @@ function categories(){
 
       <div class="panel">
 
-        <h2>
-
-          Choose a Category
-
-        </h2>
+        <h2>Choose a Category</h2>
 
         <div class="grid">
 
-          <button
+          ${categoryButton("🍔","Burgers",burgers.length+" burgers")}
 
-            class="category"
+          ${categoryButton("🍟","Sides",sides.length+" sides")}
 
-            onclick="showCategory('Burgers')"
+          ${categoryButton("🥗","Salads",salads.length+" salads")}
 
-          >
+          ${categoryButton("🥤","Soft Drinks",drinks.length+" drinks")}
 
-            <div class="badge">
-
-              CATEGORY 01
-
-            </div>
-
-            <h2>
-
-              🍔 Burgers
-
-            </h2>
-
-            <span class="muted">
-
-              ${burgers.length} burgers
-
-            </span>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="showCategory('Sides')"
-
-          >
-
-            <div class="badge">
-
-              CATEGORY 02
-
-            </div>
-
-            <h2>
-
-              🍟 Sides
-
-            </h2>
-
-            <span class="muted">
-
-              ${sides.length} sides
-
-            </span>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="showCategory('Salads')"
-
-          >
-
-            <div class="badge">
-
-              CATEGORY 03
-
-            </div>
-
-            <h2>
-
-              🥗 Salads
-
-            </h2>
-
-            <span class="muted">
-
-              ${salads.length} salads
-
-            </span>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="showCategory('Soft Drinks')"
-
-          >
-
-            <div class="badge">
-
-              CATEGORY 04
-
-            </div>
-
-            <h2>
-
-              🥤 Soft Drinks
-
-            </h2>
-
-            <span class="muted">
-
-              Drinks
-
-            </span>
-
-          </button>
+          ${categoryButton("🥫","Extra Sauces",sauces.length+" sauces")}
 
         </div>
 
@@ -1232,11 +1000,31 @@ function categories(){
 
 }
 
-/* =========================
+function categoryButton(icon,name,count){
 
-   CATEGORY ITEMS
+  return `
 
-========================= */
+    <button
+
+      class="category"
+
+      onclick="showCategory('${name}')"
+
+    >
+
+      <div class="badge">MENU CATEGORY</div>
+
+      <h2>${icon} ${name}</h2>
+
+      <span class="muted">${count}</span>
+
+    </button>
+
+  `;
+
+}
+
+/* CATEGORY ITEMS */
 
 function showCategory(category){
 
@@ -1244,33 +1032,21 @@ function showCategory(category){
 
   let items=[];
 
-  if(category==="Burgers")
+  if(category==="Burgers") items=burgers;
 
-    items=burgers;
+  if(category==="Sides") items=sides;
 
-  if(category==="Sides")
+  if(category==="Salads") items=salads;
 
-    items=sides;
+  if(category==="Soft Drinks") items=drinks;
 
-  if(category==="Salads")
-
-    items=salads;
-
-  if(category==="Soft Drinks")
-
-    items=drinks;
+  if(category==="Extra Sauces") items=sauces;
 
   document.getElementById("root").innerHTML=`
 
     <div class="app">
 
-      <button
-
-        class="back"
-
-        onclick="categories()"
-
-      >
+      <button class="back" onclick="categories()">
 
         ← Categories
 
@@ -1280,75 +1056,43 @@ function showCategory(category){
 
         MR K BURGERS
 
-        <span>
-
-          ${category.toUpperCase()}
-
-        </span>
+        <span>${category.toUpperCase()}</span>
 
       </div>
 
       <div class="panel">
 
-        <h2>
-
-          ${category}
-
-        </h2>
+        <h2>${category}</h2>
 
         <div class="grid">
 
-          ${items.map(
+          ${items.map((item,index)=>`
 
-            (item,index)=>`
+            <div class="card">
 
-              <div class="card">
+              <div class="badge">
 
-                <div class="badge">
-
-                  ${category.toUpperCase()}
-
-                  ${index+1}
-
-                </div>
-
-                <h3>
-
-                  ${item}
-
-                </h3>
-
-                <p class="muted">
-
-                  ${
-
-                    category==="Burgers"
-
-                    ? "Configure this burger before adding it to the order."
-
-                    : "Select to add to order."
-
-                  }
-
-                </p>
-
-                <button
-
-                  class="primary"
-
-                  onclick="selectItem('${item}')"
-
-                >
-
-                  SELECT
-
-                </button>
+                ITEM ${index+1}
 
               </div>
 
-            `
+              <h3>${item}</h3>
 
-          ).join("")}
+              <button
+
+                class="primary"
+
+                onclick="selectItem('${item}')"
+
+              >
+
+                SELECT
+
+              </button>
+
+            </div>
+
+          `).join("")}
 
         </div>
 
@@ -1362,11 +1106,7 @@ function showCategory(category){
 
 }
 
-/* =========================
-
-   SELECT ITEM
-
-========================= */
+/* SELECT */
 
 function selectItem(name){
 
@@ -1378,29 +1118,37 @@ function selectItem(name){
 
   }
 
-  addSimpleItem(name);
+  if(
+
+    currentCategory==="Sides" &&
+
+    loadedFries.includes(name)
+
+  ){
+
+    loadedFriesCustomizer(name);
+
+    return;
+
+  }
+
+  quantityOnly(name);
 
 }
 
-/* =========================
-
-   BURGER CUSTOMIZATION
-
-========================= */
+/* BURGER CUSTOMIZATION */
 
 function burgerCustomizer(name){
 
-  const detail=
+  const burger=burgerDetails[name];
 
-    burgerDetails[name] || {
+  const extras=
 
-      ingredients:[
+    burger.meat==="chicken"
 
-        "Freshly prepared ingredients"
+    ? chickenExtras
 
-      ]
-
-    };
+    : beefExtras;
 
   currentQty=1;
 
@@ -1424,31 +1172,13 @@ function burgerCustomizer(name){
 
         MR K BURGERS
 
-        <span>
-
-          BURGER CUSTOMIZATION
-
-        </span>
+        <span>BURGER CUSTOMIZATION</span>
 
       </div>
 
       <div class="panel">
 
-        <h1>
-
-          ${name}
-
-        </h1>
-
-        <p class="muted">
-
-          Customize the burger before
-
-          adding it to the order.
-
-        </p>
-
-        <!-- INCLUDED INGREDIENTS -->
+        <h1>${name}</h1>
 
         <div class="panel">
 
@@ -1460,135 +1190,67 @@ function burgerCustomizer(name){
 
           ${
 
-            detail.ingredients.map(
+            burger.ingredients.map(ingredient=>`
 
-              ingredient=>`
+              <label class="option">
 
-                <label class="option">
+                <span>${ingredient}</span>
 
-                  <span>
+                <input
 
-                    ${ingredient}
+                  type="checkbox"
 
-                  </span>
+                  class="included"
 
-                  <input
+                  value="${ingredient}"
 
-                    type="checkbox"
+                  checked
 
-                    checked
+                >
 
-                    value="${ingredient}"
+              </label>
 
-                    class="ingredient"
-
-                  >
-
-                </label>
-
-              `
-
-            ).join("")
+            `).join("")
 
           }
 
         </div>
 
-        <!-- EXTRA SAUCES -->
-
         <div class="panel">
 
           <div class="badge">
 
-            EXTRA SAUCES
+            ADD EXTRAS
 
           </div>
 
           ${
 
-            extraSauces.map(
+            extras.map(extra=>`
 
-              sauce=>`
+              <label class="option">
 
-                <label class="option">
+                <span>${extra}</span>
 
-                  <span>
+                <input
 
-                    ${sauce}
+                  type="checkbox"
 
-                  </span>
+                  class="extra"
 
-                  <input
+                  value="${extra}"
 
-                    type="checkbox"
+                >
 
-                    value="${sauce}"
+              </label>
 
-                    class="sauce"
-
-                  >
-
-                </label>
-
-              `
-
-            ).join("")
+            `).join("")
 
           }
 
         </div>
 
-        <!-- QUANTITY -->
-
-        <div class="panel">
-
-          <div class="badge">
-
-            QUANTITY
-
-          </div>
-
-          <div class="qty">
-
-            <button
-
-              onclick="changeQty(-1)"
-
-            >
-
-              −
-
-            </button>
-
-            <strong id="qty">
-
-              1
-
-            </strong>
-
-            <button
-
-              onclick="changeQty(1)"
-
-            >
-
-              ＋
-
-            </button>
-
-          </div>
-
-        </div>
-
-        <div class="notice">
-
-          Burger price will be added
-
-          when we enter the official
-
-          Mr K menu prices.
-
-        </div>
+        ${quantityControls()}
 
         <button
 
@@ -1596,7 +1258,7 @@ function burgerCustomizer(name){
 
           style="width:100%;margin-top:18px"
 
-          onclick="addBurgerToCart('${name}')"
+          onclick="addCustomizedItem('${name}')"
 
         >
 
@@ -1612,23 +1274,199 @@ function burgerCustomizer(name){
 
 }
 
-/* =========================
+/* LOADED FRIES */
 
-   QUANTITY
+function loadedFriesCustomizer(name){
 
-========================= */
+  currentQty=1;
 
-function changeQty(delta){
+  document.getElementById("root").innerHTML=`
 
-  currentQty=
+    <div class="app">
 
-    Math.max(
+      <button
 
-      1,
+        class="back"
 
-      currentQty+delta
+        onclick="showCategory('Sides')"
 
-    );
+      >
+
+        ← Sides
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>SIDE CUSTOMIZATION</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h1>${name}</h1>
+
+        <div class="panel">
+
+          <div class="badge">
+
+            ADD EXTRA
+
+          </div>
+
+          <label class="option">
+
+            <span>Extra grated cheese</span>
+
+            <input
+
+              type="checkbox"
+
+              class="extra"
+
+              value="Extra grated cheese"
+
+            >
+
+          </label>
+
+        </div>
+
+        ${quantityControls()}
+
+        <button
+
+          class="primary"
+
+          style="width:100%;margin-top:18px"
+
+          onclick="addCustomizedItem('${name}')"
+
+        >
+
+          ADD TO ORDER →
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+/* SIMPLE ITEM QUANTITY */
+
+function quantityOnly(name){
+
+  currentQty=1;
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="showCategory(currentCategory)"
+
+      >
+
+        ← Back
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>${currentCategory.toUpperCase()}</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h1>${name}</h1>
+
+        ${quantityControls()}
+
+        <button
+
+          class="primary"
+
+          style="width:100%;margin-top:18px"
+
+          onclick="addSimpleItem('${name}')"
+
+        >
+
+          ADD TO ORDER →
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+/* QUANTITY */
+
+function quantityControls(){
+
+  return `
+
+    <div class="panel">
+
+      <div class="badge">
+
+        QUANTITY
+
+      </div>
+
+      <div class="qty">
+
+        <button onclick="changeQty(-1)">
+
+          −
+
+        </button>
+
+        <strong id="qty">
+
+          1
+
+        </strong>
+
+        <button onclick="changeQty(1)">
+
+          ＋
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+function changeQty(change){
+
+  currentQty=Math.max(
+
+    1,
+
+    currentQty+change
+
+  );
 
   document.getElementById("qty")
 
@@ -1636,41 +1474,29 @@ function changeQty(delta){
 
 }
 
-/* =========================
+/* CART */
 
-   ADD BURGER
+function addCustomizedItem(name){
 
-========================= */
-
-function addBurgerToCart(name){
-
-  const ingredients=[
+  const included=[
 
     ...document.querySelectorAll(
 
-      ".ingredient:checked"
+      ".included:checked"
 
     )
 
-  ].map(
+  ].map(x=>x.value);
 
-    item=>item.value
-
-  );
-
-  const sauces=[
+  const extras=[
 
     ...document.querySelectorAll(
 
-      ".sauce:checked"
+      ".extra:checked"
 
     )
 
-  ].map(
-
-    item=>item.value
-
-  );
+  ].map(x=>x.value);
 
   cart.push({
 
@@ -1678,21 +1504,15 @@ function addBurgerToCart(name){
 
     qty:currentQty,
 
-    ingredients:ingredients,
+    included:included,
 
-    sauces:sauces
+    extras:extras
 
   });
 
   categories();
 
 }
-
-/* =========================
-
-   ADD SIDE / SALAD / DRINK
-
-========================= */
 
 function addSimpleItem(name){
 
@@ -1700,11 +1520,11 @@ function addSimpleItem(name){
 
     name:name,
 
-    qty:1,
+    qty:currentQty,
 
-    ingredients:[],
+    included:[],
 
-    sauces:[]
+    extras:[]
 
   });
 
@@ -1712,17 +1532,23 @@ function addSimpleItem(name){
 
 }
 
-/* =========================
-
-   CART SUMMARY
-
-========================= */
-
 function cartSummary(){
 
-  if(!cart.length)
+  if(cart.length===0){
 
     return "";
+
+  }
+
+  let totalQty=
+
+    cart.reduce(
+
+      (sum,item)=>sum+item.qty,
+
+      0
+
+    );
 
   return `
 
@@ -1736,9 +1562,7 @@ function cartSummary(){
 
       <h3>
 
-        ${cart.length}
-
-        item${cart.length>1?"s":""}
+        ${totalQty} item${totalQty!==1?"s":""}
 
       </h3>
 
@@ -1760,12 +1584,6 @@ function cartSummary(){
 
 }
 
-/* =========================
-
-   CART
-
-========================= */
-
 function viewCart(){
 
   document.getElementById("root").innerHTML=`
@@ -1780,7 +1598,7 @@ function viewCart(){
 
       >
 
-        ← Categories
+        ← Menu
 
       </button>
 
@@ -1788,99 +1606,59 @@ function viewCart(){
 
         MR K BURGERS
 
-        <span>
-
-          CURRENT ORDER
-
-        </span>
+        <span>CURRENT ORDER</span>
 
       </div>
 
       <div class="panel">
 
-        <h2>
-
-          Order Summary
-
-        </h2>
+        <h2>Order Summary</h2>
 
         ${
 
-          cart.map(
+          cart.map((item,index)=>`
 
-            (item,index)=>`
+            <div class="card">
 
-              <div class="card">
+              <div class="badge">
 
-                <div class="badge">
-
-                  ITEM ${index+1}
-
-                </div>
-
-                <h3>
-
-                  ${item.qty}
-
-                  ×
-
-                  ${item.name}
-
-                </h3>
-
-                ${
-
-                  item.ingredients.length
-
-                  ?
-
-                  `
-
-                    <p class="muted">
-
-                      Ingredients:
-
-                      ${item.ingredients.join(", ")}
-
-                    </p>
-
-                  `
-
-                  :
-
-                  ""
-
-                }
-
-                ${
-
-                  item.sauces.length
-
-                  ?
-
-                  `
-
-                    <p class="muted">
-
-                      Extra sauces:
-
-                      ${item.sauces.join(", ")}
-
-                    </p>
-
-                  `
-
-                  :
-
-                  ""
-
-                }
+                ITEM ${index+1}
 
               </div>
 
-            `
+              <h3>
 
-          ).join("")
+                ${item.qty} × ${item.name}
+
+              </h3>
+
+              ${
+
+                item.extras.length
+
+                ?
+
+                `
+
+                <p class="muted">
+
+                  Extras:
+
+                  ${item.extras.join(", ")}
+
+                </p>
+
+                `
+
+                :
+
+                ""
+
+              }
+
+            </div>
+
+          `).join("")
 
         }
 
@@ -1888,9 +1666,9 @@ function viewCart(){
 
           class="primary"
 
-          style="width:100%;margin-top:18px"
+          style="width:100%;margin-top:20px"
 
-          onclick="alert('Checkout will be built next.')"
+          onclick="alert('Checkout is the next build.')"
 
         >
 
