@@ -1,118 +1,261 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <meta name="theme-color" content="#111111">
+
 <title>Mr K Burgers POS</title>
 
 <style>
+
 *{box-sizing:border-box}
+
 body{
+
   margin:0;
+
   background:#111;
+
   color:#f5f1e8;
+
   font-family:Arial,Helvetica,sans-serif;
+
 }
+
 button,input{
+
   font:inherit;
+
 }
+
 button{
+
   cursor:pointer;
-}
-.app{
-  min-height:100vh;
-  padding:24px;
-  max-width:1100px;
-  margin:auto;
-}
-.logo{
-  font-size:28px;
-  font-weight:800;
-  letter-spacing:1px;
-}
-.logo span{
-  display:block;
-  color:#f3a51b;
-  font-size:11px;
-  letter-spacing:3px;
-  margin-top:4px;
-}
-.panel{
-  background:#1b1b1b;
-  border:1px solid #373737;
-  border-radius:16px;
-  padding:20px;
-  margin-top:18px;
-}
-h1,h2,h3{margin-top:0}
-button{
+
   border:1px solid #444;
+
   background:#252525;
+
   color:white;
+
   border-radius:12px;
+
   padding:15px 20px;
+
 }
+
 .primary{
+
   background:#f3a51b;
+
   color:#111;
+
   border-color:#f3a51b;
+
   font-weight:bold;
+
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
-}
-.card{
-  background:#242424;
-  border:1px solid #373737;
-  border-radius:14px;
-  padding:20px;
-}
-.card button{width:100%;margin-top:15px}
-.form{
-  display:grid;
-  gap:12px;
-  max-width:550px;
-}
-input{
-  width:100%;
-  padding:14px;
-  border-radius:10px;
-  border:1px solid #444;
-  background:#0d0d0d;
-  color:white;
-}
-.muted{color:#aaa}
-.badge{
-  color:#f3a51b;
-  font-size:11px;
-  font-weight:bold;
-  letter-spacing:1px;
-}
-.hidden{display:none}
-.login{
+
+.app{
+
   min-height:100vh;
-  display:grid;
-  place-items:center;
-  padding:20px;
+
+  padding:24px;
+
+  max-width:1100px;
+
+  margin:auto;
+
 }
-.loginbox{
-  width:min(430px,100%);
-  background:#191919;
+
+.logo{
+
+  font-size:28px;
+
+  font-weight:800;
+
+  letter-spacing:1px;
+
+}
+
+.logo span{
+
+  display:block;
+
+  color:#f3a51b;
+
+  font-size:11px;
+
+  letter-spacing:3px;
+
+  margin-top:4px;
+
+}
+
+.panel{
+
+  background:#1b1b1b;
+
   border:1px solid #373737;
+
+  border-radius:16px;
+
+  padding:20px;
+
+  margin-top:18px;
+
+}
+
+.grid{
+
+  display:grid;
+
+  grid-template-columns:repeat(3,1fr);
+
+  gap:15px;
+
+}
+
+.card{
+
+  background:#242424;
+
+  border:1px solid #373737;
+
+  border-radius:14px;
+
+  padding:20px;
+
+}
+
+.card button{
+
+  width:100%;
+
+  margin-top:15px;
+
+}
+
+.category{
+
+  min-height:160px;
+
+  text-align:left;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:center;
+
+}
+
+.category h2{
+
+  margin:8px 0;
+
+}
+
+.form{
+
+  display:grid;
+
+  gap:12px;
+
+  max-width:550px;
+
+}
+
+input{
+
+  width:100%;
+
+  padding:14px;
+
+  border-radius:10px;
+
+  border:1px solid #444;
+
+  background:#0d0d0d;
+
+  color:white;
+
+}
+
+.muted{
+
+  color:#aaa;
+
+}
+
+.badge{
+
+  color:#f3a51b;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:1px;
+
+}
+
+.login{
+
+  min-height:100vh;
+
+  display:grid;
+
+  place-items:center;
+
+  padding:20px;
+
+}
+
+.loginbox{
+
+  width:min(430px,100%);
+
+  background:#191919;
+
+  border:1px solid #373737;
+
   border-radius:18px;
+
   padding:30px;
+
 }
+
 .back{
+
   margin-bottom:20px;
+
 }
+
 @media(max-width:700px){
-  .app{padding:16px}
-  .grid{grid-template-columns:1fr}
+
+  .app{
+
+    padding:16px;
+
+  }
+
+  .grid{
+
+    grid-template-columns:1fr;
+
+  }
+
 }
+
 </style>
+
 </head>
 
 <body>
@@ -122,320 +265,656 @@ input{
 <script>
 
 let loggedIn=false;
+
 let orderType="";
+
 let customer={
+
   name:"",
+
   phone:"",
+
   address:""
+
 };
 
 const burgers=[
-"Mr K Classic",
-"Mushroom & Swiss",
-"Honky Tonk",
-"Philly Cheesesteak",
-"Only The Brave",
-"Bohemian",
-"Chicken Chimichurri"
+
+  "Mr K Classic",
+
+  "Mushroom & Swiss",
+
+  "Honky Tonk",
+
+  "Philly Cheesesteak",
+
+  "Only The Brave",
+
+  "Bohemian",
+
+  "Chicken Chimichurri"
+
+];
+
+const sides=[
+
+  "French Fries",
+
+  "Onion Rings",
+
+  "Plantain Tostones",
+
+  "Cheese Fries",
+
+  "Crispy Chicken Fries"
+
+];
+
+const salads=[
+
+  "Mr K Coleslaw"
+
+];
+
+const drinks=[
+
+  "Soft Drinks"
+
 ];
 
 function render(){
 
-if(!loggedIn){
+  if(!loggedIn){
 
-document.getElementById("root").innerHTML=`
+    document.getElementById("root").innerHTML=`
 
-<div class="login">
-<div class="loginbox">
+      <div class="login">
 
-<div class="logo">
-MR K BURGERS
-<span>POS PROTOTYPE</span>
-</div>
+        <div class="loginbox">
 
-<div class="form" style="margin-top:30px">
+          <div class="logo">
 
-<label>Cashier ID</label>
-<input id="user" value="cashier01">
+            MR K BURGERS
 
-<label>PIN</label>
-<input id="pin" type="password" value="1234">
+            <span>POS PROTOTYPE</span>
 
-<button class="primary" onclick="login()">
-LOGIN
-</button>
+          </div>
 
-<p class="muted">
-Prototype login: cashier01 / 1234
-</p>
+          <div class="form" style="margin-top:30px">
 
-</div>
+            <label>Cashier ID</label>
 
-</div>
-</div>
+            <input id="user" value="cashier01">
 
-`;
+            <label>PIN</label>
 
-return;
-}
+            <input id="pin" type="password" value="1234">
 
-home();
+            <button class="primary" onclick="login()">
+
+              LOGIN
+
+            </button>
+
+            <p class="muted">
+
+              Prototype login: cashier01 / 1234
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+  home();
 
 }
 
 function login(){
 
-if(
-document.getElementById("user").value==="cashier01" &&
-document.getElementById("pin").value==="1234"
-){
-loggedIn=true;
-render();
-}else{
-alert("Incorrect Cashier ID or PIN.");
-}
+  const user=document.getElementById("user").value;
+
+  const pin=document.getElementById("pin").value;
+
+  if(user==="cashier01" && pin==="1234"){
+
+    loggedIn=true;
+
+    render();
+
+  }else{
+
+    alert("Incorrect Cashier ID or PIN.");
+
+  }
 
 }
 
 function home(){
 
-document.getElementById("root").innerHTML=`
+  document.getElementById("root").innerHTML=`
 
-<div class="app">
+    <div class="app">
 
-<div class="logo">
-MR K BURGERS
-<span>CASHIER POS</span>
-</div>
+      <div class="logo">
 
-<div class="panel">
+        MR K BURGERS
 
-<h1>Cashier Home</h1>
+        <span>CASHIER POS</span>
 
-<p class="muted">
-Ready to take the next order.
-</p>
+      </div>
 
-<button class="primary" onclick="newOrder()">
-＋ NEW ORDER
-</button>
+      <div class="panel">
 
-</div>
+        <h1>Cashier Home</h1>
 
-<div class="grid">
+        <p class="muted">
 
-<div class="card">
-<div class="badge">ACTIVE ORDERS</div>
-<h2>0</h2>
-</div>
+          Ready to take the next order.
 
-<div class="card">
-<div class="badge">TODAY'S ORDERS</div>
-<h2>0</h2>
-</div>
+        </p>
 
-<div class="card">
-<div class="badge">TODAY'S SALES</div>
-<h2>0 CFA</h2>
-</div>
+        <button class="primary" onclick="newOrder()">
 
-</div>
+          ＋ NEW ORDER
 
-</div>
+        </button>
 
-`;
+      </div>
+
+      <div class="grid">
+
+        <div class="card">
+
+          <div class="badge">ACTIVE ORDERS</div>
+
+          <h2>0</h2>
+
+        </div>
+
+        <div class="card">
+
+          <div class="badge">TODAY'S ORDERS</div>
+
+          <h2>0</h2>
+
+        </div>
+
+        <div class="card">
+
+          <div class="badge">TODAY'S SALES</div>
+
+          <h2>0 CFA</h2>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
 
 }
 
 function newOrder(){
 
-document.getElementById("root").innerHTML=`
+  document.getElementById("root").innerHTML=`
 
-<div class="app">
+    <div class="app">
 
-<button class="back" onclick="home()">
-← Back
-</button>
+      <button class="back" onclick="home()">
 
-<div class="logo">
-MR K BURGERS
-<span>NEW ORDER</span>
-</div>
+        ← Back
 
-<div class="panel">
+      </button>
 
-<h2>Choose Order Type</h2>
+      <div class="logo">
 
-<div class="grid">
+        MR K BURGERS
 
-<button onclick="customerForm('Dine In')">
-<h3>🍽️ DINE IN</h3>
-<span class="muted">Restaurant order</span>
-</button>
+        <span>NEW ORDER</span>
 
-<button onclick="customerForm('Takeaway')">
-<h3>🥡 TAKEAWAY</h3>
-<span class="muted">Customer pickup</span>
-</button>
+      </div>
 
-<button onclick="customerForm('Delivery')">
-<h3>🛵 DELIVERY</h3>
-<span class="muted">Delivery order</span>
-</button>
+      <div class="panel">
 
-</div>
+        <h2>Choose Order Type</h2>
 
-</div>
+        <div class="grid">
 
-</div>
+          <button onclick="customerForm('Dine In')">
 
-`;
+            <h3>🍽️ DINE IN</h3>
+
+            <span class="muted">Restaurant order</span>
+
+          </button>
+
+          <button onclick="customerForm('Takeaway')">
+
+            <h3>🥡 TAKEAWAY</h3>
+
+            <span class="muted">Customer pickup</span>
+
+          </button>
+
+          <button onclick="customerForm('Delivery')">
+
+            <h3>🛵 DELIVERY</h3>
+
+            <span class="muted">Delivery order</span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
 
 }
 
 function customerForm(type){
 
-orderType=type;
+  orderType=type;
 
-document.getElementById("root").innerHTML=`
+  document.getElementById("root").innerHTML=`
 
-<div class="app">
+    <div class="app">
 
-<button class="back" onclick="newOrder()">
-← Back
-</button>
+      <button class="back" onclick="newOrder()">
 
-<div class="logo">
-MR K BURGERS
-<span>${type.toUpperCase()}</span>
-</div>
+        ← Back
 
-<div class="panel">
+      </button>
 
-<h2>Customer</h2>
+      <div class="logo">
 
-<div class="form">
+        MR K BURGERS
 
-<label>Customer Name</label>
-<input id="name" placeholder="Customer name">
+        <span>${type.toUpperCase()}</span>
 
-<label>
-Phone ${type==="Delivery" ? "(required)" : "(optional)"}
-</label>
+      </div>
 
-<input id="phone" placeholder="+223 ...">
+      <div class="panel">
 
-${
-type==="Delivery"
-?
-`
-<label>Delivery Address</label>
-<input id="address" placeholder="Delivery address">
-`
-:""
-}
+        <h2>Customer</h2>
 
-<button class="primary" onclick="goToMenu()">
-CONTINUE TO MENU →
-</button>
+        <div class="form">
 
-</div>
+          <label>Customer Name</label>
 
-</div>
+          <input
 
-</div>
+            id="name"
 
-`;
+            placeholder="Customer name"
 
-}
+          >
 
-function goToMenu(){
+          <label>
 
-customer.name=document.getElementById("name").value.trim();
-customer.phone=document.getElementById("phone").value.trim();
+            Phone ${type==="Delivery" ? "(required)" : "(optional)"}
 
-if(orderType==="Delivery"){
-customer.address=document.getElementById("address").value.trim();
-}
+          </label>
 
-if(!customer.name){
-alert("Please enter the customer's name.");
-return;
-}
+          <input
 
-if(
-orderType==="Delivery" &&
-(!customer.phone || !customer.address)
-){
-alert("Delivery requires phone number and address.");
-return;
-}
+            id="phone"
 
-menu();
+            placeholder="+223 ..."
 
-}
+          >
 
-function menu(){
+          ${
 
-document.getElementById("root").innerHTML=`
+            type==="Delivery"
 
-<div class="app">
+            ?
 
-<button class="back" onclick="customerForm(orderType)">
-← Back
-</button>
+            `
 
-<div class="logo">
-MR K BURGERS
-<span>MENU</span>
-</div>
+              <label>Delivery Address</label>
 
-<div class="panel">
+              <input
 
-<h2>Burgers</h2>
+                id="address"
 
-<div class="grid">
+                placeholder="Delivery address"
 
-${burgers.map((burger,index)=>`
+              >
 
-<div class="card">
+            `
 
-<div class="badge">
-BURGER ${index+1}
-</div>
+            :
 
-<h3>${burger}</h3>
+            ""
 
-<p class="muted">
-Select this burger to continue.
-</p>
+          }
 
-<button class="primary"
-onclick="selectBurger('${burger}')">
-SELECT
-</button>
+          <button class="primary" onclick="goToCategories()">
 
-</div>
+            CONTINUE TO MENU →
 
-`).join("")}
+          </button>
 
-</div>
+        </div>
 
-</div>
+      </div>
 
-</div>
+    </div>
 
-`;
+  `;
 
 }
 
-function selectBurger(name){
+function goToCategories(){
 
-alert(
-name+
-" selected.\n\n"+
-"Next build: customization, extras and cart."
-);
+  customer.name=document.getElementById("name").value.trim();
+
+  customer.phone=document.getElementById("phone").value.trim();
+
+  if(orderType==="Delivery"){
+
+    customer.address=
+
+      document.getElementById("address").value.trim();
+
+  }
+
+  if(!customer.name){
+
+    alert("Please enter the customer's name.");
+
+    return;
+
+  }
+
+  if(
+
+    orderType==="Delivery" &&
+
+    (!customer.phone || !customer.address)
+
+  ){
+
+    alert(
+
+      "Delivery requires phone number and address."
+
+    );
+
+    return;
+
+  }
+
+  categories();
+
+}
+
+function categories(){
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="customerForm(orderType)"
+
+      >
+
+        ← Back
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>MENU CATEGORIES</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h2>Choose a Category</h2>
+
+        <div class="grid">
+
+          <button
+
+            class="category"
+
+            onclick="showCategory('Burgers')"
+
+          >
+
+            <div class="badge">
+
+              CATEGORY 01
+
+            </div>
+
+            <h2>🍔 Burgers</h2>
+
+            <span class="muted">
+
+              ${burgers.length} burgers
+
+            </span>
+
+          </button>
+
+          <button
+
+            class="category"
+
+            onclick="showCategory('Sides')"
+
+          >
+
+            <div class="badge">
+
+              CATEGORY 02
+
+            </div>
+
+            <h2>🍟 Sides</h2>
+
+            <span class="muted">
+
+              ${sides.length} sides
+
+            </span>
+
+          </button>
+
+          <button
+
+            class="category"
+
+            onclick="showCategory('Salads')"
+
+          >
+
+            <div class="badge">
+
+              CATEGORY 03
+
+            </div>
+
+            <h2>🥗 Salads</h2>
+
+            <span class="muted">
+
+              ${salads.length} salad
+
+            </span>
+
+          </button>
+
+          <button
+
+            class="category"
+
+            onclick="showCategory('Soft Drinks')"
+
+          >
+
+            <div class="badge">
+
+              CATEGORY 04
+
+            </div>
+
+            <h2>🥤 Soft Drinks</h2>
+
+            <span class="muted">
+
+              Drinks
+
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+function showCategory(category){
+
+  let items=[];
+
+  if(category==="Burgers"){
+
+    items=burgers;
+
+  }
+
+  if(category==="Sides"){
+
+    items=sides;
+
+  }
+
+  if(category==="Salads"){
+
+    items=salads;
+
+  }
+
+  if(category==="Soft Drinks"){
+
+    items=drinks;
+
+  }
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="categories()"
+
+      >
+
+        ← Categories
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>${category.toUpperCase()}</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h2>${category}</h2>
+
+        <div class="grid">
+
+          ${items.map((item,index)=>`
+
+            <div class="card">
+
+              <div class="badge">
+
+                ${category.toUpperCase()} ${index+1}
+
+              </div>
+
+              <h3>${item}</h3>
+
+              <p class="muted">
+
+                Select to continue.
+
+              </p>
+
+              <button
+
+                class="primary"
+
+                onclick="selectItem('${item}')"
+
+              >
+
+                SELECT
+
+              </button>
+
+            </div>
+
+          `).join("")}
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+function selectItem(name){
+
+  alert(
+
+    name +
+
+    " selected.\n\n" +
+
+    "Next build: customization, " +
+
+    "extras, quantity and cart."
+
+  );
 
 }
 
@@ -444,4 +923,5 @@ render();
 </script>
 
 </body>
+
 </html>
