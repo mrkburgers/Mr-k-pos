@@ -16,41 +16,213 @@
 
 *{box-sizing:border-box}
 
-body{margin:0;background:#111;color:#f5f1e8;font-family:Arial,Helvetica,sans-serif}
+body{
+
+  margin:0;
+
+  background:#111;
+
+  color:#f5f1e8;
+
+  font-family:Arial,Helvetica,sans-serif;
+
+}
 
 button,input{font:inherit}
 
-button{cursor:pointer;border:1px solid #444;background:#252525;color:white;border-radius:12px;padding:15px 20px}
+button{
 
-.primary{background:#f3a51b;color:#111;border-color:#f3a51b;font-weight:bold}
+  cursor:pointer;
 
-.app{min-height:100vh;padding:24px;max-width:1100px;margin:auto}
+  border:1px solid #444;
 
-.logo{font-size:28px;font-weight:800}
+  background:#252525;
 
-.logo span{display:block;color:#f3a51b;font-size:11px;letter-spacing:3px;margin-top:4px}
+  color:white;
 
-.panel{background:#1b1b1b;border:1px solid #373737;border-radius:16px;padding:20px;margin-top:18px}
+  border-radius:12px;
 
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+  padding:15px 20px;
 
-.card{background:#242424;border:1px solid #373737;border-radius:14px;padding:20px}
+}
 
-.card button{width:100%;margin-top:15px}
+.primary{
 
-.category{min-height:150px;text-align:left}
+  background:#f3a51b;
 
-.form{display:grid;gap:12px;max-width:550px}
+  color:#111;
 
-input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white}
+  border-color:#f3a51b;
+
+  font-weight:bold;
+
+}
+
+.app{
+
+  min-height:100vh;
+
+  padding:24px;
+
+  max-width:1100px;
+
+  margin:auto;
+
+}
+
+.logo{
+
+  font-size:28px;
+
+  font-weight:800;
+
+}
+
+.logo span{
+
+  display:block;
+
+  color:#f3a51b;
+
+  font-size:11px;
+
+  letter-spacing:3px;
+
+  margin-top:4px;
+
+}
+
+.panel{
+
+  background:#1b1b1b;
+
+  border:1px solid #373737;
+
+  border-radius:16px;
+
+  padding:20px;
+
+  margin-top:18px;
+
+}
+
+.grid{
+
+  display:grid;
+
+  grid-template-columns:repeat(3,1fr);
+
+  gap:15px;
+
+}
+
+.card{
+
+  background:#242424;
+
+  border:1px solid #373737;
+
+  border-radius:14px;
+
+  padding:20px;
+
+}
+
+.card button{
+
+  width:100%;
+
+  margin-top:15px;
+
+}
+
+.clickable{
+
+  cursor:pointer;
+
+  transition:.15s;
+
+}
+
+.clickable:active{
+
+  transform:scale(.98);
+
+}
+
+.category{
+
+  min-height:150px;
+
+  text-align:left;
+
+}
+
+.form{
+
+  display:grid;
+
+  gap:12px;
+
+  max-width:550px;
+
+}
+
+input{
+
+  width:100%;
+
+  padding:14px;
+
+  border-radius:10px;
+
+  border:1px solid #444;
+
+  background:#0d0d0d;
+
+  color:white;
+
+}
 
 .muted{color:#aaa}
 
-.badge{color:#f3a51b;font-size:11px;font-weight:bold;letter-spacing:1px}
+.badge{
 
-.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+  color:#f3a51b;
 
-.loginbox{width:min(430px,100%);background:#191919;border:1px solid #373737;border-radius:18px;padding:30px}
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:1px;
+
+}
+
+.login{
+
+  min-height:100vh;
+
+  display:grid;
+
+  place-items:center;
+
+  padding:20px;
+
+}
+
+.loginbox{
+
+  width:min(430px,100%);
+
+  background:#191919;
+
+  border:1px solid #373737;
+
+  border-radius:18px;
+
+  padding:30px;
+
+}
 
 .back{margin-bottom:20px}
 
@@ -76,7 +248,13 @@ input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;backgroun
 
 }
 
-.option input{width:22px;height:22px}
+.option input{
+
+  width:22px;
+
+  height:22px;
+
+}
 
 .qty{
 
@@ -186,11 +364,143 @@ input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;backgroun
 
 }
 
+.order-card{
+
+  background:#202020;
+
+  border:1px solid #3b3b3b;
+
+  border-radius:16px;
+
+  padding:18px;
+
+  margin:14px 0;
+
+}
+
+.order-top{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:flex-start;
+
+  gap:15px;
+
+}
+
+.order-number{
+
+  font-size:22px;
+
+  font-weight:bold;
+
+}
+
+.timer{
+
+  font-size:24px;
+
+  font-weight:800;
+
+  color:#f3a51b;
+
+  font-variant-numeric:tabular-nums;
+
+}
+
+.status{
+
+  display:inline-block;
+
+  background:#302715;
+
+  border:1px solid #6c5220;
+
+  color:#f3a51b;
+
+  padding:7px 10px;
+
+  border-radius:999px;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:1px;
+
+}
+
+.locked{
+
+  display:inline-block;
+
+  padding:7px 10px;
+
+  border-radius:999px;
+
+  background:#202020;
+
+  border:1px solid #555;
+
+  color:#bbb;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:1px;
+
+}
+
+.info-row{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:15px;
+
+  padding:9px 0;
+
+  border-bottom:1px solid #333;
+
+}
+
+.info-row:last-child{
+
+  border-bottom:none;
+
+}
+
+.system-note{
+
+  border-left:4px solid #f3a51b;
+
+  padding:12px 14px;
+
+  background:#181818;
+
+  margin-top:12px;
+
+  color:#bbb;
+
+}
+
+.danger-text{
+
+  color:#ff8c8c;
+
+}
+
 @media(max-width:700px){
 
   .app{padding:16px}
 
   .grid{grid-template-columns:1fr}
+
+  .order-top{flex-direction:column}
 
 }
 
@@ -225,6 +535,24 @@ let customer={
   address:""
 
 };
+
+/*
+
+ACTIVE ORDERS
+
+Stored locally for this prototype.
+
+*/
+
+let activeOrders=
+
+  JSON.parse(localStorage.getItem("mrkActiveOrders") || "[]");
+
+let nextOrderNumber=
+
+  Number(localStorage.getItem("mrkNextOrderNumber") || "1");
+
+let timerInterval=null;
 
 /* =========================
 
@@ -558,7 +886,13 @@ function render(){
 
             <input id="pin" type="password" value="1234">
 
-            <button class="primary" onclick="login()">
+            <button
+
+              class="primary"
+
+              onclick="login()"
+
+            >
 
               LOGIN
 
@@ -616,6 +950,8 @@ function login(){
 
 function home(){
 
+  stopTimerRefresh();
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
@@ -638,7 +974,13 @@ function home(){
 
         </p>
 
-        <button class="primary" onclick="newOrder()">
+        <button
+
+          class="primary"
+
+          onclick="newOrder()"
+
+        >
 
           ＋ NEW ORDER
 
@@ -648,35 +990,171 @@ function home(){
 
       <div class="grid">
 
-        <div class="card">
+        <div
 
-          <div class="badge">ACTIVE ORDERS</div>
+          class="card clickable"
 
-          <h2>0</h2>
+          onclick="showActiveOrders()"
+
+        >
+
+          <div class="badge">
+
+            ACTIVE ORDERS
+
+          </div>
+
+          <h2>
+
+            ${activeOrders.length}
+
+          </h2>
+
+          <div class="muted">
+
+            Tap to view kitchen orders
+
+          </div>
 
         </div>
 
         <div class="card">
 
-          <div class="badge">TODAY'S ORDERS</div>
+          <div class="badge">
 
-          <h2>0</h2>
+            TODAY'S ORDERS
+
+          </div>
+
+          <h2>
+
+            ${activeOrders.length}
+
+          </h2>
 
         </div>
 
         <div class="card">
 
-          <div class="badge">TODAY'S SALES</div>
+          <div class="badge">
 
-          <h2>0 CFA</h2>
+            TODAY'S SALES
+
+          </div>
+
+          <h2>
+
+            0 CFA
+
+          </h2>
 
         </div>
 
       </div>
 
+      ${
+
+        activeOrders.length
+
+        ?
+
+        `
+
+        <div class="panel">
+
+          <div class="badge">
+
+            LIVE KITCHEN ORDERS
+
+          </div>
+
+          <h2>Current Timers</h2>
+
+          <div id="homeTimers">
+
+            ${homeTimerCards()}
+
+          </div>
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+      }
+
     </div>
 
   `;
+
+  if(activeOrders.length){
+
+    startHomeTimers();
+
+  }
+
+}
+
+function homeTimerCards(){
+
+  return activeOrders.map(order=>`
+
+    <div
+
+      class="order-card clickable"
+
+      onclick="viewActiveOrder(${order.id})"
+
+    >
+
+      <div class="order-top">
+
+        <div>
+
+          <div class="order-number">
+
+            Order #${formatOrderNumber(order.number)}
+
+          </div>
+
+          <div class="muted">
+
+            ${order.customer.name} • ${order.type}
+
+          </div>
+
+        </div>
+
+        <div
+
+          class="timer"
+
+          data-start="${order.startedAt}"
+
+        >
+
+          ${formatTimer(order.startedAt)}
+
+        </div>
+
+      </div>
+
+      <div style="margin-top:12px">
+
+        <span class="status">
+
+          ${order.status}
+
+        </span>
+
+      </div>
+
+    </div>
+
+  `).join("");
 
 }
 
@@ -688,13 +1166,33 @@ function home(){
 
 function newOrder(){
 
+  stopTimerRefresh();
+
   cart=[];
+
+  orderType="";
+
+  customer={
+
+    name:"",
+
+    phone:"",
+
+    address:""
+
+  };
 
   document.getElementById("root").innerHTML=`
 
     <div class="app">
 
-      <button class="back" onclick="home()">
+      <button
+
+        class="back"
+
+        onclick="home()"
+
+      >
 
         ← Back
 
@@ -756,7 +1254,13 @@ function customerForm(type){
 
     <div class="app">
 
-      <button class="back" onclick="newOrder()">
+      <button
+
+        class="back"
+
+        onclick="newOrder()"
+
+      >
 
         ← Back
 
@@ -778,15 +1282,39 @@ function customerForm(type){
 
           <label>Customer Name</label>
 
-          <input id="name" placeholder="Customer name">
+          <input
+
+            id="name"
+
+            placeholder="Customer name"
+
+            value="${customer.name}"
+
+          >
 
           <label>
 
-            Phone ${type==="Delivery" ? "(required)" : "(optional)"}
+            Phone ${
+
+              type==="Delivery"
+
+              ? "(required)"
+
+              : "(optional)"
+
+            }
 
           </label>
 
-          <input id="phone" placeholder="+223 ...">
+          <input
+
+            id="phone"
+
+            placeholder="+223 ..."
+
+            value="${customer.phone}"
+
+          >
 
           ${
 
@@ -796,9 +1324,21 @@ function customerForm(type){
 
             `
 
-            <label>Delivery Address</label>
+            <label>
 
-            <input id="address" placeholder="Delivery address">
+              Delivery Address
+
+            </label>
+
+            <input
+
+              id="address"
+
+              placeholder="Delivery address"
+
+              value="${customer.address}"
+
+            >
 
             `
 
@@ -808,7 +1348,13 @@ function customerForm(type){
 
           }
 
-          <button class="primary" onclick="continueToMenu()">
+          <button
+
+            class="primary"
+
+            onclick="continueToMenu()"
+
+          >
 
             CONTINUE TO MENU →
 
@@ -880,7 +1426,13 @@ function categories(){
 
     <div class="app">
 
-      <button class="back" onclick="customerForm(orderType)">
+      <button
+
+        class="back"
+
+        onclick="customerForm(orderType)"
+
+      >
 
         ← Back
 
@@ -900,15 +1452,55 @@ function categories(){
 
         <div class="grid">
 
-          ${categoryButton("🍔","Burgers",burgers.length+" burgers")}
+          ${categoryButton(
 
-          ${categoryButton("🍟","Sides",sides.length+" sides")}
+            "🍔",
 
-          ${categoryButton("🥗","Salads",salads.length+" salads")}
+            "Burgers",
 
-          ${categoryButton("🥤","Soft Drinks",drinks.length+" drinks")}
+            burgers.length+" burgers"
 
-          ${categoryButton("🥫","Extra Sauces",sauces.length+" sauces")}
+          )}
+
+          ${categoryButton(
+
+            "🍟",
+
+            "Sides",
+
+            sides.length+" sides"
+
+          )}
+
+          ${categoryButton(
+
+            "🥗",
+
+            "Salads",
+
+            salads.length+" salads"
+
+          )}
+
+          ${categoryButton(
+
+            "🥤",
+
+            "Soft Drinks",
+
+            drinks.length+" drinks"
+
+          )}
+
+          ${categoryButton(
+
+            "🥫",
+
+            "Extra Sauces",
+
+            sauces.length+" sauces"
+
+          )}
 
         </div>
 
@@ -934,11 +1526,23 @@ function categoryButton(icon,name,count){
 
     >
 
-      <div class="badge">MENU CATEGORY</div>
+      <div class="badge">
 
-      <h2>${icon} ${name}</h2>
+        MENU CATEGORY
 
-      <span class="muted">${count}</span>
+      </div>
+
+      <h2>
+
+        ${icon} ${name}
+
+      </h2>
+
+      <span class="muted">
+
+        ${count}
+
+      </span>
 
     </button>
 
@@ -972,7 +1576,13 @@ function showCategory(category){
 
     <div class="app">
 
-      <button class="back" onclick="categories()">
+      <button
+
+        class="back"
+
+        onclick="categories()"
+
+      >
 
         ← Categories
 
@@ -992,33 +1602,41 @@ function showCategory(category){
 
         <div class="grid">
 
-          ${items.map((item,index)=>`
+          ${
 
-            <div class="card">
+            items.map((item,index)=>`
 
-              <div class="badge">
+              <div class="card">
 
-                ITEM ${index+1}
+                <div class="badge">
+
+                  ITEM ${index+1}
+
+                </div>
+
+                <h3>
+
+                  ${item}
+
+                </h3>
+
+                <button
+
+                  class="primary"
+
+                  onclick="selectItem('${item}')"
+
+                >
+
+                  SELECT
+
+                </button>
 
               </div>
 
-              <h3>${item}</h3>
+            `).join("")
 
-              <button
-
-                class="primary"
-
-                onclick="selectItem('${item}')"
-
-              >
-
-                SELECT
-
-              </button>
-
-            </div>
-
-          `).join("")}
+          }
 
         </div>
 
@@ -1234,7 +1852,11 @@ function burgerCustomizer(name){
 
               <label class="option">
 
-                <span>${ingredient}</span>
+                <span>
+
+                  ${ingredient}
+
+                </span>
 
                 <input
 
@@ -1494,7 +2116,9 @@ function changeQty(change){
 
     );
 
-  document.getElementById("qty")
+  document
+
+    .getElementById("qty")
 
     .textContent=currentQty;
 
@@ -1508,15 +2132,25 @@ function changeQty(change){
 
 function addCustomizedItem(name){
 
-  const included=[
+  let included=[];
 
-    ...document.querySelectorAll(
+  const includedBoxes=
 
-      ".included:checked"
+    document.querySelectorAll(".included");
 
-    )
+  if(includedBoxes.length){
 
-  ].map(x=>x.value);
+    included=[
+
+      ...document.querySelectorAll(
+
+        ".included:checked"
+
+      )
+
+    ].map(x=>x.value);
+
+  }
 
   const extras=
 
@@ -1620,6 +2254,12 @@ function cartSummary(){
 
 }
 
+/* =========================
+
+   CURRENT ORDER
+
+========================= */
+
 function viewCart(){
 
   document.getElementById("root").innerHTML=`
@@ -1648,75 +2288,423 @@ function viewCart(){
 
       <div class="panel">
 
+        <div class="badge">
+
+          ${orderType.toUpperCase()}
+
+        </div>
+
+        <h2>
+
+          ${customer.name}
+
+        </h2>
+
+        <p class="muted">
+
+          This order can still be modified before checkout.
+
+        </p>
+
+      </div>
+
+      <div class="panel">
+
         <h2>Order Summary</h2>
 
         ${
 
-          cart.map((item,index)=>`
+          cart.length
 
-            <div class="card">
+          ?
 
-              <div class="badge">
+          cart.map((item,index)=>
 
-                ITEM ${index+1}
+            editableCartItem(item,index)
+
+          ).join("")
+
+          :
+
+          `
+
+          <p class="muted">
+
+            No items in this order.
+
+          </p>
+
+          `
+
+        }
+
+        ${
+
+          cart.length
+
+          ?
+
+          `
+
+          <button
+
+            class="primary"
+
+            style="width:100%;margin-top:20px"
+
+            onclick="checkoutOrder()"
+
+          >
+
+            CHECKOUT & SEND TO KITCHEN →
+
+          </button>
+
+          `
+
+          :
+
+          ""
+
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+function editableCartItem(item,index){
+
+  const removed=getRemovedIngredients(item);
+
+  return `
+
+    <div class="card" style="margin-bottom:14px">
+
+      <div class="badge">
+
+        ITEM ${index+1}
+
+      </div>
+
+      <h3>
+
+        ${item.qty} × ${item.name}
+
+      </h3>
+
+      ${
+
+        removed.length
+
+        ?
+
+        `
+
+        <div
+
+          class="danger-text"
+
+          style="margin-top:8px"
+
+        >
+
+          <strong>Removed:</strong>
+
+          ${
+
+            removed.map(x=>`
+
+              <div>
+
+                NO ${x}
 
               </div>
 
-              <h3>
+            `).join("")
 
-                ${item.qty} × ${item.name}
+          }
 
-              </h3>
+        </div>
 
-              ${
+        `
 
-                item.extras.length
+        :
 
-                ?
+        ""
 
-                `
+      }
 
-                <div class="muted">
+      ${
 
-                  <strong>Extras:</strong>
+        item.extras.length
 
-                  ${item.extras.map(extra=>`
+        ?
 
-                    <div>
+        `
 
-                      ${extra.qty} × ${extra.name}
+        <div
 
-                    </div>
+          class="muted"
 
-                  `).join("")}
+          style="margin-top:10px"
 
-                </div>
+        >
 
-                `
+          <strong>Extras:</strong>
 
-                :
+          ${
 
-                ""
+            item.extras.map(extra=>`
 
-              }
+              <div>
 
-            </div>
+                ${extra.qty} × ${extra.name}
 
-          `).join("")
+              </div>
 
-        }
+            `).join("")
+
+          }
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+      }
+
+      <button
+
+        onclick="removeCartItem(${index})"
+
+      >
+
+        REMOVE ITEM
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+function removeCartItem(index){
+
+  cart.splice(index,1);
+
+  viewCart();
+
+}
+
+function getRemovedIngredients(item){
+
+  if(!burgerDetails[item.name]){
+
+    return [];
+
+  }
+
+  const original=
+
+    burgerDetails[item.name].ingredients;
+
+  return original.filter(
+
+    ingredient=>
+
+      !item.included.includes(ingredient)
+
+  );
+
+}
+
+/* =========================
+
+   CHECKOUT
+
+========================= */
+
+function checkoutOrder(){
+
+  if(!cart.length){
+
+    alert("This order is empty.");
+
+    return;
+
+  }
+
+  const order={
+
+    id:Date.now(),
+
+    number:nextOrderNumber,
+
+    type:orderType,
+
+    customer:{
+
+      name:customer.name,
+
+      phone:customer.phone,
+
+      address:customer.address
+
+    },
+
+    items:JSON.parse(
+
+      JSON.stringify(cart)
+
+    ),
+
+    status:"NEW",
+
+    locked:true,
+
+    startedAt:Date.now(),
+
+    kitchenSent:true,
+
+    receiptsQueued:2
+
+  };
+
+  activeOrders.push(order);
+
+  nextOrderNumber++;
+
+  saveOrders();
+
+  checkoutSuccess(order);
+
+}
+
+/* =========================
+
+   CHECKOUT SUCCESS
+
+========================= */
+
+function checkoutSuccess(order){
+
+  cart=[];
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>ORDER CONFIRMED</span>
+
+      </div>
+
+      <div class="panel">
+
+        <div class="badge">
+
+          CHECKOUT COMPLETE
+
+        </div>
+
+        <h1>
+
+          Order #${formatOrderNumber(order.number)}
+
+        </h1>
+
+        <h2>
+
+          ${order.customer.name}
+
+        </h2>
+
+        <p>
+
+          ${order.type}
+
+        </p>
+
+        <div style="margin:20px 0">
+
+          <span class="status">
+
+            SENT TO KITCHEN
+
+          </span>
+
+        </div>
+
+        <div class="system-note">
+
+          <strong>
+
+            Kitchen tablet:
+
+          </strong>
+
+          Order queued for kitchen display.
+
+        </div>
+
+        <div class="system-note">
+
+          <strong>
+
+            Printing:
+
+          </strong>
+
+          2 receipts queued.
+
+        </div>
+
+        <div class="system-note">
+
+          <strong>
+
+            Order timer:
+
+          </strong>
+
+          Started automatically at checkout.
+
+        </div>
 
         <button
 
           class="primary"
 
-          style="width:100%;margin-top:20px"
+          style="width:100%;margin-top:22px"
 
-          onclick="alert('Checkout is the next build.')"
+          onclick="home()"
 
         >
 
-          CHECKOUT →
+          RETURN TO CASHIER HOME
+
+        </button>
+
+        <button
+
+          style="width:100%;margin-top:12px"
+
+          onclick="newOrder()"
+
+        >
+
+          ＋ START ANOTHER ORDER
 
         </button>
 
@@ -1727,6 +2715,816 @@ function viewCart(){
   `;
 
 }
+
+/* =========================
+
+   ACTIVE ORDERS
+
+========================= */
+
+function showActiveOrders(){
+
+  stopTimerRefresh();
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="home()"
+
+      >
+
+        ← Cashier Home
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>ACTIVE ORDERS</span>
+
+      </div>
+
+      <div class="panel">
+
+        <div class="order-top">
+
+          <div>
+
+            <div class="badge">
+
+              KITCHEN QUEUE
+
+            </div>
+
+            <h1>
+
+              Active Orders
+
+            </h1>
+
+          </div>
+
+          <div>
+
+            <span class="locked">
+
+              🔒 READ ONLY
+
+            </span>
+
+          </div>
+
+        </div>
+
+        <p class="muted">
+
+          Checked-out orders cannot be modified by the cashier.
+
+        </p>
+
+      </div>
+
+      <div id="activeOrderList">
+
+        ${
+
+          activeOrders.length
+
+          ?
+
+          activeOrders.map(order=>
+
+            activeOrderCard(order)
+
+          ).join("")
+
+          :
+
+          `
+
+          <div class="panel">
+
+            <h2>No active orders</h2>
+
+            <p class="muted">
+
+              Checked-out orders will appear here.
+
+            </p>
+
+          </div>
+
+          `
+
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+  if(activeOrders.length){
+
+    startActiveTimers();
+
+  }
+
+}
+
+function activeOrderCard(order){
+
+  const itemQty=
+
+    order.items.reduce(
+
+      (sum,item)=>sum+item.qty,
+
+      0
+
+    );
+
+  return `
+
+    <div
+
+      class="order-card clickable"
+
+      onclick="viewActiveOrder(${order.id})"
+
+    >
+
+      <div class="order-top">
+
+        <div>
+
+          <div class="badge">
+
+            ${order.type.toUpperCase()}
+
+          </div>
+
+          <div class="order-number">
+
+            Order #${formatOrderNumber(order.number)}
+
+          </div>
+
+          <h3>
+
+            ${order.customer.name}
+
+          </h3>
+
+          <div class="muted">
+
+            ${itemQty}
+
+            item${itemQty!==1?"s":""}
+
+          </div>
+
+        </div>
+
+        <div style="text-align:right">
+
+          <div
+
+            class="timer"
+
+            data-start="${order.startedAt}"
+
+          >
+
+            ${formatTimer(order.startedAt)}
+
+          </div>
+
+          <div style="margin-top:10px">
+
+            <span class="status">
+
+              ${order.status}
+
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <button>
+
+        VIEW ORDER →
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+/* =========================
+
+   READ-ONLY ORDER
+
+========================= */
+
+function viewActiveOrder(id){
+
+  stopTimerRefresh();
+
+  const order=
+
+    activeOrders.find(
+
+      x=>x.id===id
+
+    );
+
+  if(!order){
+
+    showActiveOrders();
+
+    return;
+
+  }
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="showActiveOrders()"
+
+      >
+
+        ← Active Orders
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>ACTIVE ORDER</span>
+
+      </div>
+
+      <div class="panel">
+
+        <div class="order-top">
+
+          <div>
+
+            <div class="badge">
+
+              ${order.type.toUpperCase()}
+
+            </div>
+
+            <h1>
+
+              Order #${formatOrderNumber(order.number)}
+
+            </h1>
+
+            <h2>
+
+              ${order.customer.name}
+
+            </h2>
+
+          </div>
+
+          <div>
+
+            <div
+
+              id="singleOrderTimer"
+
+              class="timer"
+
+              data-start="${order.startedAt}"
+
+            >
+
+              ${formatTimer(order.startedAt)}
+
+            </div>
+
+            <div style="margin-top:10px">
+
+              <span class="status">
+
+                ${order.status}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="margin-top:18px">
+
+          <span class="locked">
+
+            🔒 CASHIER READ ONLY
+
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="panel">
+
+        <div class="badge">
+
+          CUSTOMER
+
+        </div>
+
+        <div class="info-row">
+
+          <span>Name</span>
+
+          <strong>
+
+            ${order.customer.name}
+
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>Order Type</span>
+
+          <strong>
+
+            ${order.type}
+
+          </strong>
+
+        </div>
+
+        ${
+
+          order.customer.phone
+
+          ?
+
+          `
+
+          <div class="info-row">
+
+            <span>Phone</span>
+
+            <strong>
+
+              ${order.customer.phone}
+
+            </strong>
+
+          </div>
+
+          `
+
+          :
+
+          ""
+
+        }
+
+        ${
+
+          order.customer.address
+
+          ?
+
+          `
+
+          <div class="info-row">
+
+            <span>Address</span>
+
+            <strong>
+
+              ${order.customer.address}
+
+            </strong>
+
+          </div>
+
+          `
+
+          :
+
+          ""
+
+        }
+
+      </div>
+
+      <div class="panel">
+
+        <div class="badge">
+
+          ORDER ITEMS
+
+        </div>
+
+        <h2>Kitchen Order</h2>
+
+        ${
+
+          order.items.map(
+
+            (item,index)=>
+
+              lockedOrderItem(item,index)
+
+          ).join("")
+
+        }
+
+      </div>
+
+      <div class="panel">
+
+        <div class="badge">
+
+          SYSTEM
+
+        </div>
+
+        <div class="info-row">
+
+          <span>Kitchen Tablet</span>
+
+          <strong>
+
+            SENT ✓
+
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>Receipts</span>
+
+          <strong>
+
+            2 QUEUED
+
+          </strong>
+
+        </div>
+
+        <div class="info-row">
+
+          <span>Cashier Access</span>
+
+          <strong>
+
+            READ ONLY 🔒
+
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+  startSingleTimer();
+
+}
+
+function lockedOrderItem(item,index){
+
+  const removed=getRemovedIngredients(item);
+
+  return `
+
+    <div class="card" style="margin-top:14px">
+
+      <div class="badge">
+
+        ITEM ${index+1}
+
+      </div>
+
+      <h3>
+
+        ${item.qty} × ${item.name}
+
+      </h3>
+
+      ${
+
+        removed.length
+
+        ?
+
+        `
+
+        <div
+
+          class="danger-text"
+
+          style="margin-top:10px"
+
+        >
+
+          <strong>
+
+            REMOVED
+
+          </strong>
+
+          ${
+
+            removed.map(x=>`
+
+              <div>
+
+                NO ${x}
+
+              </div>
+
+            `).join("")
+
+          }
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+      }
+
+      ${
+
+        item.extras.length
+
+        ?
+
+        `
+
+        <div style="margin-top:10px">
+
+          <strong>
+
+            EXTRAS
+
+          </strong>
+
+          ${
+
+            item.extras.map(extra=>`
+
+              <div>
+
+                ${extra.qty} × ${extra.name}
+
+              </div>
+
+            `).join("")
+
+          }
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+      }
+
+    </div>
+
+  `;
+
+}
+
+/* =========================
+
+   TIMER SYSTEM
+
+========================= */
+
+function formatTimer(startedAt){
+
+  const elapsed=
+
+    Math.max(
+
+      0,
+
+      Date.now()-startedAt
+
+    );
+
+  const totalSeconds=
+
+    Math.floor(elapsed/1000);
+
+  const hours=
+
+    Math.floor(totalSeconds/3600);
+
+  const minutes=
+
+    Math.floor(
+
+      (totalSeconds%3600)/60
+
+    );
+
+  const seconds=
+
+    totalSeconds%60;
+
+  if(hours>0){
+
+    return (
+
+      String(hours).padStart(2,"0")
+
+      +":"
+
+      +String(minutes).padStart(2,"0")
+
+      +":"
+
+      +String(seconds).padStart(2,"0")
+
+    );
+
+  }
+
+  return (
+
+    String(minutes).padStart(2,"0")
+
+    +":"
+
+    +String(seconds).padStart(2,"0")
+
+  );
+
+}
+
+function updateVisibleTimers(){
+
+  document
+
+    .querySelectorAll("[data-start]")
+
+    .forEach(element=>{
+
+      const start=
+
+        Number(
+
+          element.getAttribute("data-start")
+
+        );
+
+      element.textContent=
+
+        formatTimer(start);
+
+    });
+
+}
+
+function startHomeTimers(){
+
+  stopTimerRefresh();
+
+  updateVisibleTimers();
+
+  timerInterval=
+
+    setInterval(
+
+      updateVisibleTimers,
+
+      1000
+
+    );
+
+}
+
+function startActiveTimers(){
+
+  stopTimerRefresh();
+
+  updateVisibleTimers();
+
+  timerInterval=
+
+    setInterval(
+
+      updateVisibleTimers,
+
+      1000
+
+    );
+
+}
+
+function startSingleTimer(){
+
+  stopTimerRefresh();
+
+  updateVisibleTimers();
+
+  timerInterval=
+
+    setInterval(
+
+      updateVisibleTimers,
+
+      1000
+
+    );
+
+}
+
+function stopTimerRefresh(){
+
+  if(timerInterval){
+
+    clearInterval(timerInterval);
+
+    timerInterval=null;
+
+  }
+
+}
+
+/* =========================
+
+   STORAGE
+
+========================= */
+
+function saveOrders(){
+
+  localStorage.setItem(
+
+    "mrkActiveOrders",
+
+    JSON.stringify(activeOrders)
+
+  );
+
+  localStorage.setItem(
+
+    "mrkNextOrderNumber",
+
+    String(nextOrderNumber)
+
+  );
+
+}
+
+function formatOrderNumber(number){
+
+  return String(number).padStart(3,"0");
+
+}
+
+/* =========================
+
+   START
+
+========================= */
 
 render();
 
