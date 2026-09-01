@@ -14,7 +14,11 @@
 
 <style>
 
-*{box-sizing:border-box}
+*{
+
+  box-sizing:border-box;
+
+}
 
 body{
 
@@ -28,7 +32,11 @@ body{
 
 }
 
-button,input{font:inherit}
+button,input{
+
+  font:inherit;
+
+}
 
 button{
 
@@ -152,7 +160,11 @@ button{
 
 }
 
-.category h2{margin:8px 0}
+.category h2{
+
+  margin:8px 0;
+
+}
 
 .form{
 
@@ -180,7 +192,11 @@ input{
 
 }
 
-.muted{color:#aaa}
+.muted{
+
+  color:#aaa;
+
+}
 
 .badge{
 
@@ -220,13 +236,115 @@ input{
 
 }
 
-.back{margin-bottom:20px}
+.back{
+
+  margin-bottom:20px;
+
+}
+
+.option{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:12px;
+
+  padding:14px;
+
+  background:#202020;
+
+  border:1px solid #3b3b3b;
+
+  border-radius:12px;
+
+  margin:10px 0;
+
+}
+
+.option input{
+
+  width:22px;
+
+  height:22px;
+
+}
+
+.qty{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:15px;
+
+}
+
+.qty button{
+
+  width:48px;
+
+  height:48px;
+
+  padding:0;
+
+  font-size:24px;
+
+}
+
+.qty strong{
+
+  font-size:24px;
+
+  min-width:30px;
+
+  text-align:center;
+
+}
+
+.summary{
+
+  background:#101010;
+
+  border:1px solid #3b3b3b;
+
+  border-radius:14px;
+
+  padding:18px;
+
+  margin-top:18px;
+
+}
+
+.notice{
+
+  padding:12px;
+
+  border-radius:10px;
+
+  background:#2a210f;
+
+  border:1px solid #6b5015;
+
+  color:#f3a51b;
+
+}
 
 @media(max-width:700px){
 
-  .app{padding:16px}
+  .app{
 
-  .grid{grid-template-columns:1fr}
+    padding:16px;
+
+  }
+
+  .grid{
+
+    grid-template-columns:1fr;
+
+  }
 
 }
 
@@ -244,6 +362,12 @@ let loggedIn=false;
 
 let orderType="";
 
+let currentCategory="";
+
+let cart=[];
+
+let currentQty=1;
+
 let customer={
 
   name:"",
@@ -253,6 +377,12 @@ let customer={
   address:""
 
 };
+
+/* =========================
+
+   MENU
+
+========================= */
 
 const burgers=[
 
@@ -302,53 +432,137 @@ const drinks=[
 
 ];
 
+/* =========================
+
+   BURGER INGREDIENTS
+
+========================= */
+
+const burgerDetails={
+
+  "Mr K Classic":{
+
+    ingredients:[
+
+      "120g fresh beef steak",
+
+      "Rocket lettuce (when available)",
+
+      "Tomato",
+
+      "Onions",
+
+      "Pickled cucumbers",
+
+      "Mr K sauce"
+
+    ]
+
+  },
+
+  "Mushroom & Swiss":{
+
+    ingredients:[
+
+      "Fresh beef steak",
+
+      "Mushrooms",
+
+      "Swiss cheese"
+
+    ]
+
+  },
+
+  "Honky Tonk":{
+
+    ingredients:[
+
+      "Fresh beef steak"
+
+    ]
+
+  },
+
+  "Philly Cheesesteak":{
+
+    ingredients:[
+
+      "Fresh beef steak",
+
+      "Cheesesteak-style toppings"
+
+    ]
+
+  },
+
+  "Only The Brave":{
+
+    ingredients:[
+
+      "3 fresh beef patties"
+
+    ]
+
+  },
+
+  "Bohemian":{
+
+    ingredients:[
+
+      "Fresh beef steak"
+
+    ]
+
+  },
+
+  "Chicken Chimichurri":{
+
+    ingredients:[
+
+      "Chicken",
+
+      "Chimichurri"
+
+    ]
+
+  }
+
+};
+
+/* =========================
+
+   EXTRA SAUCES
+
+========================= */
+
+const extraSauces=[
+
+  "Mr K sauce",
+
+  "Chimichurri",
+
+  "Ketchup",
+
+  "Mayonnaise",
+
+  "Honey Mustard",
+
+  "Honey BBQ"
+
+];
+
+/* =========================
+
+   START
+
+========================= */
+
 function render(){
 
   if(!loggedIn){
 
-    document.getElementById("root").innerHTML=`
-
-      <div class="login">
-
-        <div class="loginbox">
-
-          <div class="logo">
-
-            MR K BURGERS
-
-            <span>POS PROTOTYPE</span>
-
-          </div>
-
-          <div class="form" style="margin-top:30px">
-
-            <label>Cashier ID</label>
-
-            <input id="user" value="cashier01">
-
-            <label>PIN</label>
-
-            <input id="pin" type="password" value="1234">
-
-            <button class="primary" onclick="login()">
-
-              LOGIN
-
-            </button>
-
-            <p class="muted">
-
-              Prototype login: cashier01 / 1234
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
+    loginPage();
 
     return;
 
@@ -358,13 +572,103 @@ function render(){
 
 }
 
+/* =========================
+
+   LOGIN
+
+========================= */
+
+function loginPage(){
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="login">
+
+      <div class="loginbox">
+
+        <div class="logo">
+
+          MR K BURGERS
+
+          <span>POS PROTOTYPE</span>
+
+        </div>
+
+        <div
+
+          class="form"
+
+          style="margin-top:30px"
+
+        >
+
+          <label>Cashier ID</label>
+
+          <input
+
+            id="user"
+
+            value="cashier01"
+
+          >
+
+          <label>PIN</label>
+
+          <input
+
+            id="pin"
+
+            type="password"
+
+            value="1234"
+
+          >
+
+          <button
+
+            class="primary"
+
+            onclick="login()"
+
+          >
+
+            LOGIN
+
+          </button>
+
+          <p class="muted">
+
+            Prototype login: cashier01 / 1234
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
 function login(){
 
-  const user=document.getElementById("user").value;
+  const user=
 
-  const pin=document.getElementById("pin").value;
+    document.getElementById("user").value;
 
-  if(user==="cashier01" && pin==="1234"){
+  const pin=
+
+    document.getElementById("pin").value;
+
+  if(
+
+    user==="cashier01" &&
+
+    pin==="1234"
+
+  ){
 
     loggedIn=true;
 
@@ -372,11 +676,21 @@ function login(){
 
   }else{
 
-    alert("Incorrect Cashier ID or PIN.");
+    alert(
+
+      "Incorrect Cashier ID or PIN."
+
+    );
 
   }
 
 }
+
+/* =========================
+
+   HOME
+
+========================= */
 
 function home(){
 
@@ -402,7 +716,13 @@ function home(){
 
         </p>
 
-        <button class="primary" onclick="newOrder()">
+        <button
+
+          class="primary"
+
+          onclick="newOrder()"
+
+        >
 
           ＋ NEW ORDER
 
@@ -414,7 +734,11 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">ACTIVE ORDERS</div>
+          <div class="badge">
+
+            ACTIVE ORDERS
+
+          </div>
 
           <h2>0</h2>
 
@@ -422,7 +746,11 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">TODAY'S ORDERS</div>
+          <div class="badge">
+
+            TODAY'S ORDERS
+
+          </div>
 
           <h2>0</h2>
 
@@ -430,7 +758,11 @@ function home(){
 
         <div class="card">
 
-          <div class="badge">TODAY'S SALES</div>
+          <div class="badge">
+
+            TODAY'S SALES
+
+          </div>
 
           <h2>0 CFA</h2>
 
@@ -444,13 +776,25 @@ function home(){
 
 }
 
+/* =========================
+
+   NEW ORDER
+
+========================= */
+
 function newOrder(){
 
   document.getElementById("root").innerHTML=`
 
     <div class="app">
 
-      <button class="back" onclick="home()">
+      <button
+
+        class="back"
+
+        onclick="home()"
+
+      >
 
         ← Back
 
@@ -470,27 +814,51 @@ function newOrder(){
 
         <div class="grid">
 
-          <button onclick="customerForm('Dine In')">
+          <button
+
+            onclick="customerForm('Dine In')"
+
+          >
 
             <h3>🍽️ DINE IN</h3>
 
-            <span class="muted">Restaurant order</span>
+            <span class="muted">
+
+              Restaurant order
+
+            </span>
 
           </button>
 
-          <button onclick="customerForm('Takeaway')">
+          <button
+
+            onclick="customerForm('Takeaway')"
+
+          >
 
             <h3>🥡 TAKEAWAY</h3>
 
-            <span class="muted">Customer pickup</span>
+            <span class="muted">
+
+              Customer pickup
+
+            </span>
 
           </button>
 
-          <button onclick="customerForm('Delivery')">
+          <button
+
+            onclick="customerForm('Delivery')"
+
+          >
 
             <h3>🛵 DELIVERY</h3>
 
-            <span class="muted">Delivery order</span>
+            <span class="muted">
+
+              Delivery order
+
+            </span>
 
           </button>
 
@@ -504,6 +872,12 @@ function newOrder(){
 
 }
 
+/* =========================
+
+   CUSTOMER
+
+========================= */
+
 function customerForm(type){
 
   orderType=type;
@@ -512,7 +886,13 @@ function customerForm(type){
 
     <div class="app">
 
-      <button class="back" onclick="newOrder()">
+      <button
+
+        class="back"
+
+        onclick="newOrder()"
+
+      >
 
         ← Back
 
@@ -522,7 +902,11 @@ function customerForm(type){
 
         MR K BURGERS
 
-        <span>${type.toUpperCase()}</span>
+        <span>
+
+          ${type.toUpperCase()}
+
+        </span>
 
       </div>
 
@@ -532,17 +916,43 @@ function customerForm(type){
 
         <div class="form">
 
-          <label>Customer Name</label>
-
-          <input id="name" placeholder="Customer name">
-
           <label>
 
-            Phone ${type==="Delivery" ? "(required)" : "(optional)"}
+            Customer Name
 
           </label>
 
-          <input id="phone" placeholder="+223 ...">
+          <input
+
+            id="name"
+
+            placeholder="Customer name"
+
+          >
+
+          <label>
+
+            Phone
+
+            ${
+
+              type==="Delivery"
+
+              ? "(required)"
+
+              : "(optional)"
+
+            }
+
+          </label>
+
+          <input
+
+            id="phone"
+
+            placeholder="+223 ..."
+
+          >
 
           ${
 
@@ -552,7 +962,11 @@ function customerForm(type){
 
             `
 
-              <label>Delivery Address</label>
+              <label>
+
+                Delivery Address
+
+              </label>
 
               <input
 
@@ -570,7 +984,13 @@ function customerForm(type){
 
           }
 
-          <button class="primary" onclick="goToCategories()">
+          <button
+
+            class="primary"
+
+            onclick="goToCategories()"
+
+          >
 
             CONTINUE TO MENU →
 
@@ -588,19 +1008,35 @@ function customerForm(type){
 
 function goToCategories(){
 
-  customer.name=document.getElementById("name").value.trim();
+  customer.name=
 
-  customer.phone=document.getElementById("phone").value.trim();
+    document.getElementById("name")
+
+    .value.trim();
+
+  customer.phone=
+
+    document.getElementById("phone")
+
+    .value.trim();
 
   if(orderType==="Delivery"){
 
-    customer.address=document.getElementById("address").value.trim();
+    customer.address=
+
+      document.getElementById("address")
+
+      .value.trim();
 
   }
 
   if(!customer.name){
 
-    alert("Please enter the customer's name.");
+    alert(
+
+      "Please enter the customer's name."
+
+    );
 
     return;
 
@@ -614,15 +1050,27 @@ function goToCategories(){
 
   ){
 
-    alert("Delivery requires phone number and address.");
+    alert(
+
+      "Delivery requires phone number and address."
+
+    );
 
     return;
 
   }
 
+  cart=[];
+
   categories();
 
 }
+
+/* =========================
+
+   CATEGORIES
+
+========================= */
 
 function categories(){
 
@@ -652,7 +1100,11 @@ function categories(){
 
       <div class="panel">
 
-        <h2>Choose a Category</h2>
+        <h2>
+
+          Choose a Category
+
+        </h2>
 
         <div class="grid">
 
@@ -664,9 +1116,17 @@ function categories(){
 
           >
 
-            <div class="badge">CATEGORY 01</div>
+            <div class="badge">
 
-            <h2>🍔 Burgers</h2>
+              CATEGORY 01
+
+            </div>
+
+            <h2>
+
+              🍔 Burgers
+
+            </h2>
 
             <span class="muted">
 
@@ -684,9 +1144,17 @@ function categories(){
 
           >
 
-            <div class="badge">CATEGORY 02</div>
+            <div class="badge">
 
-            <h2>🍟 Sides</h2>
+              CATEGORY 02
+
+            </div>
+
+            <h2>
+
+              🍟 Sides
+
+            </h2>
 
             <span class="muted">
 
@@ -704,9 +1172,17 @@ function categories(){
 
           >
 
-            <div class="badge">CATEGORY 03</div>
+            <div class="badge">
 
-            <h2>🥗 Salads</h2>
+              CATEGORY 03
+
+            </div>
+
+            <h2>
+
+              🥗 Salads
+
+            </h2>
 
             <span class="muted">
 
@@ -724,9 +1200,17 @@ function categories(){
 
           >
 
-            <div class="badge">CATEGORY 04</div>
+            <div class="badge">
 
-            <h2>🥤 Soft Drinks</h2>
+              CATEGORY 04
+
+            </div>
+
+            <h2>
+
+              🥤 Soft Drinks
+
+            </h2>
 
             <span class="muted">
 
@@ -740,23 +1224,41 @@ function categories(){
 
       </div>
 
+      ${cartSummary()}
+
     </div>
 
   `;
 
 }
 
+/* =========================
+
+   CATEGORY ITEMS
+
+========================= */
+
 function showCategory(category){
+
+  currentCategory=category;
 
   let items=[];
 
-  if(category==="Burgers") items=burgers;
+  if(category==="Burgers")
 
-  if(category==="Sides") items=sides;
+    items=burgers;
 
-  if(category==="Salads") items=salads;
+  if(category==="Sides")
 
-  if(category==="Soft Drinks") items=drinks;
+    items=sides;
+
+  if(category==="Salads")
+
+    items=salads;
+
+  if(category==="Soft Drinks")
+
+    items=drinks;
 
   document.getElementById("root").innerHTML=`
 
@@ -778,51 +1280,329 @@ function showCategory(category){
 
         MR K BURGERS
 
-        <span>${category.toUpperCase()}</span>
+        <span>
+
+          ${category.toUpperCase()}
+
+        </span>
 
       </div>
 
       <div class="panel">
 
-        <h2>${category}</h2>
+        <h2>
+
+          ${category}
+
+        </h2>
 
         <div class="grid">
 
-          ${items.map((item,index)=>`
+          ${items.map(
 
-            <div class="card">
+            (item,index)=>`
 
-              <div class="badge">
+              <div class="card">
 
-                ${category.toUpperCase()} ${index+1}
+                <div class="badge">
+
+                  ${category.toUpperCase()}
+
+                  ${index+1}
+
+                </div>
+
+                <h3>
+
+                  ${item}
+
+                </h3>
+
+                <p class="muted">
+
+                  ${
+
+                    category==="Burgers"
+
+                    ? "Configure this burger before adding it to the order."
+
+                    : "Select to add to order."
+
+                  }
+
+                </p>
+
+                <button
+
+                  class="primary"
+
+                  onclick="selectItem('${item}')"
+
+                >
+
+                  SELECT
+
+                </button>
 
               </div>
 
-              <h3>${item}</h3>
+            `
 
-              <p class="muted">
-
-                Select to continue.
-
-              </p>
-
-              <button
-
-                class="primary"
-
-                onclick="selectItem('${item}')"
-
-              >
-
-                SELECT
-
-              </button>
-
-            </div>
-
-          `).join("")}
+          ).join("")}
 
         </div>
+
+      </div>
+
+      ${cartSummary()}
+
+    </div>
+
+  `;
+
+}
+
+/* =========================
+
+   SELECT ITEM
+
+========================= */
+
+function selectItem(name){
+
+  if(currentCategory==="Burgers"){
+
+    burgerCustomizer(name);
+
+    return;
+
+  }
+
+  addSimpleItem(name);
+
+}
+
+/* =========================
+
+   BURGER CUSTOMIZATION
+
+========================= */
+
+function burgerCustomizer(name){
+
+  const detail=
+
+    burgerDetails[name] || {
+
+      ingredients:[
+
+        "Freshly prepared ingredients"
+
+      ]
+
+    };
+
+  currentQty=1;
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="showCategory('Burgers')"
+
+      >
+
+        ← Burgers
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>
+
+          BURGER CUSTOMIZATION
+
+        </span>
+
+      </div>
+
+      <div class="panel">
+
+        <h1>
+
+          ${name}
+
+        </h1>
+
+        <p class="muted">
+
+          Customize the burger before
+
+          adding it to the order.
+
+        </p>
+
+        <!-- INCLUDED INGREDIENTS -->
+
+        <div class="panel">
+
+          <div class="badge">
+
+            INCLUDED INGREDIENTS
+
+          </div>
+
+          ${
+
+            detail.ingredients.map(
+
+              ingredient=>`
+
+                <label class="option">
+
+                  <span>
+
+                    ${ingredient}
+
+                  </span>
+
+                  <input
+
+                    type="checkbox"
+
+                    checked
+
+                    value="${ingredient}"
+
+                    class="ingredient"
+
+                  >
+
+                </label>
+
+              `
+
+            ).join("")
+
+          }
+
+        </div>
+
+        <!-- EXTRA SAUCES -->
+
+        <div class="panel">
+
+          <div class="badge">
+
+            EXTRA SAUCES
+
+          </div>
+
+          ${
+
+            extraSauces.map(
+
+              sauce=>`
+
+                <label class="option">
+
+                  <span>
+
+                    ${sauce}
+
+                  </span>
+
+                  <input
+
+                    type="checkbox"
+
+                    value="${sauce}"
+
+                    class="sauce"
+
+                  >
+
+                </label>
+
+              `
+
+            ).join("")
+
+          }
+
+        </div>
+
+        <!-- QUANTITY -->
+
+        <div class="panel">
+
+          <div class="badge">
+
+            QUANTITY
+
+          </div>
+
+          <div class="qty">
+
+            <button
+
+              onclick="changeQty(-1)"
+
+            >
+
+              −
+
+            </button>
+
+            <strong id="qty">
+
+              1
+
+            </strong>
+
+            <button
+
+              onclick="changeQty(1)"
+
+            >
+
+              ＋
+
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="notice">
+
+          Burger price will be added
+
+          when we enter the official
+
+          Mr K menu prices.
+
+        </div>
+
+        <button
+
+          class="primary"
+
+          style="width:100%;margin-top:18px"
+
+          onclick="addBurgerToCart('${name}')"
+
+        >
+
+          ADD TO ORDER →
+
+        </button>
 
       </div>
 
@@ -832,19 +1612,297 @@ function showCategory(category){
 
 }
 
-function selectItem(name){
+/* =========================
 
-  alert(
+   QUANTITY
 
-    name +
+========================= */
 
-    " selected.\n\n" +
+function changeQty(delta){
 
-    "Next build: customization, " +
+  currentQty=
 
-    "extras, quantity and cart."
+    Math.max(
+
+      1,
+
+      currentQty+delta
+
+    );
+
+  document.getElementById("qty")
+
+    .textContent=currentQty;
+
+}
+
+/* =========================
+
+   ADD BURGER
+
+========================= */
+
+function addBurgerToCart(name){
+
+  const ingredients=[
+
+    ...document.querySelectorAll(
+
+      ".ingredient:checked"
+
+    )
+
+  ].map(
+
+    item=>item.value
 
   );
+
+  const sauces=[
+
+    ...document.querySelectorAll(
+
+      ".sauce:checked"
+
+    )
+
+  ].map(
+
+    item=>item.value
+
+  );
+
+  cart.push({
+
+    name:name,
+
+    qty:currentQty,
+
+    ingredients:ingredients,
+
+    sauces:sauces
+
+  });
+
+  categories();
+
+}
+
+/* =========================
+
+   ADD SIDE / SALAD / DRINK
+
+========================= */
+
+function addSimpleItem(name){
+
+  cart.push({
+
+    name:name,
+
+    qty:1,
+
+    ingredients:[],
+
+    sauces:[]
+
+  });
+
+  categories();
+
+}
+
+/* =========================
+
+   CART SUMMARY
+
+========================= */
+
+function cartSummary(){
+
+  if(!cart.length)
+
+    return "";
+
+  return `
+
+    <div class="summary">
+
+      <div class="badge">
+
+        CURRENT ORDER
+
+      </div>
+
+      <h3>
+
+        ${cart.length}
+
+        item${cart.length>1?"s":""}
+
+      </h3>
+
+      <button
+
+        class="primary"
+
+        onclick="viewCart()"
+
+      >
+
+        VIEW ORDER →
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+/* =========================
+
+   CART
+
+========================= */
+
+function viewCart(){
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="categories()"
+
+      >
+
+        ← Categories
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>
+
+          CURRENT ORDER
+
+        </span>
+
+      </div>
+
+      <div class="panel">
+
+        <h2>
+
+          Order Summary
+
+        </h2>
+
+        ${
+
+          cart.map(
+
+            (item,index)=>`
+
+              <div class="card">
+
+                <div class="badge">
+
+                  ITEM ${index+1}
+
+                </div>
+
+                <h3>
+
+                  ${item.qty}
+
+                  ×
+
+                  ${item.name}
+
+                </h3>
+
+                ${
+
+                  item.ingredients.length
+
+                  ?
+
+                  `
+
+                    <p class="muted">
+
+                      Ingredients:
+
+                      ${item.ingredients.join(", ")}
+
+                    </p>
+
+                  `
+
+                  :
+
+                  ""
+
+                }
+
+                ${
+
+                  item.sauces.length
+
+                  ?
+
+                  `
+
+                    <p class="muted">
+
+                      Extra sauces:
+
+                      ${item.sauces.join(", ")}
+
+                    </p>
+
+                  `
+
+                  :
+
+                  ""
+
+                }
+
+              </div>
+
+            `
+
+          ).join("")
+
+        }
+
+        <button
+
+          class="primary"
+
+          style="width:100%;margin-top:18px"
+
+          onclick="alert('Checkout will be built next.')"
+
+        >
+
+          CHECKOUT →
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
 
 }
 
