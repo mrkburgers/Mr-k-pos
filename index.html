@@ -58,6 +58,28 @@ button{
 
 }
 
+.secondary{
+
+  background:#252525;
+
+  color:white;
+
+  border-color:#555;
+
+  font-weight:bold;
+
+}
+
+.danger{
+
+  background:#351b1b;
+
+  border-color:#703434;
+
+  color:#ffb0b0;
+
+}
+
 .app{
 
   min-height:100vh;
@@ -224,7 +246,11 @@ input{
 
 }
 
-.back{margin-bottom:20px}
+.back{
+
+  margin-bottom:20px;
+
+}
 
 .option{
 
@@ -432,6 +458,28 @@ input{
 
 }
 
+.draft-status{
+
+  display:inline-block;
+
+  background:#1c2730;
+
+  border:1px solid #3e6176;
+
+  color:#8ccdf3;
+
+  padding:7px 10px;
+
+  border-radius:999px;
+
+  font-size:11px;
+
+  font-weight:bold;
+
+  letter-spacing:1px;
+
+}
+
 .locked{
 
   display:inline-block;
@@ -488,9 +536,43 @@ input{
 
 }
 
-.danger-text{
+.actions{
 
-  color:#ff8c8c;
+  display:flex;
+
+  gap:10px;
+
+  flex-wrap:wrap;
+
+  margin-top:15px;
+
+}
+
+.actions button{
+
+  flex:1;
+
+  min-width:150px;
+
+}
+
+.cart-count{
+
+  display:inline-block;
+
+  margin-left:8px;
+
+  padding:4px 8px;
+
+  border-radius:999px;
+
+  background:#f3a51b;
+
+  color:#111;
+
+  font-size:11px;
+
+  font-weight:bold;
 
 }
 
@@ -524,6 +606,8 @@ let currentQty=1;
 
 let currentExtraQty={};
 
+let currentDraftId=null;
+
 let cart=[];
 
 let customer={
@@ -536,17 +620,13 @@ let customer={
 
 };
 
-/*
-
-ACTIVE ORDERS
-
-Stored locally for this prototype.
-
-*/
-
 let activeOrders=
 
   JSON.parse(localStorage.getItem("mrkActiveOrders") || "[]");
+
+let draftOrders=
+
+  JSON.parse(localStorage.getItem("mrkDraftOrders") || "[]");
 
 let nextOrderNumber=
 
@@ -631,12 +711,6 @@ const sauces=[
   "Honey BBQ"
 
 ];
-
-/* =========================
-
-   BURGER RECIPES
-
-========================= */
 
 const burgerDetails={
 
@@ -854,6 +928,40 @@ const loadedFries=[
 
 /* =========================
 
+   STORAGE
+
+========================= */
+
+function saveOrders(){
+
+  localStorage.setItem(
+
+    "mrkActiveOrders",
+
+    JSON.stringify(activeOrders)
+
+  );
+
+  localStorage.setItem(
+
+    "mrkDraftOrders",
+
+    JSON.stringify(draftOrders)
+
+  );
+
+  localStorage.setItem(
+
+    "mrkNextOrderNumber",
+
+    String(nextOrderNumber)
+
+  );
+
+}
+
+/* =========================
+
    LOGIN
 
 ========================= */
@@ -994,6 +1102,34 @@ function home(){
 
           class="card clickable"
 
+          onclick="showDraftOrders()"
+
+        >
+
+          <div class="badge">
+
+            ORDERS IN PROGRESS
+
+          </div>
+
+          <h2>
+
+            ${draftOrders.length}
+
+          </h2>
+
+          <div class="muted">
+
+            Tap to continue editable orders
+
+          </div>
+
+        </div>
+
+        <div
+
+          class="card clickable"
+
           onclick="showActiveOrders()"
 
         >
@@ -1034,22 +1170,6 @@ function home(){
 
         </div>
 
-        <div class="card">
-
-          <div class="badge">
-
-            TODAY'S SALES
-
-          </div>
-
-          <h2>
-
-            0 CFA
-
-          </h2>
-
-        </div>
-
       </div>
 
       ${
@@ -1068,13 +1188,67 @@ function home(){
 
           </div>
 
-          <h2>Current Timers</h2>
+          ${activeOrders.map(order=>`
 
-          <div id="homeTimers">
+            <div
 
-            ${homeTimerCards()}
+              class="order-card clickable"
 
-          </div>
+              onclick="viewActiveOrder(${order.id})"
+
+            >
+
+              <div class="order-top">
+
+                <div>
+
+                  <div class="order-number">
+
+                    Order #${padOrder(order.number)}
+
+                  </div>
+
+                  <div class="muted">
+
+                    ${order.customer.name}
+
+                  </div>
+
+                </div>
+
+                <div
+
+                  class="timer"
+
+                  data-start="${order.startedAt}"
+
+                >
+
+                  ${formatTimer(order.startedAt)}
+
+                </div>
+
+              </div>
+
+              <div style="margin-top:12px">
+
+                <span class="status">
+
+                  ${order.status}
+
+                </span>
+
+                <span class="locked">
+
+                  READ ONLY
+
+                </span>
+
+              </div>
+
+            </div>
+
+          `).join("")}
 
         </div>
 
@@ -1090,71 +1264,7 @@ function home(){
 
   `;
 
-  if(activeOrders.length){
-
-    startHomeTimers();
-
-  }
-
-}
-
-function homeTimerCards(){
-
-  return activeOrders.map(order=>`
-
-    <div
-
-      class="order-card clickable"
-
-      onclick="viewActiveOrder(${order.id})"
-
-    >
-
-      <div class="order-top">
-
-        <div>
-
-          <div class="order-number">
-
-            Order #${formatOrderNumber(order.number)}
-
-          </div>
-
-          <div class="muted">
-
-            ${order.customer.name} • ${order.type}
-
-          </div>
-
-        </div>
-
-        <div
-
-          class="timer"
-
-          data-start="${order.startedAt}"
-
-        >
-
-          ${formatTimer(order.startedAt)}
-
-        </div>
-
-      </div>
-
-      <div style="margin-top:12px">
-
-        <span class="status">
-
-          ${order.status}
-
-        </span>
-
-      </div>
-
-    </div>
-
-  `).join("");
+  startTimerRefresh();
 
 }
 
@@ -1164,13 +1274,19 @@ function homeTimerCards(){
 
 ========================= */
 
-function newOrder(){
+function resetCurrentOrder(){
 
-  stopTimerRefresh();
-
-  cart=[];
+  currentDraftId=null;
 
   orderType="";
+
+  currentCategory="";
+
+  currentQty=1;
+
+  currentExtraQty={};
+
+  cart=[];
 
   customer={
 
@@ -1182,19 +1298,27 @@ function newOrder(){
 
   };
 
+}
+
+function newOrder(){
+
+  resetCurrentOrder();
+
+  showOrderType();
+
+}
+
+function showOrderType(){
+
+  stopTimerRefresh();
+
   document.getElementById("root").innerHTML=`
 
     <div class="app">
 
-      <button
+      <button class="back" onclick="home()">
 
-        class="back"
-
-        onclick="home()"
-
-      >
-
-        ← Back
+        ← HOME
 
       </button>
 
@@ -1208,25 +1332,49 @@ function newOrder(){
 
       <div class="panel">
 
-        <h2>Choose Order Type</h2>
+        <h1>Select Order Type</h1>
 
         <div class="grid">
 
-          <button onclick="customerForm('Dine In')">
+          <button
 
-            <h3>🍽️ DINE IN</h3>
+            class="category"
+
+            onclick="selectOrderType('DINE IN')"
+
+          >
+
+            <div class="badge">ORDER TYPE</div>
+
+            <h2>DINE IN</h2>
 
           </button>
 
-          <button onclick="customerForm('Takeaway')">
+          <button
 
-            <h3>🥡 TAKEAWAY</h3>
+            class="category"
+
+            onclick="selectOrderType('TAKEAWAY')"
+
+          >
+
+            <div class="badge">ORDER TYPE</div>
+
+            <h2>TAKEAWAY</h2>
 
           </button>
 
-          <button onclick="customerForm('Delivery')">
+          <button
 
-            <h3>🛵 DELIVERY</h3>
+            class="category"
+
+            onclick="selectOrderType('DELIVERY')"
+
+          >
+
+            <div class="badge">ORDER TYPE</div>
+
+            <h2>DELIVERY</h2>
 
           </button>
 
@@ -1240,15 +1388,21 @@ function newOrder(){
 
 }
 
+function selectOrderType(type){
+
+  orderType=type;
+
+  customerForm();
+
+}
+
 /* =========================
 
    CUSTOMER
 
 ========================= */
 
-function customerForm(type){
-
-  orderType=type;
+function customerForm(){
 
   document.getElementById("root").innerHTML=`
 
@@ -1258,11 +1412,11 @@ function customerForm(type){
 
         class="back"
 
-        onclick="newOrder()"
+        onclick="showOrderType()"
 
       >
 
-        ← Back
+        ← BACK
 
       </button>
 
@@ -1270,55 +1424,53 @@ function customerForm(type){
 
         MR K BURGERS
 
-        <span>${type.toUpperCase()}</span>
+        <span>${orderType}</span>
 
       </div>
 
       <div class="panel">
 
-        <h2>Customer</h2>
+        <h1>Customer Details</h1>
 
         <div class="form">
 
-          <label>Customer Name</label>
-
-          <input
-
-            id="name"
-
-            placeholder="Customer name"
-
-            value="${customer.name}"
-
-          >
-
           <label>
 
-            Phone ${
-
-              type==="Delivery"
-
-              ? "(required)"
-
-              : "(optional)"
-
-            }
+            Customer Name
 
           </label>
 
           <input
 
-            id="phone"
+            id="customerName"
 
-            placeholder="+223 ..."
+            value="${escapeValue(customer.name)}"
 
-            value="${customer.phone}"
+            placeholder="Customer name"
+
+          >
+
+          <label>
+
+            Phone
+
+            ${orderType==="DELIVERY" ? "*" : "(optional)"}
+
+          </label>
+
+          <input
+
+            id="customerPhone"
+
+            value="${escapeValue(customer.phone)}"
+
+            placeholder="+223..."
 
           >
 
           ${
 
-            type==="Delivery"
+            orderType==="DELIVERY"
 
             ?
 
@@ -1326,17 +1478,17 @@ function customerForm(type){
 
             <label>
 
-              Delivery Address
+              Delivery Address *
 
             </label>
 
             <input
 
-              id="address"
+              id="customerAddress"
+
+              value="${escapeValue(customer.address)}"
 
               placeholder="Delivery address"
-
-              value="${customer.address}"
 
             >
 
@@ -1352,11 +1504,11 @@ function customerForm(type){
 
             class="primary"
 
-            onclick="continueToMenu()"
+            onclick="saveCustomer()"
 
           >
 
-            CONTINUE TO MENU →
+            CONTINUE TO MENU
 
           </button>
 
@@ -1370,57 +1522,69 @@ function customerForm(type){
 
 }
 
-function continueToMenu(){
+function saveCustomer(){
 
-  customer.name=
+  const name=
 
-    document.getElementById("name").value.trim();
+    document.getElementById("customerName").value.trim();
 
-  customer.phone=
+  const phone=
 
-    document.getElementById("phone").value.trim();
+    document.getElementById("customerPhone").value.trim();
 
-  if(orderType==="Delivery"){
+  const address=
 
-    customer.address=
+    orderType==="DELIVERY"
 
-      document.getElementById("address").value.trim();
+    ? document.getElementById("customerAddress").value.trim()
 
-  }
+    : "";
 
-  if(!customer.name){
+  if(!name){
 
-    alert("Please enter the customer's name.");
-
-    return;
-
-  }
-
-  if(
-
-    orderType==="Delivery" &&
-
-    (!customer.phone || !customer.address)
-
-  ){
-
-    alert("Delivery requires phone number and address.");
+    alert("Customer name is required.");
 
     return;
 
   }
 
-  categories();
+  if(orderType==="DELIVERY" && !phone){
+
+    alert("Phone number is required for delivery.");
+
+    return;
+
+  }
+
+  if(orderType==="DELIVERY" && !address){
+
+    alert("Delivery address is required.");
+
+    return;
+
+  }
+
+  customer={
+
+    name,
+
+    phone,
+
+    address
+
+  };
+
+  showCategories();
 
 }
 
 /* =========================
 
-   CATEGORIES
+   MENU CATEGORIES
 
 ========================= */
 
-function categories(){
+function showCategories(){
 
   document.getElementById("root").innerHTML=`
 
@@ -1430,11 +1594,11 @@ function categories(){
 
         class="back"
 
-        onclick="customerForm(orderType)"
+        onclick="customerForm()"
 
       >
 
-        ← Back
+        ← CUSTOMER
 
       </button>
 
@@ -1442,71 +1606,153 @@ function categories(){
 
         MR K BURGERS
 
-        <span>MENU CATEGORIES</span>
+        <span>MENU</span>
 
       </div>
 
       <div class="panel">
 
-        <h2>Choose a Category</h2>
+        <div class="order-top">
+
+          <div>
+
+            <h1>Menu Categories</h1>
+
+            <p class="muted">
+
+              ${customer.name} · ${orderType}
+
+            </p>
+
+          </div>
+
+          <button onclick="viewCart()">
+
+            VIEW ORDER
+
+            <span class="cart-count">
+
+              ${cart.length}
+
+            </span>
+
+          </button>
+
+        </div>
 
         <div class="grid">
 
-          ${categoryButton(
+          <button
 
-            "🍔",
+            class="category"
 
-            "Burgers",
+            onclick="showCategory('Burgers')"
 
-            burgers.length+" burgers"
+          >
 
-          )}
+            <div class="badge">CATEGORY</div>
 
-          ${categoryButton(
+            <h2>Burgers</h2>
 
-            "🍟",
+            <p>${burgers.length} items</p>
 
-            "Sides",
+          </button>
 
-            sides.length+" sides"
+          <button
 
-          )}
+            class="category"
 
-          ${categoryButton(
+            onclick="showCategory('Sides')"
 
-            "🥗",
+          >
 
-            "Salads",
+            <div class="badge">CATEGORY</div>
 
-            salads.length+" salads"
+            <h2>Sides</h2>
 
-          )}
+            <p>${sides.length} items</p>
 
-          ${categoryButton(
+          </button>
 
-            "🥤",
+          <button
 
-            "Soft Drinks",
+            class="category"
 
-            drinks.length+" drinks"
+            onclick="showCategory('Salads')"
 
-          )}
+          >
 
-          ${categoryButton(
+            <div class="badge">CATEGORY</div>
 
-            "🥫",
+            <h2>Salads</h2>
 
-            "Extra Sauces",
+            <p>${salads.length} items</p>
 
-            sauces.length+" sauces"
+          </button>
 
-          )}
+          <button
+
+            class="category"
+
+            onclick="showCategory('Soft Drinks')"
+
+          >
+
+            <div class="badge">CATEGORY</div>
+
+            <h2>Soft Drinks</h2>
+
+            <p>${drinks.length} items</p>
+
+          </button>
+
+          <button
+
+            class="category"
+
+            onclick="showCategory('Extra Sauces')"
+
+          >
+
+            <div class="badge">CATEGORY</div>
+
+            <h2>Extra Sauces</h2>
+
+            <p>${sauces.length} items</p>
+
+          </button>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+
+            class="secondary"
+
+            onclick="saveAndHoldOrder()"
+
+          >
+
+            SAVE & HOLD ORDER
+
+          </button>
+
+          <button
+
+            class="primary"
+
+            onclick="viewCart()"
+
+          >
+
+            VIEW ORDER
+
+          </button>
 
         </div>
 
       </div>
-
-      ${cartSummary()}
 
     </div>
 
@@ -1514,45 +1760,9 @@ function categories(){
 
 }
 
-function categoryButton(icon,name,count){
-
-  return `
-
-    <button
-
-      class="category"
-
-      onclick="showCategory('${name}')"
-
-    >
-
-      <div class="badge">
-
-        MENU CATEGORY
-
-      </div>
-
-      <h2>
-
-        ${icon} ${name}
-
-      </h2>
-
-      <span class="muted">
-
-        ${count}
-
-      </span>
-
-    </button>
-
-  `;
-
-}
-
 /* =========================
 
-   CATEGORY
+   CATEGORY ITEMS
 
 ========================= */
 
@@ -1580,11 +1790,11 @@ function showCategory(category){
 
         class="back"
 
-        onclick="categories()"
+        onclick="showCategories()"
 
       >
 
-        ← Categories
+        ← CATEGORIES
 
       </button>
 
@@ -1592,57 +1802,61 @@ function showCategory(category){
 
         MR K BURGERS
 
-        <span>${category.toUpperCase()}</span>
+        <span>${category}</span>
 
       </div>
 
       <div class="panel">
 
-        <h2>${category}</h2>
+        <div class="order-top">
+
+          <h1>${category}</h1>
+
+          <button onclick="viewCart()">
+
+            VIEW ORDER
+
+            <span class="cart-count">
+
+              ${cart.length}
+
+            </span>
+
+          </button>
+
+        </div>
 
         <div class="grid">
 
-          ${
+          ${items.map(item=>`
 
-            items.map((item,index)=>`
+            <button
 
-              <div class="card">
+              class="category"
 
-                <div class="badge">
+              onclick='selectMenuItem(${JSON.stringify(item)})'
 
-                  ITEM ${index+1}
+            >
 
-                </div>
+              <div class="badge">
 
-                <h3>
-
-                  ${item}
-
-                </h3>
-
-                <button
-
-                  class="primary"
-
-                  onclick="selectItem('${item}')"
-
-                >
-
-                  SELECT
-
-                </button>
+                ${category}
 
               </div>
 
-            `).join("")
+              <h2>
 
-          }
+                ${item}
+
+              </h2>
+
+            </button>
+
+          `).join("")}
 
         </div>
 
       </div>
-
-      ${cartSummary()}
 
     </div>
 
@@ -1650,163 +1864,47 @@ function showCategory(category){
 
 }
 
-function selectItem(name){
+function selectMenuItem(name){
 
-  if(currentCategory==="Burgers"){
+  if(burgers.includes(name)){
 
-    burgerCustomizer(name);
-
-    return;
-
-  }
-
-  if(
-
-    currentCategory==="Sides" &&
-
-    loadedFries.includes(name)
-
-  ){
-
-    loadedFriesCustomizer(name);
+    customizeBurger(name);
 
     return;
 
   }
 
-  quantityOnly(name);
+  if(loadedFries.includes(name)){
 
-}
+    customizeLoadedFries(name);
 
-/* =========================
-
-   EXTRA QUANTITY SYSTEM
-
-========================= */
-
-function resetExtras(extras){
-
-  currentExtraQty={};
-
-  extras.forEach(extra=>{
-
-    currentExtraQty[extra]=0;
-
-  });
-
-}
-
-function extraRows(extras){
-
-  return extras.map(extra=>`
-
-    <div class="extra-row">
-
-      <div class="extra-name">
-
-        ${extra}
-
-      </div>
-
-      <div class="extra-qty">
-
-        <button
-
-          onclick="changeExtraQty('${extra}',-1)"
-
-        >
-
-          −
-
-        </button>
-
-        <strong
-
-          id="extra-${safeId(extra)}"
-
-        >
-
-          0
-
-        </strong>
-
-        <button
-
-          onclick="changeExtraQty('${extra}',1)"
-
-        >
-
-          ＋
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `).join("");
-
-}
-
-function safeId(text){
-
-  return text
-
-    .replace(/[^a-zA-Z0-9]/g,"-")
-
-    .toLowerCase();
-
-}
-
-function changeExtraQty(extra,change){
-
-  currentExtraQty[extra]=
-
-    Math.max(
-
-      0,
-
-      (currentExtraQty[extra] || 0)+change
-
-    );
-
-  const element=
-
-    document.getElementById(
-
-      "extra-"+safeId(extra)
-
-    );
-
-  if(element){
-
-    element.textContent=
-
-      currentExtraQty[extra];
+    return;
 
   }
 
+  simpleItem(name);
+
 }
 
 /* =========================
 
-   BURGER CUSTOMIZATION
+   BURGER CUSTOMIZER
 
 ========================= */
 
-function burgerCustomizer(name){
+function customizeBurger(name){
 
-  const burger=burgerDetails[name];
+  currentQty=1;
+
+  const details=burgerDetails[name];
 
   const extras=
 
-    burger.meat==="chicken"
+    details.meat==="chicken"
 
     ? chickenExtras
 
     : beefExtras;
-
-  currentQty=1;
 
   resetExtras(extras);
 
@@ -1822,7 +1920,7 @@ function burgerCustomizer(name){
 
       >
 
-        ← Burgers
+        ← BURGERS
 
       </button>
 
@@ -1830,7 +1928,7 @@ function burgerCustomizer(name){
 
         MR K BURGERS
 
-        <span>BURGER CUSTOMIZATION</span>
+        <span>CUSTOMIZE</span>
 
       </div>
 
@@ -1838,71 +1936,85 @@ function burgerCustomizer(name){
 
         <h1>${name}</h1>
 
-        <div class="panel">
+        <div class="badge">
 
-          <div class="badge">
-
-            INCLUDED INGREDIENTS
-
-          </div>
-
-          ${
-
-            burger.ingredients.map(ingredient=>`
-
-              <label class="option">
-
-                <span>
-
-                  ${ingredient}
-
-                </span>
-
-                <input
-
-                  type="checkbox"
-
-                  class="included"
-
-                  value="${ingredient}"
-
-                  checked
-
-                >
-
-              </label>
-
-            `).join("")
-
-          }
+          INCLUDED INGREDIENTS
 
         </div>
 
-        <div class="panel">
+        ${details.ingredients.map((ingredient,index)=>`
 
-          <div class="badge">
+          <label class="option">
 
-            ADD EXTRAS
+            <span>
 
-          </div>
+              ${ingredient}
 
-          ${extraRows(extras)}
+            </span>
+
+            <input
+
+              type="checkbox"
+
+              class="ingredientCheck"
+
+              data-name="${escapeValue(ingredient)}"
+
+              checked
+
+            >
+
+          </label>
+
+        `).join("")}
+
+        <div style="margin-top:25px" class="badge">
+
+          EXTRA INGREDIENTS
 
         </div>
 
-        ${quantityControls()}
+        ${extraRows(extras)}
+
+        <div style="margin-top:25px" class="badge">
+
+          PRODUCT QUANTITY
+
+        </div>
+
+        <div class="qty" style="margin-top:10px">
+
+          <button onclick="changeQty(-1)">
+
+            −
+
+          </button>
+
+          <strong id="qtyDisplay">
+
+            1
+
+          </strong>
+
+          <button onclick="changeQty(1)">
+
+            +
+
+          </button>
+
+        </div>
 
         <button
 
           class="primary"
 
-          style="width:100%;margin-top:18px"
+          style="margin-top:25px;width:100%"
 
-          onclick="addCustomizedItem('${name}')"
+          onclick='addCustomizedItem(${JSON.stringify(name)})'
 
         >
 
-          ADD TO ORDER →
+          ADD TO ORDER
 
         </button>
 
@@ -1920,7 +2032,7 @@ function burgerCustomizer(name){
 
 ========================= */
 
-function loadedFriesCustomizer(name){
+function customizeLoadedFries(name){
 
   currentQty=1;
 
@@ -1944,7 +2056,7 @@ function loadedFriesCustomizer(name){
 
       >
 
-        ← Sides
+        ← SIDES
 
       </button>
 
@@ -1952,7 +2064,7 @@ function loadedFriesCustomizer(name){
 
         MR K BURGERS
 
-        <span>SIDE CUSTOMIZATION</span>
+        <span>CUSTOMIZE</span>
 
       </div>
 
@@ -1960,31 +2072,53 @@ function loadedFriesCustomizer(name){
 
         <h1>${name}</h1>
 
-        <div class="panel">
+        <div class="badge">
 
-          <div class="badge">
-
-            ADD EXTRA
-
-          </div>
-
-          ${extraRows(extras)}
+          EXTRA INGREDIENTS
 
         </div>
 
-        ${quantityControls()}
+        ${extraRows(extras)}
+
+        <div style="margin-top:25px" class="badge">
+
+          PRODUCT QUANTITY
+
+        </div>
+
+        <div class="qty" style="margin-top:10px">
+
+          <button onclick="changeQty(-1)">
+
+            −
+
+          </button>
+
+          <strong id="qtyDisplay">
+
+            1
+
+          </strong>
+
+          <button onclick="changeQty(1)">
+
+            +
+
+          </button>
+
+        </div>
 
         <button
 
           class="primary"
 
-          style="width:100%;margin-top:18px"
+          style="margin-top:25px;width:100%"
 
-          onclick="addCustomizedItem('${name}')"
+          onclick='addCustomizedItem(${JSON.stringify(name)})'
 
         >
 
-          ADD TO ORDER →
+          ADD TO ORDER
 
         </button>
 
@@ -2002,7 +2136,7 @@ function loadedFriesCustomizer(name){
 
 ========================= */
 
-function quantityOnly(name){
+function simpleItem(name){
 
   currentQty=1;
 
@@ -2018,7 +2152,7 @@ function quantityOnly(name){
 
       >
 
-        ← Back
+        ← BACK
 
       </button>
 
@@ -2026,7 +2160,7 @@ function quantityOnly(name){
 
         MR K BURGERS
 
-        <span>${currentCategory.toUpperCase()}</span>
+        <span>ADD ITEM</span>
 
       </div>
 
@@ -2034,19 +2168,45 @@ function quantityOnly(name){
 
         <h1>${name}</h1>
 
-        ${quantityControls()}
+        <div class="badge">
+
+          PRODUCT QUANTITY
+
+        </div>
+
+        <div class="qty" style="margin-top:10px">
+
+          <button onclick="changeQty(-1)">
+
+            −
+
+          </button>
+
+          <strong id="qtyDisplay">
+
+            1
+
+          </strong>
+
+          <button onclick="changeQty(1)">
+
+            +
+
+          </button>
+
+        </div>
 
         <button
 
           class="primary"
 
-          style="width:100%;margin-top:18px"
+          style="margin-top:25px;width:100%"
 
-          onclick="addSimpleItem('${name}')"
+          onclick='addSimpleItem(${JSON.stringify(name)})'
 
         >
 
-          ADD TO ORDER →
+          ADD TO ORDER
 
         </button>
 
@@ -2060,49 +2220,9 @@ function quantityOnly(name){
 
 /* =========================
 
-   PRODUCT QUANTITY
+   QUANTITY
 
 ========================= */
-
-function quantityControls(){
-
-  return `
-
-    <div class="panel">
-
-      <div class="badge">
-
-        PRODUCT QUANTITY
-
-      </div>
-
-      <div class="qty">
-
-        <button onclick="changeQty(-1)">
-
-          −
-
-        </button>
-
-        <strong id="qty">
-
-          1
-
-        </strong>
-
-        <button onclick="changeQty(1)">
-
-          ＋
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
 
 function changeQty(change){
 
@@ -2116,69 +2236,181 @@ function changeQty(change){
 
     );
 
-  document
+  const display=
 
-    .getElementById("qty")
+    document.getElementById("qtyDisplay");
 
-    .textContent=currentQty;
+  if(display){
+
+    display.textContent=currentQty;
+
+  }
+
+}
+
+function resetExtras(extras){
+
+  currentExtraQty={};
+
+  extras.forEach(extra=>{
+
+    currentExtraQty[extra]=0;
+
+  });
+
+}
+
+function safeId(text){
+
+  return text
+
+    .replace(/[^a-z0-9]/gi,"_")
+
+    .toLowerCase();
+
+}
+
+function extraRows(extras){
+
+  return extras.map(extra=>{
+
+    const id=
+
+      "extra_"+safeId(extra);
+
+    return `
+
+      <div class="extra-row">
+
+        <div class="extra-name">
+
+          ${extra}
+
+        </div>
+
+        <div class="extra-qty">
+
+          <button
+
+            onclick='changeExtraQty(${JSON.stringify(extra)},-1)'
+
+          >
+
+            −
+
+          </button>
+
+          <strong id="${id}">
+
+            0
+
+          </strong>
+
+          <button
+
+            onclick='changeExtraQty(${JSON.stringify(extra)},1)'
+
+          >
+
+            +
+
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }).join("");
+
+}
+
+function changeExtraQty(extra,change){
+
+  const current=
+
+    currentExtraQty[extra] || 0;
+
+  currentExtraQty[extra]=
+
+    Math.max(
+
+      0,
+
+      current+change
+
+    );
+
+  const display=
+
+    document.getElementById(
+
+      "extra_"+safeId(extra)
+
+    );
+
+  if(display){
+
+    display.textContent=
+
+      currentExtraQty[extra];
+
+  }
 
 }
 
 /* =========================
 
-   CART
+   ADD ITEMS
 
 ========================= */
 
 function addCustomizedItem(name){
 
-  let included=[];
+  let removed=[];
 
-  const includedBoxes=
+  document
 
-    document.querySelectorAll(".included");
+    .querySelectorAll(".ingredientCheck")
 
-  if(includedBoxes.length){
+    .forEach(box=>{
 
-    included=[
+      if(!box.checked){
 
-      ...document.querySelectorAll(
+        removed.push(box.dataset.name);
 
-        ".included:checked"
+      }
 
-      )
-
-    ].map(x=>x.value);
-
-  }
+    });
 
   const extras=
 
-    Object.entries(currentExtraQty)
+    Object.keys(currentExtraQty)
 
-    .filter(([name,qty])=>qty>0)
+      .filter(name=>currentExtraQty[name]>0)
 
-    .map(([name,qty])=>({
+      .map(name=>({
 
-      name:name,
+        name,
 
-      qty:qty
+        qty:currentExtraQty[name]
 
-    }));
+      }));
 
   cart.push({
 
-    name:name,
+    name,
 
     qty:currentQty,
 
-    included:included,
+    removed,
 
-    extras:extras
+    extras
 
   });
 
-  categories();
+  showCategories();
 
 }
 
@@ -2186,77 +2418,23 @@ function addSimpleItem(name){
 
   cart.push({
 
-    name:name,
+    name,
 
     qty:currentQty,
 
-    included:[],
+    removed:[],
 
     extras:[]
 
   });
 
-  categories();
-
-}
-
-function cartSummary(){
-
-  if(cart.length===0){
-
-    return "";
-
-  }
-
-  const totalQty=
-
-    cart.reduce(
-
-      (sum,item)=>sum+item.qty,
-
-      0
-
-    );
-
-  return `
-
-    <div class="summary">
-
-      <div class="badge">
-
-        CURRENT ORDER
-
-      </div>
-
-      <h3>
-
-        ${totalQty}
-
-        item${totalQty!==1?"s":""}
-
-      </h3>
-
-      <button
-
-        class="primary"
-
-        onclick="viewCart()"
-
-      >
-
-        VIEW ORDER →
-
-      </button>
-
-    </div>
-
-  `;
+  showCategories();
 
 }
 
 /* =========================
 
-   CURRENT ORDER
+   CART
 
 ========================= */
 
@@ -2270,11 +2448,11 @@ function viewCart(){
 
         class="back"
 
-        onclick="categories()"
+        onclick="showCategories()"
 
       >
 
-        ← Menu
+        ← MENU
 
       </button>
 
@@ -2288,29 +2466,75 @@ function viewCart(){
 
       <div class="panel">
 
-        <div class="badge">
+        <h1>View Order</h1>
 
-          ${orderType.toUpperCase()}
+        <div class="summary">
+
+          <div class="info-row">
+
+            <span>Customer</span>
+
+            <strong>${customer.name}</strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>Order Type</span>
+
+            <strong>${orderType}</strong>
+
+          </div>
+
+          ${
+
+            customer.phone
+
+            ?
+
+            `
+
+            <div class="info-row">
+
+              <span>Phone</span>
+
+              <strong>${customer.phone}</strong>
+
+            </div>
+
+            `
+
+            :
+
+            ""
+
+          }
+
+          ${
+
+            customer.address
+
+            ?
+
+            `
+
+            <div class="info-row">
+
+              <span>Address</span>
+
+              <strong>${customer.address}</strong>
+
+            </div>
+
+            `
+
+            :
+
+            ""
+
+          }
 
         </div>
-
-        <h2>
-
-          ${customer.name}
-
-        </h2>
-
-        <p class="muted">
-
-          This order can still be modified before checkout.
-
-        </p>
-
-      </div>
-
-      <div class="panel">
-
-        <h2>Order Summary</h2>
 
         ${
 
@@ -2318,177 +2542,147 @@ function viewCart(){
 
           ?
 
-          cart.map((item,index)=>
+          cart.map((item,index)=>`
 
-            editableCartItem(item,index)
+            <div class="order-card">
 
-          ).join("")
+              <div class="order-top">
+
+                <div>
+
+                  <div class="order-number">
+
+                    ${item.qty} × ${item.name}
+
+                  </div>
+
+                </div>
+
+                <button
+
+                  class="danger"
+
+                  onclick="removeCartItem(${index})"
+
+                >
+
+                  REMOVE ITEM
+
+                </button>
+
+              </div>
+
+              ${
+
+                item.removed?.length
+
+                ?
+
+                `
+
+                <div class="system-note">
+
+                  <strong>Removed:</strong><br>
+
+                  ${item.removed.join("<br>")}
+
+                </div>
+
+                `
+
+                :
+
+                ""
+
+              }
+
+              ${
+
+                item.extras?.length
+
+                ?
+
+                `
+
+                <div class="system-note">
+
+                  <strong>Extras:</strong><br>
+
+                  ${item.extras.map(extra=>
+
+                    `${extra.qty} × ${extra.name}`
+
+                  ).join("<br>")}
+
+                </div>
+
+                `
+
+                :
+
+                ""
+
+              }
+
+            </div>
+
+          `).join("")
 
           :
 
           `
 
-          <p class="muted">
+            <div class="system-note">
 
-            No items in this order.
+              No items added yet.
 
-          </p>
+            </div>
 
           `
 
         }
 
-        ${
+        <div class="actions">
 
-          cart.length
+          <button
 
-          ?
+            class="secondary"
 
-          `
+            onclick="showCategories()"
+
+          >
+
+            ADD MORE ITEMS
+
+          </button>
+
+          <button
+
+            class="secondary"
+
+            onclick="saveAndHoldOrder()"
+
+          >
+
+            SAVE & HOLD
+
+          </button>
 
           <button
 
             class="primary"
 
-            style="width:100%;margin-top:20px"
-
             onclick="checkoutOrder()"
 
           >
 
-            CHECKOUT & SEND TO KITCHEN →
+            CHECKOUT
 
           </button>
 
-          `
-
-          :
-
-          ""
-
-        }
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-function editableCartItem(item,index){
-
-  const removed=getRemovedIngredients(item);
-
-  return `
-
-    <div class="card" style="margin-bottom:14px">
-
-      <div class="badge">
-
-        ITEM ${index+1}
-
-      </div>
-
-      <h3>
-
-        ${item.qty} × ${item.name}
-
-      </h3>
-
-      ${
-
-        removed.length
-
-        ?
-
-        `
-
-        <div
-
-          class="danger-text"
-
-          style="margin-top:8px"
-
-        >
-
-          <strong>Removed:</strong>
-
-          ${
-
-            removed.map(x=>`
-
-              <div>
-
-                NO ${x}
-
-              </div>
-
-            `).join("")
-
-          }
-
         </div>
 
-        `
-
-        :
-
-        ""
-
-      }
-
-      ${
-
-        item.extras.length
-
-        ?
-
-        `
-
-        <div
-
-          class="muted"
-
-          style="margin-top:10px"
-
-        >
-
-          <strong>Extras:</strong>
-
-          ${
-
-            item.extras.map(extra=>`
-
-              <div>
-
-                ${extra.qty} × ${extra.name}
-
-              </div>
-
-            `).join("")
-
-          }
-
-        </div>
-
-        `
-
-        :
-
-        ""
-
-      }
-
-      <button
-
-        onclick="removeCartItem(${index})"
-
-      >
-
-        REMOVE ITEM
-
-      </button>
+      </div>
 
     </div>
 
@@ -2504,25 +2698,317 @@ function removeCartItem(index){
 
 }
 
-function getRemovedIngredients(item){
+/* =========================
 
-  if(!burgerDetails[item.name]){
+   DRAFT ORDERS
 
-    return [];
+========================= */
+
+function saveAndHoldOrder(){
+
+  if(!customer.name || !orderType){
+
+    alert("Customer details are required before holding an order.");
+
+    return;
 
   }
 
-  const original=
+  const draft={
 
-    burgerDetails[item.name].ingredients;
+    id:
 
-  return original.filter(
+      currentDraftId ||
 
-    ingredient=>
+      Date.now(),
 
-      !item.included.includes(ingredient)
+    type:orderType,
 
-  );
+    customer:{
+
+      name:customer.name,
+
+      phone:customer.phone,
+
+      address:customer.address
+
+    },
+
+    items:
+
+      JSON.parse(
+
+        JSON.stringify(cart)
+
+      ),
+
+    savedAt:Date.now()
+
+  };
+
+  if(currentDraftId){
+
+    const index=
+
+      draftOrders.findIndex(
+
+        order=>order.id===currentDraftId
+
+      );
+
+    if(index>=0){
+
+      draftOrders[index]=draft;
+
+    }else{
+
+      draftOrders.push(draft);
+
+    }
+
+  }else{
+
+    draftOrders.push(draft);
+
+  }
+
+  saveOrders();
+
+  resetCurrentOrder();
+
+  home();
+
+}
+
+function showDraftOrders(){
+
+  stopTimerRefresh();
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="home()"
+
+      >
+
+        ← CASHIER HOME
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>ORDERS IN PROGRESS</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h1>Orders in Progress</h1>
+
+        <p class="muted">
+
+          These orders are editable and have not been sent to the kitchen.
+
+        </p>
+
+        ${
+
+          draftOrders.length
+
+          ?
+
+          draftOrders.map(order=>`
+
+            <div class="order-card">
+
+              <div class="order-top">
+
+                <div>
+
+                  <div class="order-number">
+
+                    ${order.customer.name}
+
+                  </div>
+
+                  <div class="muted">
+
+                    ${order.type}
+
+                  </div>
+
+                </div>
+
+                <span class="draft-status">
+
+                  IN PROGRESS
+
+                </span>
+
+              </div>
+
+              <div class="info-row" style="margin-top:15px">
+
+                <span>Items</span>
+
+                <strong>
+
+                  ${order.items.reduce(
+
+                    (total,item)=>total+item.qty,
+
+                    0
+
+                  )}
+
+                </strong>
+
+              </div>
+
+              <div class="actions">
+
+                <button
+
+                  class="primary"
+
+                  onclick="resumeDraftOrder(${order.id})"
+
+                >
+
+                  CONTINUE ORDER
+
+                </button>
+
+                <button
+
+                  class="danger"
+
+                  onclick="deleteDraftOrder(${order.id})"
+
+                >
+
+                  DELETE
+
+                </button>
+
+              </div>
+
+            </div>
+
+          `).join("")
+
+          :
+
+          `
+
+            <div class="system-note">
+
+              No orders are currently on hold.
+
+            </div>
+
+          `
+
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+function resumeDraftOrder(id){
+
+  const draft=
+
+    draftOrders.find(
+
+      order=>order.id===id
+
+    );
+
+  if(!draft){
+
+    return;
+
+  }
+
+  currentDraftId=draft.id;
+
+  orderType=draft.type;
+
+  customer={
+
+    name:draft.customer.name,
+
+    phone:draft.customer.phone,
+
+    address:draft.customer.address
+
+  };
+
+  cart=
+
+    JSON.parse(
+
+      JSON.stringify(draft.items)
+
+    );
+
+  showCategories();
+
+}
+
+function deleteDraftOrder(id){
+
+  const draft=
+
+    draftOrders.find(
+
+      order=>order.id===id
+
+    );
+
+  if(!draft){
+
+    return;
+
+  }
+
+  if(
+
+    !confirm(
+
+      `Delete the held order for ${draft.customer.name}?`
+
+    )
+
+  ){
+
+    return;
+
+  }
+
+  draftOrders=
+
+    draftOrders.filter(
+
+      order=>order.id!==id
+
+    );
+
+  saveOrders();
+
+  showDraftOrders();
 
 }
 
@@ -2536,7 +3022,7 @@ function checkoutOrder(){
 
   if(!cart.length){
 
-    alert("This order is empty.");
+    alert("Add at least one item before checkout.");
 
     return;
 
@@ -2560,11 +3046,13 @@ function checkoutOrder(){
 
     },
 
-    items:JSON.parse(
+    items:
 
-      JSON.stringify(cart)
+      JSON.parse(
 
-    ),
+        JSON.stringify(cart)
+
+      ),
 
     status:"NEW",
 
@@ -2582,21 +3070,27 @@ function checkoutOrder(){
 
   nextOrderNumber++;
 
+  if(currentDraftId){
+
+    draftOrders=
+
+      draftOrders.filter(
+
+        draft=>draft.id!==currentDraftId
+
+      );
+
+  }
+
   saveOrders();
+
+  resetCurrentOrder();
 
   checkoutSuccess(order);
 
 }
 
-/* =========================
-
-   CHECKOUT SUCCESS
-
-========================= */
-
 function checkoutSuccess(order){
-
-  cart=[];
 
   document.getElementById("root").innerHTML=`
 
@@ -2606,7 +3100,7 @@ function checkoutSuccess(order){
 
         MR K BURGERS
 
-        <span>ORDER CONFIRMED</span>
+        <span>CHECKOUT COMPLETE</span>
 
       </div>
 
@@ -2614,99 +3108,91 @@ function checkoutSuccess(order){
 
         <div class="badge">
 
-          CHECKOUT COMPLETE
+          ORDER CONFIRMED
 
         </div>
 
         <h1>
 
-          Order #${formatOrderNumber(order.number)}
+          Order #${padOrder(order.number)}
 
         </h1>
 
-        <h2>
+        <div class="summary">
 
-          ${order.customer.name}
+          <div class="info-row">
 
-        </h2>
+            <span>Customer</span>
 
-        <p>
+            <strong>${order.customer.name}</strong>
 
-          ${order.type}
+          </div>
 
-        </p>
+          <div class="info-row">
 
-        <div style="margin:20px 0">
+            <span>Order Type</span>
 
-          <span class="status">
+            <strong>${order.type}</strong>
 
-            SENT TO KITCHEN
+          </div>
 
-          </span>
+          <div class="info-row">
 
-        </div>
+            <span>Kitchen</span>
 
-        <div class="system-note">
+            <strong>SENT</strong>
 
-          <strong>
+          </div>
 
-            Kitchen tablet:
+          <div class="info-row">
 
-          </strong>
+            <span>Receipts</span>
 
-          Order queued for kitchen display.
+            <strong>2 QUEUED</strong>
 
-        </div>
-
-        <div class="system-note">
-
-          <strong>
-
-            Printing:
-
-          </strong>
-
-          2 receipts queued.
+          </div>
 
         </div>
 
         <div class="system-note">
 
-          <strong>
-
-            Order timer:
-
-          </strong>
-
-          Started automatically at checkout.
+          Kitchen tablet: Order queued for kitchen display.
 
         </div>
 
-        <button
+        <div class="system-note">
 
-          class="primary"
+          Printing: 2 receipts queued.
 
-          style="width:100%;margin-top:22px"
+        </div>
 
-          onclick="home()"
+        <div class="system-note">
 
-        >
+          Order timer: Started automatically at checkout.
 
-          RETURN TO CASHIER HOME
+        </div>
 
-        </button>
+        <div class="actions">
 
-        <button
+          <button onclick="home()">
 
-          style="width:100%;margin-top:12px"
+            CASHIER HOME
 
-          onclick="newOrder()"
+          </button>
 
-        >
+          <button
 
-          ＋ START ANOTHER ORDER
+            class="primary"
 
-        </button>
+            onclick="newOrder()"
+
+          >
+
+            START ANOTHER ORDER
+
+          </button>
+
+        </div>
 
       </div>
 
@@ -2738,7 +3224,7 @@ function showActiveOrders(){
 
       >
 
-        ← Cashier Home
+        ← CASHIER HOME
 
       </button>
 
@@ -2752,45 +3238,13 @@ function showActiveOrders(){
 
       <div class="panel">
 
-        <div class="order-top">
-
-          <div>
-
-            <div class="badge">
-
-              KITCHEN QUEUE
-
-            </div>
-
-            <h1>
-
-              Active Orders
-
-            </h1>
-
-          </div>
-
-          <div>
-
-            <span class="locked">
-
-              🔒 READ ONLY
-
-            </span>
-
-          </div>
-
-        </div>
+        <h1>Active Orders</h1>
 
         <p class="muted">
 
-          Checked-out orders cannot be modified by the cashier.
+          Checked-out orders are locked and cannot be modified by the cashier.
 
         </p>
-
-      </div>
-
-      <div id="activeOrderList">
 
         ${
 
@@ -2798,27 +3252,103 @@ function showActiveOrders(){
 
           ?
 
-          activeOrders.map(order=>
+          activeOrders.map(order=>`
 
-            activeOrderCard(order)
+            <div
 
-          ).join("")
+              class="order-card clickable"
+
+              onclick="viewActiveOrder(${order.id})"
+
+            >
+
+              <div class="order-top">
+
+                <div>
+
+                  <div class="order-number">
+
+                    Order #${padOrder(order.number)}
+
+                  </div>
+
+                  <div class="muted">
+
+                    ${order.customer.name}
+
+                  </div>
+
+                </div>
+
+                <div
+
+                  class="timer"
+
+                  data-start="${order.startedAt}"
+
+                >
+
+                  ${formatTimer(order.startedAt)}
+
+                </div>
+
+              </div>
+
+              <div class="info-row" style="margin-top:12px">
+
+                <span>Type</span>
+
+                <strong>${order.type}</strong>
+
+              </div>
+
+              <div class="info-row">
+
+                <span>Items</span>
+
+                <strong>
+
+                  ${order.items.reduce(
+
+                    (total,item)=>total+item.qty,
+
+                    0
+
+                  )}
+
+                </strong>
+
+              </div>
+
+              <div style="margin-top:14px">
+
+                <span class="status">
+
+                  ${order.status}
+
+                </span>
+
+                <span class="locked">
+
+                  CASHIER READ ONLY
+
+                </span>
+
+              </div>
+
+            </div>
+
+          `).join("")
 
           :
 
           `
 
-          <div class="panel">
+            <div class="system-note">
 
-            <h2>No active orders</h2>
+              No active kitchen orders.
 
-            <p class="muted">
-
-              Checked-out orders will appear here.
-
-            </p>
-
-          </div>
+            </div>
 
           `
 
@@ -2830,113 +3360,9 @@ function showActiveOrders(){
 
   `;
 
-  if(activeOrders.length){
-
-    startActiveTimers();
-
-  }
+  startTimerRefresh();
 
 }
-
-function activeOrderCard(order){
-
-  const itemQty=
-
-    order.items.reduce(
-
-      (sum,item)=>sum+item.qty,
-
-      0
-
-    );
-
-  return `
-
-    <div
-
-      class="order-card clickable"
-
-      onclick="viewActiveOrder(${order.id})"
-
-    >
-
-      <div class="order-top">
-
-        <div>
-
-          <div class="badge">
-
-            ${order.type.toUpperCase()}
-
-          </div>
-
-          <div class="order-number">
-
-            Order #${formatOrderNumber(order.number)}
-
-          </div>
-
-          <h3>
-
-            ${order.customer.name}
-
-          </h3>
-
-          <div class="muted">
-
-            ${itemQty}
-
-            item${itemQty!==1?"s":""}
-
-          </div>
-
-        </div>
-
-        <div style="text-align:right">
-
-          <div
-
-            class="timer"
-
-            data-start="${order.startedAt}"
-
-          >
-
-            ${formatTimer(order.startedAt)}
-
-          </div>
-
-          <div style="margin-top:10px">
-
-            <span class="status">
-
-              ${order.status}
-
-            </span>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <button>
-
-        VIEW ORDER →
-
-      </button>
-
-    </div>
-
-  `;
-
-}
-
-/* =========================
-
-   READ-ONLY ORDER
-
-========================= */
 
 function viewActiveOrder(id){
 
@@ -2946,13 +3372,11 @@ function viewActiveOrder(id){
 
     activeOrders.find(
 
-      x=>x.id===id
+      order=>order.id===id
 
     );
 
   if(!order){
-
-    showActiveOrders();
 
     return;
 
@@ -2970,7 +3394,7 @@ function viewActiveOrder(id){
 
       >
 
-        ← Active Orders
+        ← ACTIVE ORDERS
 
       </button>
 
@@ -2978,7 +3402,7 @@ function viewActiveOrder(id){
 
         MR K BURGERS
 
-        <span>ACTIVE ORDER</span>
+        <span>ORDER DETAILS</span>
 
       </div>
 
@@ -2990,55 +3414,39 @@ function viewActiveOrder(id){
 
             <div class="badge">
 
-              ${order.type.toUpperCase()}
+              ACTIVE ORDER
 
             </div>
 
             <h1>
 
-              Order #${formatOrderNumber(order.number)}
+              Order #${padOrder(order.number)}
 
             </h1>
 
-            <h2>
-
-              ${order.customer.name}
-
-            </h2>
-
           </div>
 
-          <div>
+          <div
 
-            <div
+            class="timer"
 
-              id="singleOrderTimer"
+            data-start="${order.startedAt}"
 
-              class="timer"
+          >
 
-              data-start="${order.startedAt}"
-
-            >
-
-              ${formatTimer(order.startedAt)}
-
-            </div>
-
-            <div style="margin-top:10px">
-
-              <span class="status">
-
-                ${order.status}
-
-              </span>
-
-            </div>
+            ${formatTimer(order.startedAt)}
 
           </div>
 
         </div>
 
-        <div style="margin-top:18px">
+        <div style="margin-bottom:15px">
+
+          <span class="status">
+
+            ${order.status}
+
+          </span>
 
           <span class="locked">
 
@@ -3048,163 +3456,171 @@ function viewActiveOrder(id){
 
         </div>
 
-      </div>
-
-      <div class="panel">
-
-        <div class="badge">
-
-          CUSTOMER
-
-        </div>
-
-        <div class="info-row">
-
-          <span>Name</span>
-
-          <strong>
-
-            ${order.customer.name}
-
-          </strong>
-
-        </div>
-
-        <div class="info-row">
-
-          <span>Order Type</span>
-
-          <strong>
-
-            ${order.type}
-
-          </strong>
-
-        </div>
-
-        ${
-
-          order.customer.phone
-
-          ?
-
-          `
+        <div class="summary">
 
           <div class="info-row">
 
-            <span>Phone</span>
+            <span>Customer</span>
 
-            <strong>
-
-              ${order.customer.phone}
-
-            </strong>
+            <strong>${order.customer.name}</strong>
 
           </div>
-
-          `
-
-          :
-
-          ""
-
-        }
-
-        ${
-
-          order.customer.address
-
-          ?
-
-          `
 
           <div class="info-row">
 
-            <span>Address</span>
+            <span>Order Type</span>
 
-            <strong>
-
-              ${order.customer.address}
-
-            </strong>
+            <strong>${order.type}</strong>
 
           </div>
 
-          `
+          ${
 
-          :
+            order.customer.phone
 
-          ""
+            ?
 
-        }
+            `
 
-      </div>
+            <div class="info-row">
 
-      <div class="panel">
+              <span>Phone</span>
 
-        <div class="badge">
+              <strong>${order.customer.phone}</strong>
 
-          ORDER ITEMS
+            </div>
 
-        </div>
+            `
 
-        <h2>Kitchen Order</h2>
+            :
 
-        ${
+            ""
 
-          order.items.map(
+          }
 
-            (item,index)=>
+          ${
 
-              lockedOrderItem(item,index)
+            order.customer.address
 
-          ).join("")
+            ?
 
-        }
+            `
 
-      </div>
+            <div class="info-row">
 
-      <div class="panel">
+              <span>Address</span>
 
-        <div class="badge">
+              <strong>${order.customer.address}</strong>
 
-          SYSTEM
+            </div>
 
-        </div>
+            `
 
-        <div class="info-row">
+            :
 
-          <span>Kitchen Tablet</span>
+            ""
 
-          <strong>
-
-            SENT ✓
-
-          </strong>
+          }
 
         </div>
 
-        <div class="info-row">
+        <h2 style="margin-top:25px">
 
-          <span>Receipts</span>
+          Order Items
 
-          <strong>
+        </h2>
 
-            2 QUEUED
+        ${order.items.map(item=>`
 
-          </strong>
+          <div class="order-card">
 
-        </div>
+            <div class="order-number">
 
-        <div class="info-row">
+              ${item.qty} × ${item.name}
 
-          <span>Cashier Access</span>
+            </div>
 
-          <strong>
+            ${
 
-            READ ONLY 🔒
+              item.removed?.length
 
-          </strong>
+              ?
+
+              `
+
+              <div class="system-note">
+
+                <strong>Removed:</strong><br>
+
+                ${item.removed.join("<br>")}
+
+              </div>
+
+              `
+
+              :
+
+              ""
+
+            }
+
+            ${
+
+              item.extras?.length
+
+              ?
+
+              `
+
+              <div class="system-note">
+
+                <strong>Extras:</strong><br>
+
+                ${item.extras.map(extra=>
+
+                  `${extra.qty} × ${extra.name}`
+
+                ).join("<br>")}
+
+              </div>
+
+              `
+
+              :
+
+              ""
+
+            }
+
+          </div>
+
+        `).join("")}
+
+        <div class="summary">
+
+          <div class="info-row">
+
+            <span>Kitchen tablet</span>
+
+            <strong>SENT</strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>Receipts</span>
+
+            <strong>2 QUEUED</strong>
+
+          </div>
+
+          <div class="info-row">
+
+            <span>Cashier access</span>
+
+            <strong>READ ONLY</strong>
+
+          </div>
 
         </div>
 
@@ -3214,127 +3630,21 @@ function viewActiveOrder(id){
 
   `;
 
-  startSingleTimer();
-
-}
-
-function lockedOrderItem(item,index){
-
-  const removed=getRemovedIngredients(item);
-
-  return `
-
-    <div class="card" style="margin-top:14px">
-
-      <div class="badge">
-
-        ITEM ${index+1}
-
-      </div>
-
-      <h3>
-
-        ${item.qty} × ${item.name}
-
-      </h3>
-
-      ${
-
-        removed.length
-
-        ?
-
-        `
-
-        <div
-
-          class="danger-text"
-
-          style="margin-top:10px"
-
-        >
-
-          <strong>
-
-            REMOVED
-
-          </strong>
-
-          ${
-
-            removed.map(x=>`
-
-              <div>
-
-                NO ${x}
-
-              </div>
-
-            `).join("")
-
-          }
-
-        </div>
-
-        `
-
-        :
-
-        ""
-
-      }
-
-      ${
-
-        item.extras.length
-
-        ?
-
-        `
-
-        <div style="margin-top:10px">
-
-          <strong>
-
-            EXTRAS
-
-          </strong>
-
-          ${
-
-            item.extras.map(extra=>`
-
-              <div>
-
-                ${extra.qty} × ${extra.name}
-
-              </div>
-
-            `).join("")
-
-          }
-
-        </div>
-
-        `
-
-        :
-
-        ""
-
-      }
-
-    </div>
-
-  `;
+  startTimerRefresh();
 
 }
 
 /* =========================
 
-   TIMER SYSTEM
+   TIMER
 
 ========================= */
+
+function padOrder(number){
+
+  return String(number).padStart(3,"0");
+
+}
 
 function formatTimer(startedAt){
 
@@ -3344,29 +3654,33 @@ function formatTimer(startedAt){
 
       0,
 
-      Date.now()-startedAt
+      Math.floor(
+
+        (Date.now()-startedAt)/1000
+
+      )
 
     );
 
-  const totalSeconds=
-
-    Math.floor(elapsed/1000);
-
   const hours=
 
-    Math.floor(totalSeconds/3600);
+    Math.floor(
+
+      elapsed/3600
+
+    );
 
   const minutes=
 
     Math.floor(
 
-      (totalSeconds%3600)/60
+      (elapsed%3600)/60
 
     );
 
   const seconds=
 
-    totalSeconds%60;
+    elapsed%60;
 
   if(hours>0){
 
@@ -3410,7 +3724,7 @@ function updateVisibleTimers(){
 
         Number(
 
-          element.getAttribute("data-start")
+          element.dataset.start
 
         );
 
@@ -3422,43 +3736,7 @@ function updateVisibleTimers(){
 
 }
 
-function startHomeTimers(){
-
-  stopTimerRefresh();
-
-  updateVisibleTimers();
-
-  timerInterval=
-
-    setInterval(
-
-      updateVisibleTimers,
-
-      1000
-
-    );
-
-}
-
-function startActiveTimers(){
-
-  stopTimerRefresh();
-
-  updateVisibleTimers();
-
-  timerInterval=
-
-    setInterval(
-
-      updateVisibleTimers,
-
-      1000
-
-    );
-
-}
-
-function startSingleTimer(){
+function startTimerRefresh(){
 
   stopTimerRefresh();
 
@@ -3490,33 +3768,21 @@ function stopTimerRefresh(){
 
 /* =========================
 
-   STORAGE
+   UTILITIES
 
 ========================= */
 
-function saveOrders(){
+function escapeValue(value){
 
-  localStorage.setItem(
+  return String(value || "")
 
-    "mrkActiveOrders",
+    .replace(/&/g,"&amp;")
 
-    JSON.stringify(activeOrders)
+    .replace(/"/g,"&quot;")
 
-  );
+    .replace(/</g,"&lt;")
 
-  localStorage.setItem(
-
-    "mrkNextOrderNumber",
-
-    String(nextOrderNumber)
-
-  );
-
-}
-
-function formatOrderNumber(number){
-
-  return String(number).padStart(3,"0");
+    .replace(/>/g,"&gt;");
 
 }
 
