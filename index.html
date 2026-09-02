@@ -1089,7 +1089,61 @@ const inventoryItems=[
  {id:"honeyMustard",name:"Honey Mustard",category:"EXTRA SAUCES"}
 
 ];
+const inventoryIngredientMap={
 
+ "Beef steak 120g":
+
+ {id:"beef120",qty:1},
+
+ "Beef steak 120g ×3":
+
+ {id:"beef120",qty:3},
+
+ "Chicken steak 120g":
+
+ {id:"chicken120",qty:1},
+
+ "Burger bun":
+
+ {id:"bun",qty:1},
+
+ "Mushrooms":
+
+ {id:"mushroom",qty:1},
+
+ "Sautéed beef tenderloin 100g":
+
+ {id:"beefTenderloin100",qty:1},
+
+ "Bacon":
+
+ {id:"bacon",qty:1},
+
+ "Smoked turkey":
+
+ {id:"smokedTurkey",qty:1},
+
+ "Cheddar cheese":
+
+ {id:"cheddar",qty:1},
+
+ "Cheddar cheese ×3":
+
+ {id:"cheddar",qty:3},
+
+ "Mozzarella cheese":
+
+ {id:"mozzarella",qty:1},
+
+ "Swiss cheese":
+
+ {id:"emmental",qty:1},
+
+ "Chimichurri":
+
+ {id:"chimichurri",qty:1}
+
+};
 let inventoryStock=safeLoad(
 
  "mrkInventoryStock",
@@ -1122,8 +1176,365 @@ function saveInventory(){
 
  );
 
+} 
+function getOrderInventoryNeeds(order){
+
+ const needs={};
+
+ function add(id,qty){
+
+  if(!id||!qty)return;
+
+  needs[id]=(needs[id]||0)+qty;
+
+ }
+
+ orderCart(order).forEach(item=>{
+
+  const productQty=
+
+   Number(item.qty||1);
+
+  const burger=
+
+   burgerDetails[item.name];
+
+  if(burger){
+
+   const removed=
+
+    new Set(item.removed||[]);
+
+   burger.ingredients.forEach(
+
+    ingredient=>{
+
+     if(removed.has(ingredient)){
+
+      return;
+
+     }
+
+     const map=
+
+      inventoryIngredientMap[ingredient];
+
+     if(map){
+
+      add(
+
+       map.id,
+
+       map.qty*productQty
+
+      );
+
+     }
+
+    }
+
+   );
+
+  }
+ const productInventoryMap={
+
+ "French Fries":{
+
+  potatoes:1
+
+ },
+
+ "Plantain Tostones":{
+
+  plantain:1
+
+ },
+
+ "Cheese Fries":{
+
+  potatoes:2,
+
+  gratedCheese:1
+
+ },
+
+ "Fajita Cheese Fries":{
+
+  potatoes:2,
+
+  fajitaChicken100:1,
+
+  gratedCheese:1
+
+ },
+
+ "Dirty Fries":{
+
+  potatoes:2,
+
+  beef120:1,
+
+  gratedCheese:1
+
+ },
+
+ "Mr K Coleslaw":{
+
+  coleslaw:1
+
+ },
+
+ "Cheeseburger Salad":{
+
+  beef120:1,
+
+  cheddar:1
+
+ },
+
+ "Small Water":{
+
+  smallWater:1
+
+ },
+
+ "Big Water":{
+
+  bigWater:1
+
+ },
+
+ "Coca Cola":{
+
+  cocaCola:1
+
+ },
+
+ "Sprite":{
+
+  sprite:1
+
+ },
+
+ "Fanta":{
+
+  fanta:1
+
+ },
+
+ "Mr K Sauce":{
+
+  mrkSauce:1
+
+ },
+
+ "Chimichurri":{
+
+  chimichurri:1
+
+ },
+
+ "Honey Mustard":{
+
+  honeyMustard:1
+
+ },
+
+ "Honey BBQ":{
+
+  honeyBbq:1
+
+ }
+
+};
+
+const productNeeds=
+
+ productInventoryMap[item.name];
+
+if(productNeeds){
+
+ Object.entries(productNeeds)
+
+ .forEach(([id,qty])=>{
+
+  add(
+
+   id,
+
+   qty*productQty
+
+  );
+
+ });
+
+}
+  (item.extras||[]).forEach(extra=>{
+
+   const extraMap={
+
+    "Extra beef patty":
+
+     "beef120",
+
+    "Extra chicken steak":
+
+     "chicken120",
+
+    "Extra cheddar cheese":
+
+     "cheddar",
+
+    "Extra mozzarella cheese":
+
+     "mozzarella",
+
+    "Extra Swiss cheese":
+
+     "emmental",
+
+    "Extra mushroom":
+
+     "mushroom",
+
+    "Extra bacon":
+
+     "bacon",
+
+    "Extra grated cheese":
+
+     "gratedCheese"
+
+   };
+
+   const id=
+
+    extraMap[extra.name];
+
+   if(id){
+
+    add(
+
+     id,
+
+     Number(extra.qty||0)*
+
+     productQty
+
+    );
+
+   }
+
+  });
+
+ });
+
+ return needs;
+
 }
 
+function checkOrderInventory(order){
+
+ const needs=
+
+ getOrderInventoryNeeds(order);
+
+ const missing=[];
+
+ Object.entries(needs)
+
+ .forEach(([id,qty])=>{
+
+  const current=
+
+   Number(inventoryStock[id]||0);
+
+  if(current<qty){
+
+   const item=
+
+    inventoryItems.find(
+
+     i=>i.id===id
+
+    );
+
+   missing.push(
+
+    `${item?item.name:id}: need ${qty}, have ${current}`
+
+   );
+
+  }
+
+ });
+
+ return missing;
+
+}
+function deductOrderInventory(order){
+
+ const deductions=
+
+ getOrderInventoryNeeds(order);
+
+ Object.entries(deductions)
+
+ .forEach(([id,qty])=>{
+
+  inventoryStock[id]=
+
+   Math.max(
+
+    0,
+
+    Number(inventoryStock[id]||0)-qty
+
+   );
+
+  const item=
+
+   inventoryItems.find(
+
+    i=>i.id===id
+
+   );
+
+  inventoryMovements.push({
+
+   id:
+
+    Date.now()+
+
+    Math.random(),
+
+   type:"SALE / CHECKOUT",
+
+   itemId:id,
+
+   itemName:
+
+    item?item.name:id,
+
+   qty:-qty,
+
+   orderNumber:
+
+    order.number,
+
+   createdAt:
+
+    Date.now()
+
+  });
+
+ });
+
+ saveInventory();
+
+ saveInventoryMovements();
+
+}
 saveInventory();
 
 function managerCurrentStock(){
@@ -2799,7 +3210,25 @@ function cat(icon,name){
  </div>`;
 
 }
+function isProductAvailable(name){
 
+ return checkOrderInventory({
+
+  cart:[{
+
+   name:name,
+
+   qty:1,
+
+   extras:[],
+
+   removed:[]
+
+  }]
+
+ }).length===0;
+
+}
 function openCategory(name){
 
  currentCategory=name;
@@ -2844,19 +3273,47 @@ function openCategory(name){
 
     ${
 
-     items.map(i=>`
+     items.map(i=>{
 
-      <div
+ const available=
 
-       class="card clickable"
+  isProductAvailable(i);
 
-       onclick='selectItem(${JSON.stringify(i)})'>
+ return `
 
-       <h3>${i}</h3>
+  <div
 
-      </div>
+   class="card ${available?"clickable":""}"
 
-     `).join("")
+   ${available
+
+    ?`onclick='selectItem(${JSON.stringify(i)})'`
+
+    :""
+
+   }>
+
+   <h3>${i}</h3>
+
+   ${
+
+    available
+
+    ?""
+
+    :`<div class="muted" style="margin-top:8px;font-weight:800;">
+
+       OUT OF STOCK
+
+      </div>`
+
+   }
+
+  </div>
+
+ `;
+
+}).join("")
 
     }
 
@@ -2869,7 +3326,11 @@ function openCategory(name){
 }
 
 function selectItem(name){
+if(!isProductAvailable(name)){
 
+ return alert("OUT OF STOCK");
+
+}
  currentQty=1;
 
  if(burgerDetails[name]){
@@ -3667,7 +4128,29 @@ function checkoutOrder(){
    return alert("Add at least one item before checkout.");
 
  }
+ const missingStock=
 
+checkOrderInventory({
+
+ cart:JSON.parse(
+
+  JSON.stringify(cart)
+
+ )
+
+});
+
+if(missingStock.length){
+
+ return alert(
+
+  "NOT ENOUGH STOCK\n\n"+
+
+  missingStock.join("\n")
+
+ );
+
+}
  if(currentDraftId){
 
    draftOrders=
@@ -3701,7 +4184,7 @@ function checkoutOrder(){
  };
 
  activeOrders.push(order);
-
+ deductOrderInventory(order);
  saveOrders();
 
  currentDraftId=null;
