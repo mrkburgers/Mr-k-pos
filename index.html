@@ -1030,7 +1030,19 @@ function managerInventory(){
      <p class="muted">View low-stock items</p>
 
     </div>
+<div class="card clickable" onclick="managerProductAvailability()">
 
+ <div class="category-icon">🟢</div>
+
+ <h3>PRODUCT AVAILABILITY</h3>
+
+ <p class="muted">
+
+  View available and out-of-stock items
+
+ </p>
+
+</div>
    </div>
 
   </div>
@@ -2742,6 +2754,153 @@ function managerLowStock(){
      </div>
 
     `
+
+   }
+
+  </div>
+
+ </div>`;
+
+} 
+function managerProductAvailability(){
+
+ clearInterval(timerInterval);
+
+ const categories=[
+
+  {name:"BURGERS",items:burgers},
+
+  {name:"SIDES",items:sides},
+
+  {name:"SALADS",items:salads},
+
+  {name:"SOFT DRINKS",items:drinks},
+
+  {name:"EXTRA SAUCES",items:sauces}
+
+ ];
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — PRODUCT AVAILABILITY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🟢 PRODUCT AVAILABILITY
+
+   </span>
+
+   <h1>Menu Availability</h1>
+
+   <p class="muted">
+
+    Read-only status based on current inventory.
+
+   </p>
+
+   ${
+
+    categories.map(category=>`
+
+     <h2>${category.name}</h2>
+
+     ${
+
+      category.items.map(name=>{
+
+       const missing=
+
+        checkOrderInventory({
+
+         cart:[{
+
+          name:name,
+
+          qty:1,
+
+          extras:[],
+
+          removed:[]
+
+         }]
+
+        });
+
+       const available=
+
+        missing.length===0;
+
+       return `
+
+        <div class="order-card">
+
+         <div class="order-top">
+
+          <div>
+
+           <h3>${esc(name)}</h3>
+
+           ${
+
+            available
+
+            ?`<span class="muted">
+
+               Ready to sell
+
+              </span>`
+
+            :`<span class="muted">
+
+               ${missing.map(x=>esc(x)).join("<br>")}
+
+              </span>`
+
+           }
+
+          </div>
+
+          <div style="text-align:right">
+
+           <span class="status ${available?"ready":""}">
+
+            ${available?"AVAILABLE":"OUT OF STOCK"}
+
+           </span>
+
+          </div>
+
+         </div>
+
+        </div>
+
+       `;
+
+      }).join("")
+
+     }
+
+    `).join("")
 
    }
 
