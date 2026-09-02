@@ -1021,7 +1021,7 @@ function managerInventory(){
 
     </div>
 
-    <div class="card">
+    <div class="card clickable" onclick="managerLowStock()">
 
      <div class="category-icon">⚠️</div>
 
@@ -1089,6 +1089,58 @@ const inventoryItems=[
  {id:"honeyMustard",name:"Honey Mustard",category:"EXTRA SAUCES"}
 
 ];
+
+const lowStockThresholds={
+
+ beef120:30,
+
+ chicken120:15,
+
+ bun:20,
+
+ mushroom:15,
+
+ beefTenderloin100:10,
+
+ bacon:10,
+
+ smokedTurkey:5,
+
+ cheddar:20,
+
+ mozzarella:15,
+
+ emmental:15,
+
+ gratedCheese:15,
+
+ potatoes:40,
+
+ plantain:15,
+
+ fajitaChicken100:5,
+
+ coleslaw:5,
+
+ smallWater:24,
+
+ bigWater:24,
+
+ cocaCola:24,
+
+ sprite:24,
+
+ fanta:24,
+
+ chimichurri:5,
+
+ mrkSauce:5,
+
+ honeyBbq:5,
+
+ honeyMustard:5
+
+};
 const inventoryIngredientMap={
 
  "Beef steak 120g":
@@ -2553,6 +2605,145 @@ const today=
    }
 
    </div>
+
+  </div>
+
+ </div>`;
+
+} 
+function managerLowStock(){
+
+ clearInterval(timerInterval);
+
+ const lowItems=
+
+  inventoryItems
+
+  .map(item=>({
+
+   ...item,
+
+   current:
+
+    Number(inventoryStock[item.id]||0),
+
+   threshold:
+
+    Number(lowStockThresholds[item.id]||0)
+
+  }))
+
+  .filter(
+
+   item=>
+
+    item.current<=item.threshold
+
+  )
+
+  .sort(
+
+   (a,b)=>
+
+    (a.current-a.threshold)-
+
+    (b.current-b.threshold)
+
+  );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — LOW STOCK</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ⚠️ LOW STOCK
+
+   </span>
+
+   <h1>Low Stock Items</h1>
+
+   <p class="muted">
+
+    Items at or below their minimum stock level.
+
+   </p>
+
+   ${
+
+    lowItems.length
+
+    ?lowItems.map(item=>`
+
+     <div class="order-card">
+
+      <div class="order-top">
+
+       <div>
+
+        <h3>${esc(item.name)}</h3>
+
+        <span class="muted">
+
+         Low-stock level: ${item.threshold}
+
+        </span>
+
+       </div>
+
+       <div style="text-align:right">
+
+        <div class="order-number">
+
+         ${item.current}
+
+        </div>
+
+        <span class="muted">
+
+         IN STOCK
+
+        </span>
+
+       </div>
+
+      </div>
+
+     </div>
+
+    `).join("")
+
+    :`
+
+     <div class="system-note">
+
+      ✅ No low-stock items.
+
+     </div>
+
+    `
+
+   }
 
   </div>
 
