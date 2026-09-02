@@ -1001,7 +1001,7 @@ function managerInventory(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerWasteAdjustment()" style="cursor:pointer">
 
      <div class="category-icon">🗑️</div>
 
@@ -1675,6 +1675,289 @@ function managerRemoveStock(){
  );
 
  managerStockOut();
+
+} 
+function managerWasteAdjustment(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — WASTE / ADJUSTMENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🗑️ WASTE / ADJUSTMENT
+
+   </span>
+
+   <h1>Record Waste</h1>
+
+   <p class="muted">
+
+    Deduct wasted or adjusted servings / units from the main inventory.
+
+   </p>
+
+   <label>ITEM</label>
+
+   <select
+
+    id="wasteItem"
+
+    class="input">
+
+    <option value="">
+
+     Select inventory item
+
+    </option>
+
+    ${
+
+     inventoryItems
+
+     .map(item=>`
+
+      <option value="${item.id}">
+
+       ${esc(item.name)} — ${inventoryStock[item.id]||0} in stock
+
+      </option>
+
+     `)
+
+     .join("")
+
+    }
+
+   </select>
+
+   <label>QUANTITY</label>
+
+   <input
+
+    id="wasteQty"
+
+    class="input"
+
+    type="number"
+
+    inputmode="numeric"
+
+    min="1"
+
+    step="1"
+
+    placeholder="Enter servings / units">
+
+   <label>REASON</label>
+
+   <select
+
+    id="wasteReason"
+
+    class="input">
+
+    <option value="">
+
+     Select reason
+
+    </option>
+
+    <option value="Damaged">
+
+     Damaged
+
+    </option>
+
+    <option value="Expired">
+
+     Expired
+
+    </option>
+
+    <option value="Spoiled">
+
+     Spoiled
+
+    </option>
+
+    <option value="Dropped / Accident">
+
+     Dropped / Accident
+
+    </option>
+
+    <option value="Stock Correction">
+
+     Stock Correction
+
+    </option>
+
+    <option value="Other">
+
+     Other
+
+    </option>
+
+   </select>
+
+   <button
+
+    class="primary"
+
+    onclick="managerRecordWaste()">
+
+    RECORD WASTE / ADJUSTMENT
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+
+function managerRecordWaste(){
+
+ const itemId=
+
+ document.getElementById("wasteItem").value;
+
+ const qty=
+
+ Number(
+
+  document.getElementById("wasteQty").value
+
+ );
+
+ const reason=
+
+ document.getElementById("wasteReason").value;
+
+ if(!itemId){
+
+  return alert(
+
+   "Please select an inventory item."
+
+  );
+
+ }
+
+ if(
+
+  !Number.isInteger(qty)||
+
+  qty<=0
+
+ ){
+
+  return alert(
+
+   "Please enter a valid whole-number quantity."
+
+  );
+
+ }
+
+ if(!reason){
+
+  return alert(
+
+   "Please select a reason."
+
+  );
+
+ }
+
+ const item=
+
+ inventoryItems.find(
+
+  i=>i.id===itemId
+
+ );
+
+ if(!item){
+
+  return alert(
+
+   "Inventory item not found."
+
+  );
+
+ }
+
+ const current=
+
+ Number(inventoryStock[itemId]||0);
+
+ if(qty>current){
+
+  return alert(
+
+   `Not enough ${item.name} in stock. Current stock: ${current}.`
+
+  );
+
+ }
+
+ inventoryStock[itemId]=
+
+ current-qty;
+
+ inventoryMovements.push({
+
+  id:Date.now(),
+
+  type:"WASTE / ADJUSTMENT",
+
+  itemId:itemId,
+
+  itemName:item.name,
+
+  qty:-qty,
+
+  reason:reason,
+
+  createdAt:Date.now()
+
+ });
+
+ saveInventory();
+
+ saveInventoryMovements();
+
+ alert(
+
+  `${item.name}: -${qty} units recorded as ${reason}.`
+
+ );
+
+ managerWasteAdjustment();
 
 }
 /* CASHIER HOME */
