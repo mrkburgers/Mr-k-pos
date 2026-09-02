@@ -16,23 +16,11 @@
 
 *{box-sizing:border-box}
 
-body{
-
-  margin:0;background:#111;color:#f5f1e8;
-
-  font-family:Arial,Helvetica,sans-serif
-
-}
+body{margin:0;background:#111;color:#f5f1e8;font-family:Arial,Helvetica,sans-serif}
 
 button,input{font:inherit}
 
-button{
-
-  cursor:pointer;border:1px solid #444;background:#252525;color:white;
-
-  border-radius:12px;padding:15px 20px
-
-}
+button{cursor:pointer;border:1px solid #444;background:#252525;color:white;border-radius:12px;padding:15px 20px}
 
 .primary{background:#f3a51b;color:#111;border-color:#f3a51b;font-weight:bold}
 
@@ -64,13 +52,7 @@ button{
 
 .form{display:grid;gap:12px;max-width:550px}
 
-input{
-
-  width:100%;padding:14px;border-radius:10px;border:1px solid #444;
-
-  background:#0d0d0d;color:white
-
-}
+input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white}
 
 .muted{color:#aaa}
 
@@ -88,15 +70,7 @@ input{
 
 .qty strong{min-width:30px;text-align:center;font-size:24px}
 
-.extra-row{
-
-  display:flex;align-items:center;justify-content:space-between;gap:15px;
-
-  background:#202020;border:1px solid #3b3b3b;border-radius:12px;
-
-  padding:14px;margin:10px 0
-
-}
+.extra-row{display:flex;align-items:center;justify-content:space-between;gap:15px;background:#202020;border:1px solid #3b3b3b;border-radius:12px;padding:14px;margin:10px 0}
 
 .extra-name{flex:1;font-weight:bold}
 
@@ -106,141 +80,47 @@ input{
 
 .extra-qty strong{min-width:28px;text-align:center;font-size:20px}
 
-.ingredient-row{
+.ingredient-row{display:flex;align-items:center;gap:12px;background:#202020;border:1px solid #3b3b3b;border-radius:12px;padding:14px;margin:8px 0}
 
-  display:flex;align-items:center;gap:12px;
-
-  background:#202020;border:1px solid #3b3b3b;border-radius:12px;
-
-  padding:14px;margin:8px 0
-
-}
-
-.ingredient-row input{
-
-  width:22px;height:22px;accent-color:#f3a51b;flex:0 0 auto
-
-}
+.ingredient-row input{width:22px;height:22px;accent-color:#f3a51b;flex:0 0 auto}
 
 .ingredient-row label{font-weight:bold;flex:1}
 
-.no-item{
+.no-item{color:#ff9b9b;font-weight:bold;margin-top:5px}
 
-  color:#ff9b9b;font-weight:bold;margin-top:5px
+.summary{background:#101010;border:1px solid #3b3b3b;border-radius:14px;padding:18px;margin-top:18px}
 
-}
+.order-card{background:#202020;border:1px solid #3b3b3b;border-radius:16px;padding:18px;margin:14px 0}
 
-.summary{
-
-  background:#101010;border:1px solid #3b3b3b;
-
-  border-radius:14px;padding:18px;margin-top:18px
-
-}
-
-.order-card{
-
-  background:#202020;border:1px solid #3b3b3b;
-
-  border-radius:16px;padding:18px;margin:14px 0
-
-}
-
-.order-top{
-
-  display:flex;justify-content:space-between;
-
-  align-items:flex-start;gap:15px
-
-}
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
 
 .order-number{font-size:22px;font-weight:bold}
 
-.timer{
+.timer{font-size:24px;font-weight:800;color:#f3a51b;font-variant-numeric:tabular-nums}
 
-  font-size:24px;font-weight:800;color:#f3a51b;
+.status{display:inline-block;background:#302715;border:1px solid #6c5220;color:#f3a51b;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px}
 
-  font-variant-numeric:tabular-nums
+.status.ready{background:#17351e;border-color:#397548;color:#b8ffc8}
 
-}
+.status.completed{background:#252525;border-color:#555;color:#bbb}
 
-.status{
+.draft-status{display:inline-block;background:#1c2730;border:1px solid #3e6176;color:#8ccdf3;padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px}
 
-  display:inline-block;background:#302715;border:1px solid #6c5220;
-
-  color:#f3a51b;padding:7px 10px;border-radius:999px;
-
-  font-size:11px;font-weight:bold;letter-spacing:1px
-
-}
-
-.status.ready{
-
-  background:#17351e;border-color:#397548;color:#b8ffc8
-
-}
-
-.draft-status{
-
-  display:inline-block;background:#1c2730;border:1px solid #3e6176;
-
-  color:#8ccdf3;padding:7px 10px;border-radius:999px;
-
-  font-size:11px;font-weight:bold;letter-spacing:1px
-
-}
-
-.info-row{
-
-  display:flex;justify-content:space-between;gap:15px;
-
-  padding:9px 0;border-bottom:1px solid #333
-
-}
+.info-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #333}
 
 .info-row:last-child{border-bottom:none}
 
-.system-note{
+.system-note{border-left:4px solid #f3a51b;padding:12px 14px;background:#181818;margin-top:12px;color:#bbb}
 
-  border-left:4px solid #f3a51b;padding:12px 14px;
-
-  background:#181818;margin-top:12px;color:#bbb
-
-}
-
-.actions{
-
-  display:flex;gap:10px;flex-wrap:wrap;margin-top:15px
-
-}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
 
 .actions button{flex:1;min-width:150px}
 
-.cart-count{
+.cart-count{display:inline-block;margin-left:8px;padding:4px 8px;border-radius:999px;background:#f3a51b;color:#111;font-size:11px;font-weight:bold}
 
-  display:inline-block;margin-left:8px;padding:4px 8px;
+.kitchen-title{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
 
-  border-radius:999px;background:#f3a51b;color:#111;
-
-  font-size:11px;font-weight:bold
-
-}
-
-.kitchen-title{
-
-  display:flex;justify-content:space-between;
-
-  align-items:center;gap:15px;flex-wrap:wrap
-
-}
-
-.kitchen-item{
-
-  font-size:18px;font-weight:bold;
-
-  padding:10px 0;border-bottom:1px solid #333
-
-}
+.kitchen-item{font-size:18px;font-weight:bold;padding:10px 0;border-bottom:1px solid #333}
 
 .kitchen-item:last-child{border-bottom:none}
 
@@ -296,301 +176,115 @@ let timerInterval=null;
 
 const burgers=[
 
- "Mr K Classic",
+ "Mr K Classic","Mushroom & Swiss","Honky Tonk","Philly Cheesesteak",
 
- "Mushroom & Swiss",
-
- "Honky Tonk",
-
- "Philly Cheesesteak",
-
- "Only The Brave",
-
- "Bohemian",
-
- "Chicken Chimichurri"
+ "Only The Brave","Bohemian","Chicken Chimichurri"
 
 ];
 
 const sides=[
 
- "French Fries",
+ "French Fries","Plantain Tostones","Onion Rings","Cheese Fries",
 
- "Plantain Tostones",
-
- "Onion Rings",
-
- "Cheese Fries",
-
- "Fajita Cheese Fries",
-
- "Dirty Fries"
+ "Fajita Cheese Fries","Dirty Fries"
 
 ];
 
-const salads=[
+const salads=["Mr K Coleslaw","Cheeseburger Salad"];
 
- "Mr K Coleslaw",
+const drinks=["Small Water","Big Water","Coca Cola","Sprite","Fanta"];
 
- "Cheeseburger Salad"
-
-];
-
-const drinks=[
-
- "Small Water",
-
- "Big Water",
-
- "Coca Cola",
-
- "Sprite",
-
- "Fanta"
-
-];
-
-const sauces=[
-
- "Mr K Sauce",
-
- "Chimichurri",
-
- "Ketchup",
-
- "Mayonnaise",
-
- "Honey Mustard",
-
- "Honey BBQ"
-
-];
+const sauces=["Mr K Sauce","Chimichurri","Ketchup","Mayonnaise","Honey Mustard","Honey BBQ"];
 
 const burgerDetails={
 
-"Mr K Classic":{
+ "Mr K Classic":{
 
- meat:"beef",
+   meat:"beef",
 
- ingredients:[
+   ingredients:["Beef steak 120g","Burger bun","Rocket lettuce","Tomato","Onions","Pickled cucumbers","Mr K sauce"]
 
-  "Beef steak 120g",
+ },
 
-  "Burger bun",
+ "Mushroom & Swiss":{
 
-  "Rocket lettuce",
+   meat:"beef",
 
-  "Tomato",
+   ingredients:["Beef steak 120g","Burger bun","Mushrooms","Swiss cheese","Rocket lettuce","Sauce"]
 
-  "Onions",
+ },
 
-  "Pickled cucumbers",
+ "Honky Tonk":{
 
-  "Mr K sauce"
+   meat:"beef",
 
- ]
+   ingredients:["Beef steak 120g","Burger bun","Bacon","Swiss cheese","Cheddar cheese","Rocket lettuce","Sauce","Onion rings"]
 
-},
+ },
 
-"Mushroom & Swiss":{
+ "Philly Cheesesteak":{
 
- meat:"beef",
+   meat:"beef",
 
- ingredients:[
+   ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Sautéed beef tenderloin 100g","Rocket lettuce","Sauce"]
 
-  "Beef steak 120g",
+ },
 
-  "Burger bun",
+ "Only The Brave":{
 
-  "Mushrooms",
+   meat:"beef",
 
-  "Swiss cheese",
+   ingredients:["Beef steak 120g ×3","Burger bun","Cheddar cheese ×3","Bacon","Rocket lettuce","Sauce"]
 
-  "Rocket lettuce",
+ },
 
-  "Sauce"
+ "Bohemian":{
 
- ]
+   meat:"beef",
 
-},
+   ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Smoked turkey","Rocket lettuce","Sauce"]
 
-"Honky Tonk":{
+ },
 
- meat:"beef",
+ "Chicken Chimichurri":{
 
- ingredients:[
+   meat:"chicken",
 
-  "Beef steak 120g",
+   ingredients:["Chicken steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Chimichurri","Rocket lettuce","Sauce"]
 
-  "Burger bun",
-
-  "Bacon",
-
-  "Swiss cheese",
-
-  "Cheddar cheese",
-
-  "Rocket lettuce",
-
-  "Sauce",
-
-  "Onion rings"
-
- ]
-
-},
-
-"Philly Cheesesteak":{
-
- meat:"beef",
-
- ingredients:[
-
-  "Beef steak 120g",
-
-  "Burger bun",
-
-  "Mozzarella cheese",
-
-  "Cheddar cheese",
-
-  "Sautéed beef tenderloin 100g",
-
-  "Rocket lettuce",
-
-  "Sauce"
-
- ]
-
-},
-
-"Only The Brave":{
-
- meat:"beef",
-
- ingredients:[
-
-  "Beef steak 120g ×3",
-
-  "Burger bun",
-
-  "Cheddar cheese ×3",
-
-  "Bacon",
-
-  "Rocket lettuce",
-
-  "Sauce"
-
- ]
-
-},
-
-"Bohemian":{
-
- meat:"beef",
-
- ingredients:[
-
-  "Beef steak 120g",
-
-  "Burger bun",
-
-  "Mozzarella cheese",
-
-  "Smoked turkey",
-
-  "Rocket lettuce",
-
-  "Sauce"
-
- ]
-
-},
-
-"Chicken Chimichurri":{
-
- meat:"chicken",
-
- ingredients:[
-
-  "Chicken steak 120g",
-
-  "Burger bun",
-
-  "Mozzarella cheese",
-
-  "Cheddar cheese",
-
-  "Chimichurri",
-
-  "Rocket lettuce",
-
-  "Sauce"
-
- ]
-
-}
+ }
 
 };
 
 const beefExtras=[
 
- "Extra beef patty",
+ "Extra beef patty","Extra cheddar cheese","Extra mozzarella cheese",
 
- "Extra cheddar cheese",
-
- "Extra mozzarella cheese",
-
- "Extra Swiss cheese",
-
- "Extra mushroom",
-
- "Extra onion rings",
-
- "Extra bacon"
+ "Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
 
 ];
 
 const chickenExtras=[
 
- "Extra chicken steak",
+ "Extra chicken steak","Extra cheddar cheese","Extra mozzarella cheese",
 
- "Extra cheddar cheese",
-
- "Extra mozzarella cheese",
-
- "Extra Swiss cheese",
-
- "Extra mushroom",
-
- "Extra onion rings",
-
- "Extra bacon"
+ "Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
 
 ];
 
-const loadedFries=[
-
- "Cheese Fries",
-
- "Fajita Cheese Fries",
-
- "Dirty Fries"
-
-];
+const loadedFries=["Cheese Fries","Fajita Cheese Fries","Dirty Fries"];
 
 function safeLoad(key,fallback){
 
  try{
 
-  const value=JSON.parse(localStorage.getItem(key)||"null");
+   const v=JSON.parse(localStorage.getItem(key)||"null");
 
-  return Array.isArray(value)?value:fallback;
+   return Array.isArray(v)?v:fallback;
 
  }catch(e){
 
-  return fallback;
+   return fallback;
 
  }
 
@@ -630,13 +324,9 @@ function orderLabel(o){
 
  if(o.type==="DINE IN"){
 
-  if(o.customer&&o.customer.table){
+   if(o.customer&&o.customer.table)return `Table ${o.customer.table}`;
 
-   return `Table ${o.customer.table}`;
-
-  }
-
-  return o.customer?.name||"Dine In";
+   return o.customer?.name||"Dine In";
 
  }
 
@@ -646,63 +336,51 @@ function orderLabel(o){
 
 function currentCustomerLabel(){
 
- return orderType==="DINE IN"
+ return orderType==="DINE IN"?`Table ${customer.table}`:customer.name;
 
- ?`Table ${customer.table}`
+}
 
- :customer.name;
+function formatDateTime(timestamp){
+
+ if(!timestamp)return "—";
+
+ try{
+
+   return new Date(Number(timestamp)).toLocaleString();
+
+ }catch(e){
+
+   return "—";
+
+ }
+
+}
+
+function prepDuration(o){
+
+ if(!o.startedAt||!o.readyAt)return "—";
+
+ return formatTimer(o.startedAt,o.readyAt);
 
 }
 
 function saveOrders(){
 
- localStorage.setItem(
+ localStorage.setItem("mrkActiveOrders",JSON.stringify(activeOrders));
 
-  "mrkActiveOrders",
+ localStorage.setItem("mrkDraftOrders",JSON.stringify(draftOrders));
 
-  JSON.stringify(activeOrders)
+ localStorage.setItem("mrkCompletedOrders",JSON.stringify(completedOrders));
 
- );
-
- localStorage.setItem(
-
-  "mrkDraftOrders",
-
-  JSON.stringify(draftOrders)
-
- );
-
- localStorage.setItem(
-
-  "mrkCompletedOrders",
-
-  JSON.stringify(completedOrders)
-
- );
-
- localStorage.setItem(
-
-  "mrkNextOrderNumber",
-
-  String(nextOrderNumber)
-
- );
+ localStorage.setItem("mrkNextOrderNumber",String(nextOrderNumber));
 
 }
 
 function render(){
 
- if(!loggedIn){
+ if(!loggedIn)return loginScreen();
 
-  return loginScreen();
-
- }
-
- if(role==="kitchen"){
-
-  return kitchenHome();
-
- }
+ if(role==="kitchen")return kitchenHome();
 
  home();
 
@@ -716,13 +394,7 @@ function loginScreen(){
 
   <div class="loginbox">
 
-   <div class="logo">
-
-    MR K BURGERS
-
-    <span>POS SYSTEM</span>
-
-   </div>
+   <div class="logo">MR K BURGERS<span>POS SYSTEM</span></div>
 
    <div class="form" style="margin-top:30px">
 
@@ -734,15 +406,7 @@ function loginScreen(){
 
     <input id="pin" type="password" placeholder="PIN">
 
-    <button
-
-     class="primary"
-
-     onclick="login()">
-
-     LOGIN
-
-    </button>
+    <button class="primary" onclick="login()">LOGIN</button>
 
    </div>
 
@@ -756,9 +420,7 @@ function loginScreen(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -770,25 +432,25 @@ function login(){
 
  if(u==="cashier01"&&p==="1234"){
 
-  loggedIn=true;
+   loggedIn=true;
 
-  role="cashier";
+   role="cashier";
 
-  home();
+   home();
 
-  return;
+   return;
 
  }
 
  if(u==="kitchen01"&&p==="5678"){
 
-  loggedIn=true;
+   loggedIn=true;
 
-  role="kitchen";
+   role="kitchen";
 
-  kitchenHome();
+   kitchenHome();
 
-  return;
+   return;
 
  }
 
@@ -812,25 +474,9 @@ function header(label){
 
  return `
 
- <div class="logo">
+ <div class="logo">MR K BURGERS<span>${label}</span></div>
 
-  MR K BURGERS
-
-  <span>${label}</span>
-
- </div>
-
- <button
-
-  class="secondary"
-
-  onclick="logout()">
-
-  LOG OUT
-
- </button>
-
- `;
+ <button class="secondary" onclick="logout()">LOG OUT</button>`;
 
 }
 
@@ -858,11 +504,7 @@ function home(){
 
    <div class="grid">
 
-    <div
-
-     class="card clickable"
-
-     onclick="newOrder()">
+    <div class="card clickable" onclick="newOrder()">
 
      <div class="category-icon">🧾</div>
 
@@ -870,11 +512,7 @@ function home(){
 
     </div>
 
-    <div
-
-     class="card clickable"
-
-     onclick="showDraftOrders()">
+    <div class="card clickable" onclick="showDraftOrders()">
 
      <div class="category-icon">⏸️</div>
 
@@ -884,11 +522,7 @@ function home(){
 
     </div>
 
-    <div
-
-     class="card clickable"
-
-     onclick="showActiveOrders()">
+    <div class="card clickable" onclick="showActiveOrders()">
 
      <div class="category-icon">🔥</div>
 
@@ -898,17 +532,23 @@ function home(){
 
     </div>
 
+    <div class="card clickable" onclick="showOrderHistory()">
+
+     <div class="category-icon">📜</div>
+
+     <h3>ORDER HISTORY</h3>
+
+     <strong>${completedOrders.length}</strong>
+
+    </div>
+
    </div>
 
   </div>
 
   <div class="panel">
 
-   <span class="badge">
-
-    LIVE KITCHEN ORDERS
-
-   </span>
+   <span class="badge">LIVE KITCHEN ORDERS</span>
 
    <h2>Current Orders</h2>
 
@@ -924,9 +564,7 @@ function home(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
  startTimerRefresh();
 
@@ -936,11 +574,105 @@ function cashierOrderCard(o){
 
  return `
 
+ <div class="order-card clickable" onclick="activeOrderDetail(${Number(o.number)})">
+
+  <div class="order-top">
+
+   <div>
+
+    <div class="order-number">#${padOrder(o.number)}</div>
+
+    <strong>${esc(orderLabel(o))}</strong><br>
+
+    <span class="muted">${esc(o.type)}</span>
+
+   </div>
+
+   <div style="text-align:right">
+
+    <div
+
+     class="timer"
+
+     data-start="${o.startedAt||Date.now()}"
+
+     data-stop="${o.readyAt||""}">
+
+     ${formatTimer(o.startedAt||Date.now(),o.readyAt)}
+
+    </div>
+
+    <span class="status ${o.status==="READY"?"ready":""}">
+
+     ${esc(o.status||"NEW")}
+
+    </span>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+
+/* ORDER HISTORY */
+
+function showOrderHistory(){
+
+ clearInterval(timerInterval);
+
+ const history=[...completedOrders]
+
+ .sort((a,b)=>Number(b.completedAt||0)-Number(a.completedAt||0));
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="home()">← BACK</button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>ORDER HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">COMPLETED ORDERS</span>
+
+   <h2>Order History</h2>
+
+   ${
+
+    history.length
+
+    ?history.map(historyCard).join("")
+
+    :`<p class="muted">No completed orders yet.</p>`
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+
+function historyCard(o){
+
+ const index=completedOrders.indexOf(o);
+
+ return `
+
  <div
 
   class="order-card clickable"
 
-  onclick="activeOrderDetail(${Number(o.number)})">
+  onclick="completedOrderDetail(${index})">
 
   <div class="order-top">
 
@@ -970,39 +702,237 @@ function cashierOrderCard(o){
 
    <div style="text-align:right">
 
-    <div
+    <span class="status completed">
 
-     class="timer"
+     COMPLETED
 
-     data-start="${o.startedAt||Date.now()}"
+    </span>
 
-     data-stop="${o.readyAt||""}">
+    <div class="muted" style="margin-top:10px">
 
-     ${formatTimer(
-
-      o.startedAt||Date.now(),
-
-      o.readyAt
-
-     )}
+     ${esc(formatDateTime(o.completedAt))}
 
     </div>
 
-    <span
+    <div style="margin-top:7px">
 
-     class="status ${o.status==="READY"?"ready":""}">
+     Prep: <strong>${esc(prepDuration(o))}</strong>
 
-     ${esc(o.status||"NEW")}
-
-    </span>
+    </div>
 
    </div>
 
   </div>
 
- </div>
+ </div>`;
 
- `;
+}
+
+function completedOrderDetail(index){
+
+ const o=completedOrders[index];
+
+ if(!o){
+
+   return showOrderHistory();
+
+ }
+
+ const items=orderCart(o);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="showOrderHistory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>COMPLETED ORDER</span>
+
+  </div>
+
+  <div class="panel">
+
+   <div class="order-top">
+
+    <div>
+
+     <div class="order-number">
+
+      #${padOrder(o.number)}
+
+     </div>
+
+     <h2>
+
+      ${esc(orderLabel(o))}
+
+     </h2>
+
+    </div>
+
+    <span class="status completed">
+
+     COMPLETED
+
+    </span>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Order Type</span>
+
+    <strong>${esc(o.type)}</strong>
+
+   </div>
+
+   ${
+
+    o.type==="DINE IN"
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Table Number</span>
+
+      <strong>${esc(o.customer?.table)}</strong>
+
+     </div>
+
+    `
+
+    :`
+
+     <div class="info-row">
+
+      <span>Customer</span>
+
+      <strong>${esc(o.customer?.name)}</strong>
+
+     </div>
+
+     ${
+
+      o.customer?.phone
+
+      ?`
+
+       <div class="info-row">
+
+        <span>Phone</span>
+
+        <strong>${esc(o.customer.phone)}</strong>
+
+       </div>
+
+      `
+
+      :""
+
+     }
+
+     ${
+
+      o.type==="DELIVERY"&&o.customer?.address
+
+      ?`
+
+       <div class="info-row">
+
+        <span>Address</span>
+
+        <strong>${esc(o.customer.address)}</strong>
+
+       </div>
+
+      `
+
+      :""
+
+     }
+
+    `
+
+   }
+
+   <div class="info-row">
+
+    <span>Completed</span>
+
+    <strong>${esc(formatDateTime(o.completedAt))}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Final Prep Time</span>
+
+    <strong>${esc(prepDuration(o))}</strong>
+
+   </div>
+
+   <h3>Items</h3>
+
+   ${
+
+    items.length
+
+    ?items.map(i=>`
+
+     <div class="summary">
+
+      <strong>
+
+       ${i.qty} × ${esc(i.name)}
+
+      </strong>
+
+      ${removedHtml(i)}
+
+      ${
+
+       (i.extras||[])
+
+       .map(e=>`
+
+        <div class="muted">
+
+         ${e.qty} × ${esc(e.name)}
+
+        </div>
+
+       `)
+
+       .join("")
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted">No item details available.</p>`
+
+   }
+
+   <div class="system-note">
+
+    📜 Completed orders are read-only.
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 
@@ -1032,15 +962,7 @@ function newOrder(){
 
  <div class="app">
 
-  <button
-
-   class="back"
-
-   onclick="home()">
-
-   ← BACK
-
-  </button>
+  <button class="back" onclick="home()">← BACK</button>
 
   <div class="logo">
 
@@ -1056,11 +978,7 @@ function newOrder(){
 
    <div class="grid">
 
-    <div
-
-     class="card category clickable"
-
-     onclick="selectOrderType('DINE IN')">
+    <div class="card category clickable" onclick="selectOrderType('DINE IN')">
 
      <div class="category-icon">🍽️</div>
 
@@ -1068,11 +986,7 @@ function newOrder(){
 
     </div>
 
-    <div
-
-     class="card category clickable"
-
-     onclick="selectOrderType('TAKEAWAY')">
+    <div class="card category clickable" onclick="selectOrderType('TAKEAWAY')">
 
      <div class="category-icon">🥡</div>
 
@@ -1080,11 +994,7 @@ function newOrder(){
 
     </div>
 
-    <div
-
-     class="card category clickable"
-
-     onclick="selectOrderType('DELIVERY')">
+    <div class="card category clickable" onclick="selectOrderType('DELIVERY')">
 
      <div class="category-icon">🛵</div>
 
@@ -1096,9 +1006,7 @@ function newOrder(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1128,9 +1036,7 @@ function customerForm(){
 
    value="${esc(customer.table)}"
 
-   placeholder="Example: 6">
-
-  `;
+   placeholder="Example: 6">`;
 
  }
 
@@ -1154,9 +1060,7 @@ function customerForm(){
 
    value="${esc(customer.phone)}"
 
-   placeholder="+223">
-
-  `;
+   placeholder="+223">`;
 
  }
 
@@ -1188,9 +1092,7 @@ function customerForm(){
 
    id="address"
 
-   value="${esc(customer.address)}">
-
-  `;
+   value="${esc(customer.address)}">`;
 
  }
 
@@ -1198,15 +1100,7 @@ function customerForm(){
 
  <div class="app">
 
-  <button
-
-   class="back"
-
-   onclick="newOrder()">
-
-   ← BACK
-
-  </button>
+  <button class="back" onclick="newOrder()">← BACK</button>
 
   <div class="logo">
 
@@ -1238,9 +1132,7 @@ function customerForm(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1248,105 +1140,87 @@ function saveCustomer(){
 
  if(orderType==="DINE IN"){
 
-  const table=
+   const table=
 
-  document.getElementById("table")
+   document.getElementById("table").value.trim();
 
-  .value.trim();
+   if(!table){
 
-  if(!table){
+     return alert("Enter the table number.");
 
-   return alert("Enter the table number.");
+   }
 
-  }
+   customer={
 
-  customer={
+     name:"",
 
-   name:"",
+     phone:"",
 
-   phone:"",
+     address:"",
 
-   address:"",
+     table
 
-   table
-
-  };
+   };
 
  }
 
  else if(orderType==="TAKEAWAY"){
 
-  const name=
+   const name=
 
-  document.getElementById("name")
+   document.getElementById("name").value.trim();
 
-  .value.trim();
+   if(!name){
 
-  if(!name){
+     return alert("Enter the customer name.");
 
-   return alert("Enter the customer name.");
+   }
 
-  }
+   customer={
 
-  customer={
+     name,
 
-   name,
+     phone:document.getElementById("phone").value.trim(),
 
-   phone:
+     address:"",
 
-    document.getElementById("phone")
+     table:""
 
-    .value.trim(),
-
-   address:"",
-
-   table:""
-
-  };
+   };
 
  }
 
  else{
 
-  const name=
+   const name=
 
-   document.getElementById("name")
+   document.getElementById("name").value.trim();
 
-   .value.trim();
+   const phone=
 
-  const phone=
+   document.getElementById("phone").value.trim();
 
-   document.getElementById("phone")
+   const address=
 
-   .value.trim();
+   document.getElementById("address").value.trim();
 
-  const address=
+   if(!name||!phone||!address){
 
-   document.getElementById("address")
+     return alert("Complete all delivery details.");
 
-   .value.trim();
+   }
 
-  if(!name||!phone||!address){
+   customer={
 
-   return alert(
+     name,
 
-    "Complete all delivery details."
+     phone,
 
-   );
+     address,
 
-  }
+     table:""
 
-  customer={
-
-   name,
-
-   phone,
-
-   address,
-
-   table:""
-
-  };
+   };
 
  }
 
@@ -1362,15 +1236,7 @@ function menuCategories(){
 
  <div class="app">
 
-  <button
-
-   class="back"
-
-   onclick="customerForm()">
-
-   ← BACK
-
-  </button>
+  <button class="back" onclick="customerForm()">← BACK</button>
 
   <div class="logo">
 
@@ -1408,17 +1274,7 @@ function menuCategories(){
 
      <span class="cart-count">
 
-      ${
-
-       cart.reduce(
-
-        (a,b)=>a+Number(b.qty||0),
-
-        0
-
-       )
-
-      }
+      ${cart.reduce((a,b)=>a+Number(b.qty||0),0)}
 
      </span>
 
@@ -1438,9 +1294,7 @@ function menuCategories(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1462,9 +1316,7 @@ function cat(icon,name){
 
   <h3>${name}</h3>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1474,21 +1326,13 @@ function openCategory(name){
 
  let items=
 
- name==="Burgers"
+ name==="Burgers"?burgers:
 
- ?burgers:
+ name==="Sides"?sides:
 
- name==="Sides"
+ name==="Salads"?salads:
 
- ?sides:
-
- name==="Salads"
-
- ?salads:
-
- name==="Soft Drinks"
-
- ?drinks:
+ name==="Soft Drinks"?drinks:
 
  sauces;
 
@@ -1522,15 +1366,15 @@ function openCategory(name){
 
      items.map(i=>`
 
-     <div
+      <div
 
-      class="card clickable"
+       class="card clickable"
 
-      onclick='selectItem(${JSON.stringify(i)})'>
+       onclick='selectItem(${JSON.stringify(i)})'>
 
-      <h3>${i}</h3>
+       <h3>${i}</h3>
 
-     </div>
+      </div>
 
      `).join("")
 
@@ -1540,9 +1384,7 @@ function openCategory(name){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1552,13 +1394,13 @@ function selectItem(name){
 
  if(burgerDetails[name]){
 
-  return burgerCustomize(name);
+   return burgerCustomize(name);
 
  }
 
  if(loadedFries.includes(name)){
 
-  return loadedCustomize(name);
+   return loadedCustomize(name);
 
  }
 
@@ -1572,11 +1414,11 @@ function resetExtras(extras){
 
  currentExtraQty={};
 
- extras.forEach(
+ extras.forEach(e=>{
 
-  e=>currentExtraQty[e]=0
+   currentExtraQty[e]=0;
 
- );
+ });
 
 }
 
@@ -1588,15 +1430,7 @@ function resetIngredients(){
 
 function safeId(t){
 
- return "x"+
-
- t.replace(
-
-  /[^a-zA-Z0-9]/g,
-
-  ""
-
- );
+ return "x"+t.replace(/[^a-zA-Z0-9]/g,"");
 
 }
 
@@ -1608,9 +1442,7 @@ function ingredientId(i){
 
 function ingredientRows(ingredients){
 
- return ingredients.map(
-
-  (ingredient,index)=>`
+ return ingredients.map((ingredient,index)=>`
 
  <div class="ingredient-row">
 
@@ -1622,13 +1454,7 @@ function ingredientRows(ingredients){
 
    checked
 
-   onchange='toggleIngredient(
-
-    ${JSON.stringify(ingredient)},
-
-    this.checked
-
-   )'>
+   onchange='toggleIngredient(${JSON.stringify(ingredient)},this.checked)'>
 
   <label for="${ingredientId(index)}">
 
@@ -1636,45 +1462,29 @@ function ingredientRows(ingredients){
 
   </label>
 
- </div>
-
- `).join("");
+ </div>`).join("");
 
 }
 
-function toggleIngredient(
-
- ingredient,
-
- isChecked
-
-){
+function toggleIngredient(ingredient,isChecked){
 
  if(isChecked){
 
-  currentRemovedIngredients=
+   currentRemovedIngredients=
 
-  currentRemovedIngredients.filter(
+   currentRemovedIngredients.filter(
 
-   x=>x!==ingredient
+     x=>x!==ingredient
 
-  );
+   );
 
  }else{
 
-  if(
+   if(!currentRemovedIngredients.includes(ingredient)){
 
-   !currentRemovedIngredients
+     currentRemovedIngredients.push(ingredient);
 
-   .includes(ingredient)
-
-  ){
-
-   currentRemovedIngredients
-
-   .push(ingredient);
-
-  }
+   }
 
  }
 
@@ -1696,13 +1506,7 @@ function extraRows(extras){
 
    <button
 
-    onclick='changeExtraQty(
-
-     ${JSON.stringify(e)},
-
-     -1
-
-    )'>
+    onclick='changeExtraQty(${JSON.stringify(e)},-1)'>
 
     −
 
@@ -1716,13 +1520,7 @@ function extraRows(extras){
 
    <button
 
-    onclick='changeExtraQty(
-
-     ${JSON.stringify(e)},
-
-     1
-
-    )'>
+    onclick='changeExtraQty(${JSON.stringify(e)},1)'>
 
     +
 
@@ -1730,9 +1528,7 @@ function extraRows(extras){
 
   </div>
 
- </div>
-
- `).join("");
+ </div>`).join("");
 
 }
 
@@ -1740,23 +1536,17 @@ function changeExtraQty(e,n){
 
  currentExtraQty[e]=Math.max(
 
-  0,
+   0,
 
-  (currentExtraQty[e]||0)+n
-
- );
-
- const el=
-
- document.getElementById(
-
-  safeId(e)
+   (currentExtraQty[e]||0)+n
 
  );
+
+ const el=document.getElementById(safeId(e));
 
  if(el){
 
-  el.textContent=currentExtraQty[e];
+   el.textContent=currentExtraQty[e];
 
  }
 
@@ -1828,11 +1618,7 @@ function burgerCustomize(name){
 
     style="margin-top:20px;width:100%"
 
-    onclick='addCustomizedItem(
-
-     ${JSON.stringify(name)}
-
-    )'>
+    onclick='addCustomizedItem(${JSON.stringify(name)})'>
 
     ADD TO ORDER
 
@@ -1840,19 +1626,13 @@ function burgerCustomize(name){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
 function loadedCustomize(name){
 
- resetExtras([
-
-  "Extra grated cheese"
-
- ]);
+ resetExtras(["Extra grated cheese"]);
 
  currentRemovedIngredients=[];
 
@@ -1884,11 +1664,7 @@ function loadedCustomize(name){
 
    <h3>Extras</h3>
 
-   ${extraRows([
-
-    "Extra grated cheese"
-
-   ])}
+   ${extraRows(["Extra grated cheese"])}
 
    <h3>PRODUCT QUANTITY</h3>
 
@@ -1900,11 +1676,7 @@ function loadedCustomize(name){
 
     style="margin-top:20px;width:100%"
 
-    onclick='addCustomizedItem(
-
-     ${JSON.stringify(name)}
-
-    )'>
+    onclick='addCustomizedItem(${JSON.stringify(name)})'>
 
     ADD TO ORDER
 
@@ -1912,9 +1684,7 @@ function loadedCustomize(name){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1958,11 +1728,7 @@ function simpleItem(name){
 
     style="margin-top:20px;width:100%"
 
-    onclick='addSimpleItem(
-
-     ${JSON.stringify(name)}
-
-    )'>
+    onclick='addSimpleItem(${JSON.stringify(name)})'>
 
     ADD TO ORDER
 
@@ -1970,9 +1736,7 @@ function simpleItem(name){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -1982,11 +1746,7 @@ function qtyHtml(){
 
  <div class="qty">
 
-  <button onclick="changeQty(-1)">
-
-   −
-
-  </button>
+  <button onclick="changeQty(-1)">−</button>
 
   <strong id="qty">
 
@@ -1994,15 +1754,9 @@ function qtyHtml(){
 
   </strong>
 
-  <button onclick="changeQty(1)">
+  <button onclick="changeQty(1)">+</button>
 
-   +
-
-  </button>
-
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -2010,19 +1764,17 @@ function changeQty(n){
 
  currentQty=Math.max(
 
-  1,
+   1,
 
-  currentQty+n
+   currentQty+n
 
  );
 
- const el=
-
- document.getElementById("qty");
+ const el=document.getElementById("qty");
 
  if(el){
 
-  el.textContent=currentQty;
+   el.textContent=currentQty;
 
  }
 
@@ -2038,25 +1790,21 @@ function addCustomizedItem(name){
 
  .map(([name,qty])=>({
 
-  name,
+   name,
 
-  qty
+   qty
 
  }));
 
  cart.push({
 
-  name,
+   name,
 
-  qty:currentQty,
+   qty:currentQty,
 
-  extras,
+   extras,
 
-  removed:[
-
-   ...currentRemovedIngredients
-
-  ]
+   removed:[...currentRemovedIngredients]
 
  });
 
@@ -2070,13 +1818,13 @@ function addSimpleItem(name){
 
  cart.push({
 
-  name,
+   name,
 
-  qty:currentQty,
+   qty:currentQty,
 
-  extras:[],
+   extras:[],
 
-  removed:[]
+   removed:[]
 
  });
 
@@ -2092,13 +1840,15 @@ function removedHtml(i){
 
  .map(r=>`
 
- <div class="no-item">
+  <div class="no-item">
 
-  NO ${esc(String(r).toUpperCase())}
+   NO ${esc(String(r).toUpperCase())}
 
- </div>
+  </div>
 
- `).join("");
+ `)
+
+ .join("");
 
 }
 
@@ -2144,53 +1894,51 @@ function viewCart(){
 
     ?cart.map((i,index)=>`
 
-    <div class="summary">
+     <div class="summary">
 
-     <strong>
+      <strong>
 
-      ${i.qty} × ${esc(i.name)}
+       ${i.qty} × ${esc(i.name)}
 
-     </strong>
+      </strong>
 
-     ${removedHtml(i)}
+      ${removedHtml(i)}
 
-     ${
+      ${
 
-      (i.extras||[])
+       (i.extras||[])
 
-      .map(e=>`
+       .map(e=>`
 
-       <div class="muted">
+        <div class="muted">
 
-        ${e.qty} × ${esc(e.name)}
+         ${e.qty} × ${esc(e.name)}
 
-       </div>
+        </div>
 
-      `).join("")
+       `)
 
-     }
+       .join("")
 
-     <button
+      }
 
-      class="danger"
+      <button
 
-      style="margin-top:12px"
+       class="danger"
 
-      onclick="removeCartItem(${index})">
+       style="margin-top:12px"
 
-      REMOVE ITEM
+       onclick="removeCartItem(${index})">
 
-     </button>
+       REMOVE ITEM
 
-    </div>
+      </button>
+
+     </div>
 
     `).join("")
 
-    :`<p class="muted">
-
-      Order is empty.
-
-     </p>`
+    :`<p class="muted">Order is empty.</p>`
 
    }
 
@@ -2220,9 +1968,7 @@ function viewCart(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -2240,41 +1986,21 @@ function saveAndHoldOrder(){
 
  if(!cart.length){
 
-  return alert(
-
-   "Add at least one item first."
-
-  );
+   return alert("Add at least one item first.");
 
  }
 
  const draft={
 
-  id:
+   id:currentDraftId||Date.now(),
 
-   currentDraftId||
+   type:orderType,
 
-   Date.now(),
+   customer:{...customer},
 
-  type:orderType,
+   cart:JSON.parse(JSON.stringify(cart)),
 
-  customer:{
-
-   ...customer
-
-  },
-
-  cart:
-
-   JSON.parse(
-
-    JSON.stringify(cart)
-
-   ),
-
-  savedAt:
-
-   Date.now()
+   savedAt:Date.now()
 
  };
 
@@ -2282,17 +2008,17 @@ function saveAndHoldOrder(){
 
  draftOrders.findIndex(
 
-  d=>d.id===draft.id
+   d=>d.id===draft.id
 
  );
 
  if(ix>=0){
 
-  draftOrders[ix]=draft;
+   draftOrders[ix]=draft;
 
  }else{
 
-  draftOrders.push(draft);
+   draftOrders.push(draft);
 
  }
 
@@ -2306,13 +2032,13 @@ function saveAndHoldOrder(){
 
  customer={
 
-  name:"",
+   name:"",
 
-  phone:"",
+   phone:"",
 
-  address:"",
+   address:"",
 
-  table:""
+   table:""
 
  };
 
@@ -2384,11 +2110,9 @@ function showDraftOrders(){
 
         .reduce(
 
-         (a,b)=>
+          (a,b)=>a+Number(b.qty||0),
 
-         a+Number(b.qty||0),
-
-         0
+          0
 
         )
 
@@ -2402,19 +2126,13 @@ function showDraftOrders(){
 
     `).join("")
 
-    :`<p class="muted">
-
-      No orders on hold.
-
-     </p>`
+    :`<p class="muted">No orders on hold.</p>`
 
    }
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -2424,13 +2142,13 @@ function resumeDraft(id){
 
  draftOrders.find(
 
-  x=>x.id===id
+   x=>x.id===id
 
  );
 
  if(!d){
 
-  return;
+   return;
 
  }
 
@@ -2440,7 +2158,7 @@ function resumeDraft(id){
 
  customer={
 
-  ...d.customer
+   ...d.customer
 
  };
 
@@ -2448,11 +2166,11 @@ function resumeDraft(id){
 
  JSON.parse(
 
-  JSON.stringify(
+   JSON.stringify(
 
-   orderCart(d)
+     orderCart(d)
 
-  )
+   )
 
  );
 
@@ -2466,65 +2184,39 @@ function checkoutOrder(){
 
  if(!cart.length){
 
-  return alert(
-
-   "Add at least one item before checkout."
-
-  );
+   return alert("Add at least one item before checkout.");
 
  }
 
  if(currentDraftId){
 
-  draftOrders=
+   draftOrders=
 
-  draftOrders.filter(
+   draftOrders.filter(
 
-   d=>d.id!==currentDraftId
+     d=>d.id!==currentDraftId
 
-  );
+   );
 
  }
 
  const order={
 
-  number:
+   number:nextOrderNumber++,
 
-   nextOrderNumber++,
+   type:orderType,
 
-  type:
+   customer:{...customer},
 
-   orderType,
+   cart:JSON.parse(JSON.stringify(cart)),
 
-  customer:{
+   startedAt:Date.now(),
 
-   ...customer
+   readyAt:null,
 
-  },
+   completedAt:null,
 
-  cart:
-
-   JSON.parse(
-
-    JSON.stringify(cart)
-
-   ),
-
-  startedAt:
-
-   Date.now(),
-
-  readyAt:
-
-   null,
-
-  completedAt:
-
-   null,
-
-  status:
-
-   "NEW"
+   status:"NEW"
 
  };
 
@@ -2538,13 +2230,13 @@ function checkoutOrder(){
 
  customer={
 
-  name:"",
+   name:"",
 
-  phone:"",
+   phone:"",
 
-  address:"",
+   address:"",
 
-  table:""
+   table:""
 
  };
 
@@ -2578,17 +2270,13 @@ function checkoutOrder(){
 
    <div class="system-note">
 
-    👨‍🍳 Kitchen:
-
-    Order queued for kitchen display.
+    👨‍🍳 Kitchen: Order queued for kitchen display.
 
    </div>
 
    <div class="system-note">
 
-    🧾 Printing:
-
-    2 receipts queued.
+    🧾 Printing: 2 receipts queued.
 
    </div>
 
@@ -2606,13 +2294,11 @@ function checkoutOrder(){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
-/* CASHIER ACTIVE ORDERS */
+/* ACTIVE ORDERS */
 
 function showActiveOrders(){
 
@@ -2622,11 +2308,11 @@ function showActiveOrders(){
 
  .sort(
 
-  (a,b)=>
+   (a,b)=>
 
-  Number(b.number)-
+   Number(b.number)-
 
-  Number(a.number)
+   Number(a.number)
 
  );
 
@@ -2658,25 +2344,15 @@ function showActiveOrders(){
 
     newest.length
 
-    ?newest.map(
+    ?newest.map(cashierOrderCard).join("")
 
-     cashierOrderCard
-
-    ).join("")
-
-    :`<p class="muted">
-
-      No active orders.
-
-     </p>`
+    :`<p class="muted">No active orders.</p>`
 
    }
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
  startTimerRefresh();
 
@@ -2688,17 +2364,17 @@ function activeOrderDetail(number){
 
  activeOrders.find(
 
-  x=>
+   x=>
 
-  Number(x.number)===
+   Number(x.number)===
 
-  Number(number)
+   Number(number)
 
  );
 
  if(!o){
 
-  return home();
+   return home();
 
  }
 
@@ -2762,9 +2438,9 @@ function activeOrderDetail(number){
 
        formatTimer(
 
-        o.startedAt||Date.now(),
+         o.startedAt||Date.now(),
 
-        o.readyAt
+         o.readyAt
 
        )
 
@@ -2788,11 +2464,7 @@ function activeOrderDetail(number){
 
     <span>Order Type</span>
 
-    <strong>
-
-     ${esc(o.type)}
-
-    </strong>
+    <strong>${esc(o.type)}</strong>
 
    </div>
 
@@ -2806,11 +2478,7 @@ function activeOrderDetail(number){
 
       <span>Table Number</span>
 
-      <strong>
-
-       ${esc(o.customer?.table)}
-
-      </strong>
+      <strong>${esc(o.customer?.table)}</strong>
 
      </div>
 
@@ -2822,11 +2490,7 @@ function activeOrderDetail(number){
 
       <span>Customer</span>
 
-      <strong>
-
-       ${esc(o.customer?.name)}
-
-      </strong>
+      <strong>${esc(o.customer?.name)}</strong>
 
      </div>
 
@@ -2840,11 +2504,7 @@ function activeOrderDetail(number){
 
         <span>Phone</span>
 
-        <strong>
-
-         ${esc(o.customer.phone)}
-
-        </strong>
+        <strong>${esc(o.customer.phone)}</strong>
 
        </div>
 
@@ -2866,11 +2526,7 @@ function activeOrderDetail(number){
 
         <span>Address</span>
 
-        <strong>
-
-         ${esc(o.customer.address)}
-
-        </strong>
+        <strong>${esc(o.customer.address)}</strong>
 
        </div>
 
@@ -2914,7 +2570,9 @@ function activeOrderDetail(number){
 
         </div>
 
-       `).join("")
+       `)
+
+       .join("")
 
       }
 
@@ -2922,15 +2580,7 @@ function activeOrderDetail(number){
 
     `).join("")
 
-    :`
-
-     <p class="muted">
-
-      No item details available.
-
-     </p>
-
-    `
+    :`<p class="muted">No item details available.</p>`
 
    }
 
@@ -2942,13 +2592,9 @@ function activeOrderDetail(number){
 
      <div class="system-note">
 
-      ✅ Kitchen has marked this
+      ✅ Kitchen has marked this order READY.
 
-      order READY.
-
-      Hand it over,
-
-      then complete it.
+      Hand it over, then complete it.
 
      </div>
 
@@ -2958,11 +2604,7 @@ function activeOrderDetail(number){
 
       style="margin-top:18px;width:100%"
 
-      onclick="cashierCompleteOrder(
-
-       ${Number(o.number)}
-
-      )">
+      onclick="cashierCompleteOrder(${Number(o.number)})">
 
       COMPLETED
 
@@ -2974,11 +2616,9 @@ function activeOrderDetail(number){
 
      <div class="system-note">
 
-      🔒 Checked-out orders are
+      🔒 Checked-out orders are read-only until
 
-      read-only until the kitchen
-
-      marks them READY.
+      the kitchen marks them READY.
 
      </div>
 
@@ -2988,9 +2628,7 @@ function activeOrderDetail(number){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
  startTimerRefresh();
 
@@ -3002,17 +2640,17 @@ function cashierCompleteOrder(number){
 
  activeOrders.findIndex(
 
-  x=>
+   x=>
 
-  Number(x.number)===
+   Number(x.number)===
 
-  Number(number)
+   Number(number)
 
  );
 
  if(ix<0){
 
-  return home();
+   return home();
 
  }
 
@@ -3022,11 +2660,11 @@ function cashierCompleteOrder(number){
 
  if(o.status!=="READY"){
 
-  return alert(
+   return alert(
 
-   "Kitchen must mark the order READY first."
+     "Kitchen must mark the order READY first."
 
-  );
+   );
 
  }
 
@@ -3036,13 +2674,7 @@ function cashierCompleteOrder(number){
 
  completedOrders.push(o);
 
- activeOrders.splice(
-
-  ix,
-
-  1
-
- );
+ activeOrders.splice(ix,1);
 
  saveOrders();
 
@@ -3062,11 +2694,11 @@ function kitchenHome(){
 
  .sort(
 
-  (a,b)=>
+   (a,b)=>
 
-  Number(a.number)-
+   Number(a.number)-
 
-  Number(b.number)
+   Number(b.number)
 
  );
 
@@ -3094,29 +2726,19 @@ function kitchenHome(){
 
     orders.length
 
-    ?orders.map(
+    ?orders.map(kitchenCard).join("")
 
-     kitchenCard
-
-    ).join("")
-
-    :`
-
-     <p class="muted">
+    :`<p class="muted">
 
       No orders waiting in the kitchen.
 
-     </p>
-
-    `
+     </p>`
 
    }
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
  startTimerRefresh();
 
@@ -3170,9 +2792,9 @@ function kitchenCard(o){
 
       formatTimer(
 
-       o.startedAt||Date.now(),
+        o.startedAt||Date.now(),
 
-       o.readyAt
+        o.readyAt
 
       )
 
@@ -3218,7 +2840,9 @@ function kitchenCard(o){
 
         </div>
 
-       `).join("")
+       `)
+
+       .join("")
 
       }
 
@@ -3226,15 +2850,11 @@ function kitchenCard(o){
 
     `).join("")
 
-    :`
-
-     <p class="muted">
+    :`<p class="muted">
 
       No item details available.
 
-     </p>
-
-    `
+     </p>`
 
    }
 
@@ -3252,11 +2872,7 @@ function kitchenCard(o){
 
       class="primary"
 
-      onclick="setPreparing(
-
-       ${Number(o.number)}
-
-      )">
+      onclick="setPreparing(${Number(o.number)})">
 
       START PREPARING
 
@@ -3278,11 +2894,7 @@ function kitchenCard(o){
 
       class="green"
 
-      onclick="setReady(
-
-       ${Number(o.number)}
-
-      )">
+      onclick="setReady(${Number(o.number)})">
 
       MARK READY
 
@@ -3306,13 +2918,9 @@ function kitchenCard(o){
 
       style="width:100%">
 
-      ✅ READY —
+      ✅ READY — Waiting for cashier to
 
-      Waiting for cashier to
-
-      hand over and complete
-
-      the order.
+      hand over and complete the order.
 
      </div>
 
@@ -3324,9 +2932,7 @@ function kitchenCard(o){
 
   </div>
 
- </div>
-
- `;
+ </div>`;
 
 }
 
@@ -3336,17 +2942,17 @@ function setPreparing(number){
 
  activeOrders.find(
 
-  x=>
+   x=>
 
-  Number(x.number)===
+   Number(x.number)===
 
-  Number(number)
+   Number(number)
 
  );
 
  if(!o){
 
-  return;
+   return;
 
  }
 
@@ -3364,25 +2970,23 @@ function setReady(number){
 
  activeOrders.find(
 
-  x=>
+   x=>
 
-  Number(x.number)===
+   Number(x.number)===
 
-  Number(number)
+   Number(number)
 
  );
 
  if(!o){
 
-  return;
+   return;
 
  }
 
  o.status="READY";
 
- o.readyAt=
-
- Date.now();
+ o.readyAt=Date.now();
 
  saveOrders();
 
@@ -3392,13 +2996,7 @@ function setReady(number){
 
 /* TIMER */
 
-function formatTimer(
-
- startedAt,
-
- stopAt
-
-){
+function formatTimer(startedAt,stopAt){
 
  const start=
 
@@ -3418,31 +3016,23 @@ function formatTimer(
 
  Math.max(
 
-  0,
+   0,
 
-  Math.floor(
+   Math.floor(
 
-   (end-start)/1000
+     (end-start)/1000
 
-  )
+   )
 
  );
 
  const h=
 
- Math.floor(
-
-  seconds/3600
-
- );
+ Math.floor(seconds/3600);
 
  const m=
 
- Math.floor(
-
-  (seconds%3600)/60
-
- );
+ Math.floor((seconds%3600)/60);
 
  const s=
 
@@ -3450,19 +3040,19 @@ function formatTimer(
 
  if(h>0){
 
-  return `${
+   return `${
 
-   String(h).padStart(2,"0")
+    String(h).padStart(2,"0")
 
-  }:${
+   }:${
 
-   String(m).padStart(2,"0")
+    String(m).padStart(2,"0")
 
-  }:${
+   }:${
 
-   String(s).padStart(2,"0")
+    String(s).padStart(2,"0")
 
-  }`;
+   }`;
 
  }
 
@@ -3486,15 +3076,15 @@ function updateVisibleTimers(){
 
  .forEach(el=>{
 
-  el.textContent=
+   el.textContent=
 
-  formatTimer(
+   formatTimer(
 
-   el.dataset.start,
+     el.dataset.start,
 
-   el.dataset.stop||null
+     el.dataset.stop||null
 
-  );
+   );
 
  });
 
@@ -3502,11 +3092,7 @@ function updateVisibleTimers(){
 
 function startTimerRefresh(){
 
- clearInterval(
-
-  timerInterval
-
- );
+ clearInterval(timerInterval);
 
  updateVisibleTimers();
 
@@ -3514,9 +3100,9 @@ function startTimerRefresh(){
 
  setInterval(
 
-  updateVisibleTimers,
+   updateVisibleTimers,
 
-  1000
+   1000
 
  );
 
@@ -3552,9 +3138,9 @@ window.addEventListener(
 
   safeLoad(
 
-   "mrkActiveOrders",
+    "mrkActiveOrders",
 
-   []
+    []
 
   );
 
@@ -3562,9 +3148,9 @@ window.addEventListener(
 
   safeLoad(
 
-   "mrkDraftOrders",
+    "mrkDraftOrders",
 
-   []
+    []
 
   );
 
@@ -3572,9 +3158,9 @@ window.addEventListener(
 
   safeLoad(
 
-   "mrkCompletedOrders",
+    "mrkCompletedOrders",
 
-   []
+    []
 
   );
 
@@ -3582,11 +3168,11 @@ window.addEventListener(
 
    if(role==="kitchen"){
 
-    kitchenHome();
+     kitchenHome();
 
    }else{
 
-    home();
+     home();
 
    }
 
