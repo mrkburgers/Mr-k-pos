@@ -18,13 +18,9 @@
 
 body{
 
-  margin:0;
+  margin:0;background:#111;color:#f5f1e8;
 
-  background:#111;
-
-  color:#f5f1e8;
-
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:Arial,Helvetica,sans-serif
 
 }
 
@@ -32,557 +28,149 @@ button,input{font:inherit}
 
 button{
 
-  cursor:pointer;
+  cursor:pointer;border:1px solid #444;background:#252525;color:white;
 
-  border:1px solid #444;
-
-  background:#252525;
-
-  color:white;
-
-  border-radius:12px;
-
-  padding:15px 20px;
+  border-radius:12px;padding:15px 20px
 
 }
 
-.primary{
+.primary{background:#f3a51b;color:#111;border-color:#f3a51b;font-weight:bold}
 
-  background:#f3a51b;
+.secondary{background:#252525;color:white;border-color:#555;font-weight:bold}
 
-  color:#111;
+.danger{background:#351b1b;border-color:#703434;color:#ffb0b0}
 
-  border-color:#f3a51b;
+.green{background:#17351e;border-color:#397548;color:#b8ffc8;font-weight:bold}
 
-  font-weight:bold;
+.app{min-height:100vh;padding:24px;max-width:1100px;margin:auto}
 
-}
+.logo{font-size:28px;font-weight:800}
 
-.secondary{
+.logo span{display:block;color:#f3a51b;font-size:11px;letter-spacing:3px;margin-top:4px}
 
-  background:#252525;
+.panel{background:#1b1b1b;border:1px solid #373737;border-radius:16px;padding:20px;margin-top:18px}
 
-  color:white;
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
 
-  border-color:#555;
+.card{background:#242424;border:1px solid #373737;border-radius:14px;padding:20px}
 
-  font-weight:bold;
+.clickable{cursor:pointer;transition:.15s}
 
-}
+.clickable:active{transform:scale(.98)}
 
-.danger{
+.category{min-height:150px;text-align:left}
 
-  background:#351b1b;
+.category-icon{font-size:38px;margin-bottom:12px}
 
-  border-color:#703434;
-
-  color:#ffb0b0;
-
-}
-
-.app{
-
-  min-height:100vh;
-
-  padding:24px;
-
-  max-width:1100px;
-
-  margin:auto;
-
-}
-
-.logo{
-
-  font-size:28px;
-
-  font-weight:800;
-
-}
-
-.logo span{
-
-  display:block;
-
-  color:#f3a51b;
-
-  font-size:11px;
-
-  letter-spacing:3px;
-
-  margin-top:4px;
-
-}
-
-.panel{
-
-  background:#1b1b1b;
-
-  border:1px solid #373737;
-
-  border-radius:16px;
-
-  padding:20px;
-
-  margin-top:18px;
-
-}
-
-.grid{
-
-  display:grid;
-
-  grid-template-columns:repeat(3,1fr);
-
-  gap:15px;
-
-}
-
-.card{
-
-  background:#242424;
-
-  border:1px solid #373737;
-
-  border-radius:14px;
-
-  padding:20px;
-
-}
-
-.clickable{
-
-  cursor:pointer;
-
-  transition:.15s;
-
-}
-
-.clickable:active{
-
-  transform:scale(.98);
-
-}
-
-.category{
-
-  min-height:150px;
-
-  text-align:left;
-
-}
-
-.category-icon{
-
-  font-size:38px;
-
-  margin-bottom:12px;
-
-}
-
-.form{
-
-  display:grid;
-
-  gap:12px;
-
-  max-width:550px;
-
-}
+.form{display:grid;gap:12px;max-width:550px}
 
 input{
 
-  width:100%;
+  width:100%;padding:14px;border-radius:10px;border:1px solid #444;
 
-  padding:14px;
-
-  border-radius:10px;
-
-  border:1px solid #444;
-
-  background:#0d0d0d;
-
-  color:white;
+  background:#0d0d0d;color:white
 
 }
 
 .muted{color:#aaa}
 
-.badge{
+.badge{color:#f3a51b;font-size:11px;font-weight:bold;letter-spacing:1px}
 
-  color:#f3a51b;
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
 
-  font-size:11px;
+.loginbox{width:min(430px,100%);background:#191919;border:1px solid #373737;border-radius:18px;padding:30px}
 
-  font-weight:bold;
+.back{margin-bottom:20px}
 
-  letter-spacing:1px;
+.qty{display:flex;align-items:center;gap:15px}
 
-}
+.qty button{width:48px;height:48px;padding:0;font-size:24px}
 
-.login{
-
-  min-height:100vh;
-
-  display:grid;
-
-  place-items:center;
-
-  padding:20px;
-
-}
-
-.loginbox{
-
-  width:min(430px,100%);
-
-  background:#191919;
-
-  border:1px solid #373737;
-
-  border-radius:18px;
-
-  padding:30px;
-
-}
-
-.back{
-
-  margin-bottom:20px;
-
-}
-
-.option{
-
-  display:flex;
-
-  justify-content:space-between;
-
-  align-items:center;
-
-  gap:15px;
-
-  background:#202020;
-
-  border:1px solid #3b3b3b;
-
-  border-radius:12px;
-
-  padding:14px;
-
-  margin:10px 0;
-
-}
-
-.option input{
-
-  width:22px;
-
-  height:22px;
-
-}
-
-.qty{
-
-  display:flex;
-
-  align-items:center;
-
-  gap:15px;
-
-}
-
-.qty button{
-
-  width:48px;
-
-  height:48px;
-
-  padding:0;
-
-  font-size:24px;
-
-}
-
-.qty strong{
-
-  min-width:30px;
-
-  text-align:center;
-
-  font-size:24px;
-
-}
+.qty strong{min-width:30px;text-align:center;font-size:24px}
 
 .extra-row{
 
-  display:flex;
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
 
-  align-items:center;
+  background:#202020;border:1px solid #3b3b3b;border-radius:12px;
 
-  justify-content:space-between;
-
-  gap:15px;
-
-  background:#202020;
-
-  border:1px solid #3b3b3b;
-
-  border-radius:12px;
-
-  padding:14px;
-
-  margin:10px 0;
+  padding:14px;margin:10px 0
 
 }
 
-.extra-name{
+.extra-name{flex:1;font-weight:bold}
 
-  flex:1;
+.extra-qty{display:flex;align-items:center;gap:10px}
 
-  font-weight:bold;
+.extra-qty button{width:42px;height:42px;padding:0;font-size:22px}
 
-}
+.extra-qty strong{min-width:28px;text-align:center;font-size:20px}
 
-.extra-qty{
+.summary{background:#101010;border:1px solid #3b3b3b;border-radius:14px;padding:18px;margin-top:18px}
 
-  display:flex;
+.order-card{background:#202020;border:1px solid #3b3b3b;border-radius:16px;padding:18px;margin:14px 0}
 
-  align-items:center;
+.order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
 
-  gap:10px;
+.order-number{font-size:22px;font-weight:bold}
 
-}
-
-.extra-qty button{
-
-  width:42px;
-
-  height:42px;
-
-  padding:0;
-
-  font-size:22px;
-
-}
-
-.extra-qty strong{
-
-  min-width:28px;
-
-  text-align:center;
-
-  font-size:20px;
-
-}
-
-.summary{
-
-  background:#101010;
-
-  border:1px solid #3b3b3b;
-
-  border-radius:14px;
-
-  padding:18px;
-
-  margin-top:18px;
-
-}
-
-.order-card{
-
-  background:#202020;
-
-  border:1px solid #3b3b3b;
-
-  border-radius:16px;
-
-  padding:18px;
-
-  margin:14px 0;
-
-}
-
-.order-top{
-
-  display:flex;
-
-  justify-content:space-between;
-
-  align-items:flex-start;
-
-  gap:15px;
-
-}
-
-.order-number{
-
-  font-size:22px;
-
-  font-weight:bold;
-
-}
-
-.timer{
-
-  font-size:24px;
-
-  font-weight:800;
-
-  color:#f3a51b;
-
-  font-variant-numeric:tabular-nums;
-
-}
+.timer{font-size:24px;font-weight:800;color:#f3a51b;font-variant-numeric:tabular-nums}
 
 .status{
 
-  display:inline-block;
+  display:inline-block;background:#302715;border:1px solid #6c5220;color:#f3a51b;
 
-  background:#302715;
-
-  border:1px solid #6c5220;
-
-  color:#f3a51b;
-
-  padding:7px 10px;
-
-  border-radius:999px;
-
-  font-size:11px;
-
-  font-weight:bold;
-
-  letter-spacing:1px;
+  padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px
 
 }
 
+.status.ready{background:#17351e;border-color:#397548;color:#b8ffc8}
+
+.status.completed{background:#252525;border-color:#555;color:#aaa}
+
 .draft-status{
 
-  display:inline-block;
+  display:inline-block;background:#1c2730;border:1px solid #3e6176;color:#8ccdf3;
 
-  background:#1c2730;
-
-  border:1px solid #3e6176;
-
-  color:#8ccdf3;
-
-  padding:7px 10px;
-
-  border-radius:999px;
-
-  font-size:11px;
-
-  font-weight:bold;
-
-  letter-spacing:1px;
+  padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px
 
 }
 
 .locked{
 
-  display:inline-block;
+  display:inline-block;padding:7px 10px;border-radius:999px;background:#202020;
 
-  padding:7px 10px;
-
-  border-radius:999px;
-
-  background:#202020;
-
-  border:1px solid #555;
-
-  color:#bbb;
-
-  font-size:11px;
-
-  font-weight:bold;
-
-  letter-spacing:1px;
+  border:1px solid #555;color:#bbb;font-size:11px;font-weight:bold;letter-spacing:1px
 
 }
 
-.info-row{
+.info-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #333}
 
-  display:flex;
+.info-row:last-child{border-bottom:none}
 
-  justify-content:space-between;
+.system-note{border-left:4px solid #f3a51b;padding:12px 14px;background:#181818;margin-top:12px;color:#bbb}
 
-  gap:15px;
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
 
-  padding:9px 0;
-
-  border-bottom:1px solid #333;
-
-}
-
-.info-row:last-child{
-
-  border-bottom:none;
-
-}
-
-.system-note{
-
-  border-left:4px solid #f3a51b;
-
-  padding:12px 14px;
-
-  background:#181818;
-
-  margin-top:12px;
-
-  color:#bbb;
-
-}
-
-.actions{
-
-  display:flex;
-
-  gap:10px;
-
-  flex-wrap:wrap;
-
-  margin-top:15px;
-
-}
-
-.actions button{
-
-  flex:1;
-
-  min-width:150px;
-
-}
+.actions button{flex:1;min-width:150px}
 
 .cart-count{
 
-  display:inline-block;
+  display:inline-block;margin-left:8px;padding:4px 8px;border-radius:999px;
 
-  margin-left:8px;
-
-  padding:4px 8px;
-
-  border-radius:999px;
-
-  background:#f3a51b;
-
-  color:#111;
-
-  font-size:11px;
-
-  font-weight:bold;
+  background:#f3a51b;color:#111;font-size:11px;font-weight:bold
 
 }
 
+.kitchen-title{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+
+.kitchen-item{font-size:18px;font-weight:bold;padding:10px 0;border-bottom:1px solid #333}
+
+.kitchen-item:last-child{border-bottom:none}
+
 @media(max-width:700px){
 
-  .app{padding:16px}
-
-  .grid{grid-template-columns:1fr}
-
-  .order-top{flex-direction:column}
+  .app{padding:16px}.grid{grid-template-columns:1fr}.order-top{flex-direction:column}
 
 }
 
@@ -598,6 +186,8 @@ input{
 
 let loggedIn=false;
 
+let role="";
+
 let orderType="";
 
 let currentCategory="";
@@ -610,3263 +200,1185 @@ let currentDraftId=null;
 
 let cart=[];
 
-let customer={
+let customer={name:"",phone:"",address:"",table:""};
 
-  name:"",
+let activeOrders=JSON.parse(localStorage.getItem("mrkActiveOrders")||"[]");
 
-  phone:"",
+let draftOrders=JSON.parse(localStorage.getItem("mrkDraftOrders")||"[]");
 
-  address:"",
+let completedOrders=JSON.parse(localStorage.getItem("mrkCompletedOrders")||"[]");
 
-  table:""
-
-};
-
-let activeOrders=
-
-  JSON.parse(localStorage.getItem("mrkActiveOrders") || "[]");
-
-let draftOrders=
-
-  JSON.parse(localStorage.getItem("mrkDraftOrders") || "[]");
-
-let nextOrderNumber=
-
-  Number(localStorage.getItem("mrkNextOrderNumber") || "1");
+let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
 
 let timerInterval=null;
 
-/* =========================
-
-   MENU
-
-========================= */
-
 const burgers=[
 
-  "Mr K Classic",
+"Mr K Classic","Mushroom & Swiss","Honky Tonk","Philly Cheesesteak",
 
-  "Mushroom & Swiss",
-
-  "Honky Tonk",
-
-  "Philly Cheesesteak",
-
-  "Only The Brave",
-
-  "Bohemian",
-
-  "Chicken Chimichurri"
+"Only The Brave","Bohemian","Chicken Chimichurri"
 
 ];
 
 const sides=[
 
-  "French Fries",
+"French Fries","Plantain Tostones","Onion Rings","Cheese Fries",
 
-  "Plantain Tostones",
-
-  "Onion Rings",
-
-  "Cheese Fries",
-
-  "Fajita Cheese Fries",
-
-  "Dirty Fries"
+"Fajita Cheese Fries","Dirty Fries"
 
 ];
 
-const salads=[
+const salads=["Mr K Coleslaw","Cheeseburger Salad"];
 
-  "Mr K Coleslaw",
+const drinks=["Small Water","Big Water","Coca Cola","Sprite","Fanta"];
 
-  "Cheeseburger Salad"
-
-];
-
-const drinks=[
-
-  "Small Water",
-
-  "Big Water",
-
-  "Coca Cola",
-
-  "Sprite",
-
-  "Fanta"
-
-];
-
-const sauces=[
-
-  "Mr K Sauce",
-
-  "Chimichurri",
-
-  "Ketchup",
-
-  "Mayonnaise",
-
-  "Honey Mustard",
-
-  "Honey BBQ"
-
-];
+const sauces=["Mr K Sauce","Chimichurri","Ketchup","Mayonnaise","Honey Mustard","Honey BBQ"];
 
 const burgerDetails={
 
-  "Mr K Classic":{
+"Mr K Classic":{
 
-    meat:"beef",
+ meat:"beef",
 
-    ingredients:[
+ ingredients:["Beef steak 120g","Burger bun","Rocket lettuce","Tomato","Onions","Pickled cucumbers","Mr K sauce"]
 
-      "Beef steak 120g",
+},
 
-      "Burger bun",
+"Mushroom & Swiss":{
 
-      "Rocket lettuce",
+ meat:"beef",
 
-      "Tomato",
+ ingredients:["Beef steak 120g","Burger bun","Mushrooms","Swiss cheese","Rocket lettuce","Sauce"]
 
-      "Onions",
+},
 
-      "Pickled cucumbers",
+"Honky Tonk":{
 
-      "Mr K sauce"
+ meat:"beef",
 
-    ]
+ ingredients:["Beef steak 120g","Burger bun","Bacon","Swiss cheese","Cheddar cheese","Rocket lettuce","Sauce","Onion rings"]
 
-  },
+},
 
-  "Mushroom & Swiss":{
+"Philly Cheesesteak":{
 
-    meat:"beef",
+ meat:"beef",
 
-    ingredients:[
+ ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Sautéed beef tenderloin 100g","Rocket lettuce","Sauce"]
 
-      "Beef steak 120g",
+},
 
-      "Burger bun",
+"Only The Brave":{
 
-      "Mushrooms",
+ meat:"beef",
 
-      "Swiss cheese",
+ ingredients:["Beef steak 120g ×3","Burger bun","Cheddar cheese ×3","Bacon","Rocket lettuce","Sauce"]
 
-      "Rocket lettuce",
+},
 
-      "Sauce"
+"Bohemian":{
 
-    ]
+ meat:"beef",
 
-  },
+ ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Smoked turkey","Rocket lettuce","Sauce"]
 
-  "Honky Tonk":{
+},
 
-    meat:"beef",
+"Chicken Chimichurri":{
 
-    ingredients:[
+ meat:"chicken",
 
-      "Beef steak 120g",
+ ingredients:["Chicken steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Chimichurri","Rocket lettuce","Sauce"]
 
-      "Burger bun",
-
-      "Bacon",
-
-      "Swiss cheese",
-
-      "Cheddar cheese",
-
-      "Rocket lettuce",
-
-      "Sauce",
-
-      "Onion rings"
-
-    ]
-
-  },
-
-  "Philly Cheesesteak":{
-
-    meat:"beef",
-
-    ingredients:[
-
-      "Beef steak 120g",
-
-      "Burger bun",
-
-      "Mozzarella cheese",
-
-      "Cheddar cheese",
-
-      "Sautéed beef tenderloin 100g",
-
-      "Rocket lettuce",
-
-      "Sauce"
-
-    ]
-
-  },
-
-  "Only The Brave":{
-
-    meat:"beef",
-
-    ingredients:[
-
-      "Beef steak 120g ×3",
-
-      "Burger bun",
-
-      "Cheddar cheese ×3",
-
-      "Bacon",
-
-      "Rocket lettuce",
-
-      "Sauce"
-
-    ]
-
-  },
-
-  "Bohemian":{
-
-    meat:"beef",
-
-    ingredients:[
-
-      "Beef steak 120g",
-
-      "Burger bun",
-
-      "Mozzarella cheese",
-
-      "Smoked turkey",
-
-      "Rocket lettuce",
-
-      "Sauce"
-
-    ]
-
-  },
-
-  "Chicken Chimichurri":{
-
-    meat:"chicken",
-
-    ingredients:[
-
-      "Chicken steak 120g",
-
-      "Burger bun",
-
-      "Mozzarella cheese",
-
-      "Cheddar cheese",
-
-      "Chimichurri",
-
-      "Rocket lettuce",
-
-      "Sauce"
-
-    ]
-
-  }
+}
 
 };
 
 const beefExtras=[
 
-  "Extra beef patty",
+"Extra beef patty","Extra cheddar cheese","Extra mozzarella cheese",
 
-  "Extra cheddar cheese",
-
-  "Extra mozzarella cheese",
-
-  "Extra Swiss cheese",
-
-  "Extra mushroom",
-
-  "Extra onion rings",
-
-  "Extra bacon"
+"Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
 
 ];
 
 const chickenExtras=[
 
-  "Extra chicken steak",
+"Extra chicken steak","Extra cheddar cheese","Extra mozzarella cheese",
 
-  "Extra cheddar cheese",
-
-  "Extra mozzarella cheese",
-
-  "Extra Swiss cheese",
-
-  "Extra mushroom",
-
-  "Extra onion rings",
-
-  "Extra bacon"
+"Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
 
 ];
 
-const loadedFries=[
+const loadedFries=["Cheese Fries","Fajita Cheese Fries","Dirty Fries"];
 
-  "Cheese Fries",
+function esc(v){
 
-  "Fajita Cheese Fries",
+ return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;")
 
-  "Dirty Fries"
-
-];
-
-/* =========================
-
-   HELPERS
-
-========================= */
-
-function escapeValue(value){
-
-  return String(value || "")
-
-    .replace(/&/g,"&amp;")
-
-    .replace(/"/g,"&quot;")
-
-    .replace(/</g,"&lt;")
-
-    .replace(/>/g,"&gt;");
+ .replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
 }
 
-function padOrder(number){
+function padOrder(n){return String(n).padStart(3,"0")}
 
-  return String(number).padStart(3,"0");
+function orderLabel(o){
 
-}
+ if(o.type==="DINE IN"){
 
-function orderLabel(order){
+   if(o.customer&&o.customer.table)return `Table ${o.customer.table}`;
 
-  if(order.type==="DINE IN"){
+   return o.customer?.name||"Dine In";
 
-    return `Table ${order.customer.table}`;
+ }
 
-  }
-
-  return order.customer.name || order.type;
+ return o.customer?.name||o.type;
 
 }
 
 function currentCustomerLabel(){
 
-  if(orderType==="DINE IN"){
-
-    return `Table ${customer.table}`;
-
-  }
-
-  return customer.name;
+ return orderType==="DINE IN"?`Table ${customer.table}`:customer.name;
 
 }
-
-/* =========================
-
-   STORAGE
-
-========================= */
 
 function saveOrders(){
 
-  localStorage.setItem(
+ localStorage.setItem("mrkActiveOrders",JSON.stringify(activeOrders));
 
-    "mrkActiveOrders",
+ localStorage.setItem("mrkDraftOrders",JSON.stringify(draftOrders));
 
-    JSON.stringify(activeOrders)
+ localStorage.setItem("mrkCompletedOrders",JSON.stringify(completedOrders));
 
-  );
-
-  localStorage.setItem(
-
-    "mrkDraftOrders",
-
-    JSON.stringify(draftOrders)
-
-  );
-
-  localStorage.setItem(
-
-    "mrkNextOrderNumber",
-
-    String(nextOrderNumber)
-
-  );
+ localStorage.setItem("mrkNextOrderNumber",String(nextOrderNumber));
 
 }
 
-/* =========================
-
-   LOGIN
-
-========================= */
-
 function render(){
 
-  if(!loggedIn){
+ if(!loggedIn)return loginScreen();
 
-    document.getElementById("root").innerHTML=`
+ if(role==="kitchen")return kitchenHome();
 
-      <div class="login">
+ home();
 
-        <div class="loginbox">
+}
 
-          <div class="logo">
+function loginScreen(){
 
-            MR K BURGERS
+ document.getElementById("root").innerHTML=`
 
-            <span>POS PROTOTYPE</span>
+ <div class="login">
 
-          </div>
+  <div class="loginbox">
 
-          <div class="form" style="margin-top:30px">
+   <div class="logo">MR K BURGERS<span>POS SYSTEM</span></div>
 
-            <label>Cashier ID</label>
+   <div class="form" style="margin-top:30px">
 
-            <input id="user" value="cashier01">
+    <label>Staff ID</label>
 
-            <label>PIN</label>
+    <input id="user" placeholder="Staff ID">
 
-            <input id="pin" type="password" value="1234">
+    <label>PIN</label>
 
-            <button
+    <input id="pin" type="password" placeholder="PIN">
 
-              class="primary"
+    <button class="primary" onclick="login()">LOGIN</button>
 
-              onclick="login()"
+   </div>
 
-            >
+   <p class="muted" style="margin-top:20px">
 
-              LOGIN
+    Cashier: cashier01<br>Kitchen: kitchen01
 
-            </button>
+   </p>
 
-            <p class="muted">
+  </div>
 
-              Prototype: cashier01 / 1234
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-  home();
+ </div>`;
 
 }
 
 function login(){
 
-  if(
+ const u=document.getElementById("user").value.trim();
 
-    document.getElementById("user").value==="cashier01" &&
+ const p=document.getElementById("pin").value.trim();
 
-    document.getElementById("pin").value==="1234"
+ if(u==="cashier01"&&p==="1234"){
 
-  ){
+   loggedIn=true;role="cashier";home();return;
 
-    loggedIn=true;
+ }
 
-    render();
+ if(u==="kitchen01"&&p==="5678"){
 
-  }else{
+   loggedIn=true;role="kitchen";kitchenHome();return;
 
-    alert("Incorrect Cashier ID or PIN.");
+ }
 
-  }
+ alert("Invalid Staff ID or PIN.");
 
 }
 
-/* =========================
+function logout(){
 
-   HOME
+ loggedIn=false;role="";clearInterval(timerInterval);render();
 
-========================= */
+}
+
+function header(label){
+
+ return `
+
+ <div class="logo">MR K BURGERS<span>${label}</span></div>
+
+ <button class="secondary" onclick="logout()">LOG OUT</button>`;
+
+}
 
 function home(){
 
-  stopTimerRefresh();
+ clearInterval(timerInterval);
 
-  const newestOrders=
+ const newest=[...activeOrders].sort((a,b)=>b.number-a.number);
 
-    [...activeOrders].sort(
+ document.getElementById("root").innerHTML=`
 
-      (a,b)=>b.number-a.number
+ <div class="app">
 
-    );
+  <div class="kitchen-title">${header("CASHIER POS")}</div>
 
-  document.getElementById("root").innerHTML=`
+  <div class="panel">
 
-    <div class="app">
+   <div class="grid">
 
-      <div class="logo">
+    <div class="card clickable" onclick="newOrder()">
 
-        MR K BURGERS
+     <div class="category-icon">🧾</div>
 
-        <span>CASHIER POS</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>Cashier Home</h1>
-
-        <p class="muted">
-
-          Ready to take the next order.
-
-        </p>
-
-        <button
-
-          class="primary"
-
-          onclick="newOrder()"
-
-        >
-
-          ＋ NEW ORDER
-
-        </button>
-
-      </div>
-
-      <div class="grid">
-
-        <div
-
-          class="card clickable"
-
-          onclick="showDraftOrders()"
-
-        >
-
-          <div class="badge">
-
-            ORDERS IN PROGRESS
-
-          </div>
-
-          <h2>${draftOrders.length}</h2>
-
-          <div class="muted">
-
-            Tap to continue editable orders
-
-          </div>
-
-        </div>
-
-        <div
-
-          class="card clickable"
-
-          onclick="showActiveOrders()"
-
-        >
-
-          <div class="badge">
-
-            ACTIVE ORDERS
-
-          </div>
-
-          <h2>${activeOrders.length}</h2>
-
-          <div class="muted">
-
-            Tap to view kitchen orders
-
-          </div>
-
-        </div>
-
-        <div class="card">
-
-          <div class="badge">
-
-            TODAY'S ORDERS
-
-          </div>
-
-          <h2>${activeOrders.length}</h2>
-
-        </div>
-
-      </div>
-
-      ${
-
-        newestOrders.length
-
-        ?
-
-        `
-
-        <div class="panel">
-
-          <div class="badge">
-
-            LIVE KITCHEN ORDERS
-
-          </div>
-
-          <h2>Current Timers</h2>
-
-          ${newestOrders.map(order=>`
-
-            <div
-
-              class="order-card clickable"
-
-              onclick="viewActiveOrder(${order.id})"
-
-            >
-
-              <div class="order-top">
-
-                <div>
-
-                  <div class="order-number">
-
-                    Order #${padOrder(order.number)}
-
-                  </div>
-
-                  <div class="muted">
-
-                    ${orderLabel(order)} • ${order.type}
-
-                  </div>
-
-                </div>
-
-                <div
-
-                  class="timer"
-
-                  data-start="${order.startedAt}"
-
-                >
-
-                  ${formatTimer(order.startedAt)}
-
-                </div>
-
-              </div>
-
-              <div style="margin-top:12px">
-
-                <span class="status">
-
-                  ${order.status}
-
-                </span>
-
-                <span class="locked">
-
-                  READ ONLY
-
-                </span>
-
-              </div>
-
-            </div>
-
-          `).join("")}
-
-        </div>
-
-        `
-
-        :
-
-        ""
-
-      }
+     <h3>NEW ORDER</h3>
 
     </div>
 
-  `;
+    <div class="card clickable" onclick="showDraftOrders()">
 
-  startTimerRefresh();
+     <div class="category-icon">⏸️</div>
+
+     <h3>ORDERS IN PROGRESS</h3>
+
+     <strong>${draftOrders.length}</strong>
+
+    </div>
+
+    <div class="card clickable" onclick="showActiveOrders()">
+
+     <div class="category-icon">🔥</div>
+
+     <h3>ACTIVE ORDERS</h3>
+
+     <strong>${activeOrders.length}</strong>
+
+    </div>
+
+   </div>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">LIVE KITCHEN ORDERS</span>
+
+   <h2>Current Orders</h2>
+
+   ${newest.length?newest.map(cashierOrderCard).join(""):
+
+   `<p class="muted">No active orders.</p>`}
+
+  </div>
+
+ </div>`;
+
+ startTimerRefresh();
 
 }
 
-/* =========================
+function cashierOrderCard(o){
 
-   NEW ORDER
+ return `
 
-========================= */
+ <div class="order-card clickable" onclick="activeOrderDetail(${o.number})">
 
-function resetCurrentOrder(){
+  <div class="order-top">
 
-  currentDraftId=null;
+   <div>
 
-  orderType="";
+    <div class="order-number">#${padOrder(o.number)}</div>
 
-  currentCategory="";
+    <strong>${esc(orderLabel(o))}</strong><br>
 
-  currentQty=1;
+    <span class="muted">${esc(o.type)}</span>
 
-  currentExtraQty={};
+   </div>
 
-  cart=[];
+   <div style="text-align:right">
 
-  customer={
+    <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
 
-    name:"",
+     ${formatTimer(o.startedAt,o.readyAt)}
 
-    phone:"",
+    </div>
 
-    address:"",
+    <span class="status ${o.status==="READY"?"ready":""}">
 
-    table:""
+     ${esc(o.status||"NEW")}
 
-  };
+    </span>
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 
 function newOrder(){
 
-  resetCurrentOrder();
+ orderType="";currentDraftId=null;cart=[];
 
-  showOrderType();
+ customer={name:"",phone:"",address:"",table:""};
 
-}
+ document.getElementById("root").innerHTML=`
 
-function showOrderType(){
+ <div class="app">
 
-  stopTimerRefresh();
+  <button class="back" onclick="home()">← BACK</button>
 
-  document.getElementById("root").innerHTML=`
+  <div class="logo">MR K BURGERS<span>NEW ORDER</span></div>
 
-    <div class="app">
+  <div class="panel">
 
-      <button
+   <h2>Select Order Type</h2>
 
-        class="back"
+   <div class="grid">
 
-        onclick="home()"
+    <div class="card category clickable" onclick="selectOrderType('DINE IN')">
 
-      >
-
-        ← HOME
-
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>NEW ORDER</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>Select Order Type</h1>
-
-        <div class="grid">
-
-          <button
-
-            class="category"
-
-            onclick="selectOrderType('DINE IN')"
-
-          >
-
-            <div class="category-icon">🍽️</div>
-
-            <div class="badge">ORDER TYPE</div>
-
-            <h2>DINE IN</h2>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="selectOrderType('TAKEAWAY')"
-
-          >
-
-            <div class="category-icon">🥡</div>
-
-            <div class="badge">ORDER TYPE</div>
-
-            <h2>TAKEAWAY</h2>
-
-          </button>
-
-          <button
-
-            class="category"
-
-            onclick="selectOrderType('DELIVERY')"
-
-          >
-
-            <div class="category-icon">🛵</div>
-
-            <div class="badge">ORDER TYPE</div>
-
-            <h2>DELIVERY</h2>
-
-          </button>
-
-        </div>
-
-      </div>
+     <div class="category-icon">🍽️</div><h3>DINE IN</h3>
 
     </div>
 
-  `;
+    <div class="card category clickable" onclick="selectOrderType('TAKEAWAY')">
+
+     <div class="category-icon">🥡</div><h3>TAKEAWAY</h3>
+
+    </div>
+
+    <div class="card category clickable" onclick="selectOrderType('DELIVERY')">
+
+     <div class="category-icon">🛵</div><h3>DELIVERY</h3>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 
-function selectOrderType(type){
+function selectOrderType(t){
 
-  orderType=type;
-
-  customerForm();
+ orderType=t;customerForm();
 
 }
-
-/* =========================
-
-   CUSTOMER / TABLE
-
-========================= */
 
 function customerForm(){
 
-  if(orderType==="DINE IN"){
+ let fields="";
 
-    document.getElementById("root").innerHTML=`
+ if(orderType==="DINE IN"){
 
-      <div class="app">
+   fields=`<label>Table Number</label>
 
-        <button
+   <input id="table" inputmode="numeric" value="${esc(customer.table)}" placeholder="Example: 6">`;
 
-          class="back"
+ }else if(orderType==="TAKEAWAY"){
 
-          onclick="showOrderType()"
+   fields=`<label>Customer Name</label>
 
-        >
+   <input id="name" value="${esc(customer.name)}">
 
-          ← BACK
+   <label>Phone Number (optional)</label>
 
-        </button>
+   <input id="phone" value="${esc(customer.phone)}" placeholder="+223">`;
 
-        <div class="logo">
+ }else{
 
-          MR K BURGERS
+   fields=`<label>Customer Name</label>
 
-          <span>DINE IN</span>
+   <input id="name" value="${esc(customer.name)}">
 
-        </div>
+   <label>Phone Number</label>
 
-        <div class="panel">
+   <input id="phone" value="${esc(customer.phone)}" placeholder="+223">
 
-          <h1>Table Number</h1>
+   <label>Delivery Address</label>
 
-          <div class="form">
+   <input id="address" value="${esc(customer.address)}">`;
 
-            <label>Table Number *</label>
+ }
 
-            <input
+ document.getElementById("root").innerHTML=`
 
-              id="tableNumber"
+ <div class="app">
 
-              inputmode="numeric"
+  <button class="back" onclick="newOrder()">← BACK</button>
 
-              value="${escapeValue(customer.table)}"
+  <div class="logo">MR K BURGERS<span>${orderType}</span></div>
 
-              placeholder="Example: 6"
+  <div class="panel">
 
-            >
+   <h2>Order Details</h2>
 
-            <button
+   <div class="form">${fields}
 
-              class="primary"
+    <button class="primary" onclick="saveCustomer()">CONTINUE TO MENU</button>
 
-              onclick="saveCustomer()"
+   </div>
 
-            >
+  </div>
 
-              CONTINUE TO MENU
-
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    `;
-
-    return;
-
-  }
-
-  document.getElementById("root").innerHTML=`
-
-    <div class="app">
-
-      <button
-
-        class="back"
-
-        onclick="showOrderType()"
-
-      >
-
-        ← BACK
-
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>${orderType}</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>Customer Details</h1>
-
-        <div class="form">
-
-          <label>Customer Name *</label>
-
-          <input
-
-            id="customerName"
-
-            value="${escapeValue(customer.name)}"
-
-            placeholder="Customer name"
-
-          >
-
-          <label>
-
-            Phone
-
-            ${orderType==="DELIVERY" ? "*" : "(optional)"}
-
-          </label>
-
-          <input
-
-            id="customerPhone"
-
-            value="${escapeValue(customer.phone)}"
-
-            placeholder="+223..."
-
-          >
-
-          ${
-
-            orderType==="DELIVERY"
-
-            ?
-
-            `
-
-            <label>
-
-              Delivery Address *
-
-            </label>
-
-            <input
-
-              id="customerAddress"
-
-              value="${escapeValue(customer.address)}"
-
-              placeholder="Delivery address"
-
-            >
-
-            `
-
-            :
-
-            ""
-
-          }
-
-          <button
-
-            class="primary"
-
-            onclick="saveCustomer()"
-
-          >
-
-            CONTINUE TO MENU
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
 
 function saveCustomer(){
 
-  if(orderType==="DINE IN"){
+ if(orderType==="DINE IN"){
 
-    const table=
+   const table=document.getElementById("table").value.trim();
 
-      document.getElementById("tableNumber").value.trim();
+   if(!table)return alert("Enter the table number.");
 
-    if(!table){
+   customer={name:"",phone:"",address:"",table};
 
-      alert("Table number is required.");
+ }else if(orderType==="TAKEAWAY"){
 
-      return;
+   const name=document.getElementById("name").value.trim();
 
-    }
+   if(!name)return alert("Enter the customer name.");
 
-    customer={
+   customer={
 
-      name:"",
+    name,phone:document.getElementById("phone").value.trim(),address:"",table:""
 
-      phone:"",
+   };
 
-      address:"",
+ }else{
 
-      table
+   const name=document.getElementById("name").value.trim();
 
-    };
+   const phone=document.getElementById("phone").value.trim();
 
-    showCategories();
+   const address=document.getElementById("address").value.trim();
 
-    return;
+   if(!name||!phone||!address)return alert("Complete all delivery details.");
 
-  }
+   customer={name,phone,address,table:""};
 
-  const name=
+ }
 
-    document.getElementById("customerName").value.trim();
-
-  const phone=
-
-    document.getElementById("customerPhone").value.trim();
-
-  const address=
-
-    orderType==="DELIVERY"
-
-    ? document.getElementById("customerAddress").value.trim()
-
-    : "";
-
-  if(!name){
-
-    alert("Customer name is required.");
-
-    return;
-
-  }
-
-  if(orderType==="DELIVERY" && !phone){
-
-    alert("Phone number is required for delivery.");
-
-    return;
-
-  }
-
-  if(orderType==="DELIVERY" && !address){
-
-    alert("Delivery address is required.");
-
-    return;
-
-  }
-
-  customer={
-
-    name,
-
-    phone,
-
-    address,
-
-    table:""
-
-  };
-
-  showCategories();
+ menuCategories();
 
 }
 
-/* =========================
+function menuCategories(){
 
-   MENU CATEGORIES
+ document.getElementById("root").innerHTML=`
 
-========================= */
+ <div class="app">
 
-function showCategories(){
+  <button class="back" onclick="customerForm()">← BACK</button>
 
-  document.getElementById("root").innerHTML=`
+  <div class="logo">MR K BURGERS<span>MENU</span></div>
 
-    <div class="app">
+  <div class="panel">
 
-      <button
+   <div class="grid">
 
-        class="back"
+    ${cat("🍔","Burgers")}
 
-        onclick="customerForm()"
+    ${cat("🍟","Sides")}
 
-      >
+    ${cat("🥗","Salads")}
 
-        ← ${orderType==="DINE IN" ? "TABLE" : "CUSTOMER"}
+    ${cat("🥤","Soft Drinks")}
 
-      </button>
+    ${cat("🥫","Extra Sauces")}
 
-      <div class="logo">
+   </div>
 
-        MR K BURGERS
+   <div class="actions">
 
-        <span>MENU</span>
+    <button class="secondary" onclick="viewCart()">VIEW ORDER
 
-      </div>
-
-      <div class="panel">
-
-        <div class="order-top">
-
-          <div>
-
-            <h1>Menu Categories</h1>
-
-            <p class="muted">
-
-              ${currentCustomerLabel()} · ${orderType}
-
-            </p>
-
-          </div>
-
-          <button onclick="viewCart()">
-
-            VIEW ORDER
-
-            <span class="cart-count">
-
-              ${cart.length}
-
-            </span>
-
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          ${menuCategoryCard(
-
-            "🍔",
-
-            "Burgers",
-
-            burgers.length
-
-          )}
-
-          ${menuCategoryCard(
-
-            "🍟",
-
-            "Sides",
-
-            sides.length
-
-          )}
-
-          ${menuCategoryCard(
-
-            "🥗",
-
-            "Salads",
-
-            salads.length
-
-          )}
-
-          ${menuCategoryCard(
-
-            "🥤",
-
-            "Soft Drinks",
-
-            drinks.length
-
-          )}
-
-          ${menuCategoryCard(
-
-            "🥫",
-
-            "Extra Sauces",
-
-            sauces.length
-
-          )}
-
-        </div>
-
-        <div class="actions">
-
-          <button
-
-            class="secondary"
-
-            onclick="saveAndHoldOrder()"
-
-          >
-
-            SAVE & HOLD ORDER
-
-          </button>
-
-          <button
-
-            class="primary"
-
-            onclick="viewCart()"
-
-          >
-
-            VIEW ORDER
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
-
-}
-
-function menuCategoryCard(icon,name,count){
-
-  return `
-
-    <button
-
-      class="category"
-
-      onclick='showCategory(${JSON.stringify(name)})'
-
-    >
-
-      <div class="category-icon">
-
-        ${icon}
-
-      </div>
-
-      <div class="badge">
-
-        CATEGORY
-
-      </div>
-
-      <h2>
-
-        ${name}
-
-      </h2>
-
-      <p>
-
-        ${count} items
-
-      </p>
+     <span class="cart-count">${cart.reduce((a,b)=>a+b.qty,0)}</span>
 
     </button>
 
-  `;
+    <button class="secondary" onclick="saveAndHoldOrder()">SAVE & HOLD</button>
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 
-/* =========================
+function cat(icon,name){
 
-   CATEGORY ITEMS
+ return `<div class="card category clickable" onclick="openCategory('${name}')">
 
-========================= */
-
-function showCategory(category){
-
-  currentCategory=category;
-
-  let items=[];
-
-  if(category==="Burgers") items=burgers;
-
-  if(category==="Sides") items=sides;
-
-  if(category==="Salads") items=salads;
-
-  if(category==="Soft Drinks") items=drinks;
-
-  if(category==="Extra Sauces") items=sauces;
-
-  document.getElementById("root").innerHTML=`
-
-    <div class="app">
-
-      <button
-
-        class="back"
-
-        onclick="showCategories()"
-
-      >
-
-        ← CATEGORIES
-
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>${category}</span>
-
-      </div>
-
-      <div class="panel">
-
-        <div class="order-top">
-
-          <h1>${category}</h1>
-
-          <button onclick="viewCart()">
-
-            VIEW ORDER
-
-            <span class="cart-count">
-
-              ${cart.length}
-
-            </span>
-
-          </button>
-
-        </div>
-
-        <div class="grid">
-
-          ${items.map(item=>`
-
-            <button
-
-              class="category"
-
-              onclick='selectMenuItem(${JSON.stringify(item)})'
-
-            >
-
-              <div class="badge">
-
-                ${category}
-
-              </div>
-
-              <h2>
-
-                ${item}
-
-              </h2>
-
-            </button>
-
-          `).join("")}
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
+ <div class="category-icon">${icon}</div><h3>${name}</h3></div>`;
 
 }
 
-function selectMenuItem(name){
+function openCategory(name){
 
-  if(burgers.includes(name)){
+ currentCategory=name;
 
-    customizeBurger(name);
+ let items=name==="Burgers"?burgers:
 
-    return;
+ name==="Sides"?sides:
 
-  }
+ name==="Salads"?salads:
 
-  if(loadedFries.includes(name)){
+ name==="Soft Drinks"?drinks:sauces;
 
-    customizeLoadedFries(name);
+ document.getElementById("root").innerHTML=`
 
-    return;
+ <div class="app">
 
-  }
+  <button class="back" onclick="menuCategories()">← BACK</button>
 
-  simpleItem(name);
+  <div class="logo">MR K BURGERS<span>${name.toUpperCase()}</span></div>
+
+  <div class="panel">
+
+   <div class="grid">
+
+    ${items.map(i=>`<div class="card clickable" onclick='selectItem(${JSON.stringify(i)})'>
+
+     <h3>${i}</h3></div>`).join("")}
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 
-/* =========================
+function selectItem(name){
 
-   EXTRA QUANTITY SYSTEM
+ currentQty=1;
 
-========================= */
+ if(burgerDetails[name])return burgerCustomize(name);
+
+ if(loadedFries.includes(name))return loadedCustomize(name);
+
+ simpleItem(name);
+
+}
 
 function resetExtras(extras){
 
-  currentExtraQty={};
-
-  extras.forEach(extra=>{
-
-    currentExtraQty[extra]=0;
-
-  });
+ currentExtraQty={};extras.forEach(e=>currentExtraQty[e]=0);
 
 }
 
-function safeId(text){
-
-  return text
-
-    .replace(/[^a-zA-Z0-9]/g,"_");
-
-}
+function safeId(t){return "x"+t.replace(/[^a-zA-Z0-9]/g,"")}
 
 function extraRows(extras){
 
-  return extras.map(extra=>`
+ return extras.map(e=>`
 
-    <div class="extra-row">
+ <div class="extra-row">
 
-      <div class="extra-name">
+  <div class="extra-name">${e}</div>
 
-        ${extra}
+  <div class="extra-qty">
 
-      </div>
+   <button onclick='changeExtraQty(${JSON.stringify(e)},-1)'>−</button>
 
-      <div class="extra-qty">
+   <strong id="${safeId(e)}">${currentExtraQty[e]||0}</strong>
 
-        <button
+   <button onclick='changeExtraQty(${JSON.stringify(e)},1)'>+</button>
 
-          onclick='changeExtraQty(${JSON.stringify(extra)},-1)'
+  </div>
 
-        >
-
-          −
-
-        </button>
-
-        <strong id="extra_${safeId(extra)}">
-
-          ${currentExtraQty[extra] || 0}
-
-        </strong>
-
-        <button
-
-          onclick='changeExtraQty(${JSON.stringify(extra)},1)'
-
-        >
-
-          +
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `).join("");
+ </div>`).join("");
 
 }
 
-function changeExtraQty(extra,change){
+function changeExtraQty(e,n){
 
-  currentExtraQty[extra]=
+ currentExtraQty[e]=Math.max(0,(currentExtraQty[e]||0)+n);
 
-    Math.max(
-
-      0,
-
-      (currentExtraQty[extra] || 0)+change
-
-    );
-
-  const element=
-
-    document.getElementById(
-
-      "extra_"+safeId(extra)
-
-    );
-
-  if(element){
-
-    element.textContent=
-
-      currentExtraQty[extra];
-
-  }
+ const el=document.getElementById(safeId(e));if(el)el.textContent=currentExtraQty[e];
 
 }
 
-/* =========================
+function burgerCustomize(name){
 
-   BURGER CUSTOMIZER
+ const d=burgerDetails[name];
 
-========================= */
+ const extras=d.meat==="chicken"?chickenExtras:beefExtras;
 
-function customizeBurger(name){
+ resetExtras(extras);
 
-  currentQty=1;
+ document.getElementById("root").innerHTML=`
 
-  const details=
+ <div class="app">
 
-    burgerDetails[name];
+  <button class="back" onclick="openCategory('Burgers')">← BACK</button>
 
-  const extras=
+  <div class="logo">MR K BURGERS<span>CUSTOMIZE</span></div>
 
-    details.meat==="chicken"
+  <div class="panel">
 
-    ? chickenExtras
+   <h2>${name}</h2>
 
-    : beefExtras;
+   <h3>Ingredients</h3>
 
-  resetExtras(extras);
+   ${d.ingredients.map(i=>`<div class="muted">• ${i}</div>`).join("")}
 
-  document.getElementById("root").innerHTML=`
+   <h3>Extras</h3>
 
-    <div class="app">
+   ${extraRows(extras)}
 
-      <button
+   <h3>PRODUCT QUANTITY</h3>
 
-        class="back"
+   ${qtyHtml()}
 
-        onclick="showCategory('Burgers')"
+   <button class="primary" style="margin-top:20px;width:100%"
 
-      >
+    onclick='addCustomizedItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
 
-        ← BURGERS
+  </div>
 
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>CUSTOMIZE</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>${name}</h1>
-
-        <div class="badge">
-
-          INCLUDED INGREDIENTS
-
-        </div>
-
-        ${details.ingredients.map(ingredient=>`
-
-          <label class="option">
-
-            <span>
-
-              ${ingredient}
-
-            </span>
-
-            <input
-
-              type="checkbox"
-
-              class="ingredientCheck"
-
-              data-name="${escapeValue(ingredient)}"
-
-              checked
-
-            >
-
-          </label>
-
-        `).join("")}
-
-        <div
-
-          class="badge"
-
-          style="margin-top:25px"
-
-        >
-
-          EXTRA INGREDIENTS
-
-        </div>
-
-        ${extraRows(extras)}
-
-        <div
-
-          class="badge"
-
-          style="margin-top:25px"
-
-        >
-
-          PRODUCT QUANTITY
-
-        </div>
-
-        <div
-
-          class="qty"
-
-          style="margin-top:10px"
-
-        >
-
-          <button onclick="changeQty(-1)">
-
-            −
-
-          </button>
-
-          <strong id="qtyDisplay">
-
-            1
-
-          </strong>
-
-          <button onclick="changeQty(1)">
-
-            +
-
-          </button>
-
-        </div>
-
-        <button
-
-          class="primary"
-
-          style="margin-top:25px;width:100%"
-
-          onclick='addCustomizedItem(${JSON.stringify(name)})'
-
-        >
-
-          ADD TO ORDER
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
 
-/* =========================
+function loadedCustomize(name){
 
-   LOADED FRIES
+ resetExtras(["Extra grated cheese"]);
 
-========================= */
+ document.getElementById("root").innerHTML=`
 
-function customizeLoadedFries(name){
+ <div class="app">
 
-  currentQty=1;
+  <button class="back" onclick="openCategory('Sides')">← BACK</button>
 
-  const extras=[
+  <div class="logo">MR K BURGERS<span>CUSTOMIZE</span></div>
 
-    "Extra grated cheese"
+  <div class="panel">
 
-  ];
+   <h2>${name}</h2>
 
-  resetExtras(extras);
+   <h3>Extras</h3>
 
-  document.getElementById("root").innerHTML=`
+   ${extraRows(["Extra grated cheese"])}
 
-    <div class="app">
+   <h3>PRODUCT QUANTITY</h3>${qtyHtml()}
 
-      <button
+   <button class="primary" style="margin-top:20px;width:100%"
 
-        class="back"
+    onclick='addCustomizedItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
 
-        onclick="showCategory('Sides')"
+  </div>
 
-      >
-
-        ← SIDES
-
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>CUSTOMIZE</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>${name}</h1>
-
-        <div class="badge">
-
-          EXTRA INGREDIENTS
-
-        </div>
-
-        ${extraRows(extras)}
-
-        <div
-
-          class="badge"
-
-          style="margin-top:25px"
-
-        >
-
-          PRODUCT QUANTITY
-
-        </div>
-
-        <div
-
-          class="qty"
-
-          style="margin-top:10px"
-
-        >
-
-          <button onclick="changeQty(-1)">
-
-            −
-
-          </button>
-
-          <strong id="qtyDisplay">
-
-            1
-
-          </strong>
-
-          <button onclick="changeQty(1)">
-
-            +
-
-          </button>
-
-        </div>
-
-        <button
-
-          class="primary"
-
-          style="width:100%;margin-top:25px"
-
-          onclick='addCustomizedItem(${JSON.stringify(name)})'
-
-        >
-
-          ADD TO ORDER
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
-
-/* =========================
-
-   SIMPLE ITEMS
-
-========================= */
 
 function simpleItem(name){
 
-  currentQty=1;
+ document.getElementById("root").innerHTML=`
 
-  currentExtraQty={};
+ <div class="app">
 
-  document.getElementById("root").innerHTML=`
+  <button class="back" onclick="openCategory('${currentCategory}')">← BACK</button>
 
-    <div class="app">
+  <div class="logo">MR K BURGERS<span>ADD ITEM</span></div>
 
-      <button
+  <div class="panel">
 
-        class="back"
+   <h2>${name}</h2>
 
-        onclick='showCategory(${JSON.stringify(currentCategory)})'
+   <h3>PRODUCT QUANTITY</h3>${qtyHtml()}
 
-      >
+   <button class="primary" style="margin-top:20px;width:100%"
 
-        ← ${currentCategory.toUpperCase()}
+    onclick='addSimpleItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
 
-      </button>
+  </div>
 
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>ADD ITEM</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>${name}</h1>
-
-        <div class="badge">
-
-          PRODUCT QUANTITY
-
-        </div>
-
-        <div
-
-          class="qty"
-
-          style="margin-top:10px"
-
-        >
-
-          <button onclick="changeQty(-1)">
-
-            −
-
-          </button>
-
-          <strong id="qtyDisplay">
-
-            1
-
-          </strong>
-
-          <button onclick="changeQty(1)">
-
-            +
-
-          </button>
-
-        </div>
-
-        <button
-
-          class="primary"
-
-          style="width:100%;margin-top:25px"
-
-          onclick='addSimpleItem(${JSON.stringify(name)})'
-
-        >
-
-          ADD TO ORDER
-
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
 
-function changeQty(change){
+function qtyHtml(){
 
-  currentQty=
+ return `<div class="qty">
 
-    Math.max(
+ <button onclick="changeQty(-1)">−</button>
 
-      1,
+ <strong id="qty">${currentQty}</strong>
 
-      currentQty+change
+ <button onclick="changeQty(1)">+</button>
 
-    );
-
-  const element=
-
-    document.getElementById("qtyDisplay");
-
-  if(element){
-
-    element.textContent=currentQty;
-
-  }
+ </div>`;
 
 }
 
-/* =========================
+function changeQty(n){
 
-   ADD ITEMS
+ currentQty=Math.max(1,currentQty+n);
 
-========================= */
+ const el=document.getElementById("qty");if(el)el.textContent=currentQty;
+
+}
 
 function addCustomizedItem(name){
 
-  let removed=[];
+ const extras=Object.entries(currentExtraQty)
 
-  document
+ .filter(([n,q])=>q>0).map(([name,qty])=>({name,qty}));
 
-    .querySelectorAll(".ingredientCheck")
+ cart.push({name,qty:currentQty,extras});
 
-    .forEach(check=>{
-
-      if(!check.checked){
-
-        removed.push(
-
-          check.dataset.name
-
-        );
-
-      }
-
-    });
-
-  const extras=
-
-    Object.entries(currentExtraQty)
-
-      .filter(([,qty])=>qty>0)
-
-      .map(([name,qty])=>({
-
-        name,
-
-        qty
-
-      }));
-
-  cart.push({
-
-    name,
-
-    qty:currentQty,
-
-    removed,
-
-    extras
-
-  });
-
-  showCategories();
+ menuCategories();
 
 }
 
 function addSimpleItem(name){
 
-  cart.push({
+ cart.push({name,qty:currentQty,extras:[]});
 
-    name,
-
-    qty:currentQty,
-
-    removed:[],
-
-    extras:[]
-
-  });
-
-  showCategories();
+ menuCategories();
 
 }
-
-/* =========================
-
-   CART
-
-========================= */
 
 function viewCart(){
 
-  document.getElementById("root").innerHTML=`
+ document.getElementById("root").innerHTML=`
 
-    <div class="app">
+ <div class="app">
 
-      <button
+  <button class="back" onclick="menuCategories()">← BACK</button>
 
-        class="back"
+  <div class="logo">MR K BURGERS<span>ORDER SUMMARY</span></div>
 
-        onclick="showCategories()"
+  <div class="panel">
 
-      >
+   <h2>${orderType} — ${esc(currentCustomerLabel())}</h2>
 
-        ← MENU
+   ${cart.length?cart.map((i,index)=>`
 
-      </button>
+    <div class="summary">
 
-      <div class="logo">
+     <strong>${i.qty} × ${i.name}</strong>
 
-        MR K BURGERS
+     ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
 
-        <span>CURRENT ORDER</span>
+     <button class="danger" style="margin-top:12px"
 
-      </div>
+      onclick="removeCartItem(${index})">REMOVE ITEM</button>
 
-      <div class="panel">
+    </div>`).join(""):`<p class="muted">Order is empty.</p>`}
 
-        <div class="order-top">
+   <div class="actions">
 
-          <div>
+    <button class="secondary" onclick="saveAndHoldOrder()">SAVE & HOLD</button>
 
-            <h1>Order Summary</h1>
+    <button class="primary" onclick="checkoutOrder()">CHECKOUT</button>
 
-            <p class="muted">
+   </div>
 
-              ${currentCustomerLabel()} · ${orderType}
+  </div>
 
-            </p>
-
-          </div>
-
-          <span class="draft-status">
-
-            EDITABLE
-
-          </span>
-
-        </div>
-
-        ${
-
-          cart.length
-
-          ?
-
-          cart.map((item,index)=>`
-
-            <div class="summary">
-
-              <div class="order-top">
-
-                <div>
-
-                  <strong>
-
-                    ${item.qty} × ${item.name}
-
-                  </strong>
-
-                </div>
-
-                <button
-
-                  class="danger"
-
-                  onclick="removeCartItem(${index})"
-
-                >
-
-                  REMOVE ITEM
-
-                </button>
-
-              </div>
-
-              ${
-
-                item.removed &&
-
-                item.removed.length
-
-                ?
-
-                `
-
-                <p class="muted">
-
-                  Removed:
-
-                  ${item.removed.join(", ")}
-
-                </p>
-
-                `
-
-                :
-
-                ""
-
-              }
-
-              ${
-
-                item.extras &&
-
-                item.extras.length
-
-                ?
-
-                `
-
-                <div style="margin-top:10px">
-
-                  ${item.extras.map(extra=>`
-
-                    <div class="muted">
-
-                      + ${extra.qty} × ${extra.name}
-
-                    </div>
-
-                  `).join("")}
-
-                </div>
-
-                `
-
-                :
-
-                ""
-
-              }
-
-            </div>
-
-          `).join("")
-
-          :
-
-          `
-
-          <div class="system-note">
-
-            No items added yet.
-
-          </div>
-
-          `
-
-        }
-
-        <div class="actions">
-
-          <button
-
-            onclick="showCategories()"
-
-          >
-
-            ADD MORE ITEMS
-
-          </button>
-
-          <button
-
-            class="secondary"
-
-            onclick="saveAndHoldOrder()"
-
-          >
-
-            SAVE & HOLD
-
-          </button>
-
-          <button
-
-            class="primary"
-
-            onclick="checkoutOrder()"
-
-          >
-
-            CHECKOUT
-
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
 
-function removeCartItem(index){
-
-  cart.splice(index,1);
-
-  viewCart();
-
-}
-
-/* =========================
-
-   DRAFT ORDERS
-
-========================= */
+function removeCartItem(i){cart.splice(i,1);viewCart()}
 
 function saveAndHoldOrder(){
 
-  if(!orderType){
+ if(!cart.length)return alert("Add at least one item first.");
 
-    alert("Order type is required.");
+ const draft={
 
-    return;
+  id:currentDraftId||Date.now(),
 
-  }
+  type:orderType,
 
-  if(orderType==="DINE IN" && !customer.table){
+  customer:{...customer},
 
-    alert("Table number is required.");
+  cart:JSON.parse(JSON.stringify(cart)),
 
-    return;
+  savedAt:Date.now()
 
-  }
+ };
 
-  if(orderType!=="DINE IN" && !customer.name){
+ const ix=draftOrders.findIndex(d=>d.id===draft.id);
 
-    alert("Customer details are required.");
+ if(ix>=0)draftOrders[ix]=draft;else draftOrders.push(draft);
 
-    return;
+ currentDraftId=draft.id;saveOrders();
 
-  }
+ currentDraftId=null;cart=[];customer={name:"",phone:"",address:"",table:""};
 
-  const draft={
-
-    id:
-
-      currentDraftId ||
-
-      Date.now(),
-
-    type:orderType,
-
-    customer:{
-
-      name:customer.name,
-
-      phone:customer.phone,
-
-      address:customer.address,
-
-      table:customer.table
-
-    },
-
-    items:
-
-      JSON.parse(
-
-        JSON.stringify(cart)
-
-      ),
-
-    savedAt:Date.now()
-
-  };
-
-  if(currentDraftId){
-
-    const index=
-
-      draftOrders.findIndex(
-
-        order=>order.id===currentDraftId
-
-      );
-
-    if(index>=0){
-
-      draftOrders[index]=draft;
-
-    }else{
-
-      draftOrders.push(draft);
-
-    }
-
-  }else{
-
-    draftOrders.push(draft);
-
-  }
-
-  saveOrders();
-
-  resetCurrentOrder();
-
-  home();
+ orderType="";home();
 
 }
 
 function showDraftOrders(){
 
-  stopTimerRefresh();
+ document.getElementById("root").innerHTML=`
 
-  const newestDrafts=
+ <div class="app">
 
-    [...draftOrders].sort(
+  <button class="back" onclick="home()">← BACK</button>
 
-      (a,b)=>b.savedAt-a.savedAt
+  <div class="logo">MR K BURGERS<span>ORDERS IN PROGRESS</span></div>
 
-    );
+  <div class="panel">
 
-  document.getElementById("root").innerHTML=`
+   ${draftOrders.length?draftOrders.map(d=>`
 
-    <div class="app">
+    <div class="order-card clickable" onclick="resumeDraft(${d.id})">
 
-      <button
+     <span class="draft-status">ON HOLD</span>
 
-        class="back"
+     <h3>${esc(orderLabel(d))}</h3>
 
-        onclick="home()"
+     <div class="muted">${d.type} • ${d.cart.reduce((a,b)=>a+b.qty,0)} items</div>
 
-      >
+    </div>`).join(""):`<p class="muted">No orders on hold.</p>`}
 
-        ← CASHIER HOME
+  </div>
 
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>ORDERS IN PROGRESS</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>Orders in Progress</h1>
-
-        <p class="muted">
-
-          These orders are editable and have not been sent to the kitchen.
-
-        </p>
-
-        ${
-
-          newestDrafts.length
-
-          ?
-
-          newestDrafts.map(order=>`
-
-            <div class="order-card">
-
-              <div class="order-top">
-
-                <div>
-
-                  <div class="order-number">
-
-                    ${orderLabel(order)}
-
-                  </div>
-
-                  <div class="muted">
-
-                    ${order.type}
-
-                  </div>
-
-                </div>
-
-                <span class="draft-status">
-
-                  IN PROGRESS
-
-                </span>
-
-              </div>
-
-              <div
-
-                class="info-row"
-
-                style="margin-top:15px"
-
-              >
-
-                <span>Items</span>
-
-                <strong>
-
-                  ${order.items.reduce(
-
-                    (total,item)=>total+item.qty,
-
-                    0
-
-                  )}
-
-                </strong>
-
-              </div>
-
-              <div class="actions">
-
-                <button
-
-                  class="primary"
-
-                  onclick="resumeDraftOrder(${order.id})"
-
-                >
-
-                  CONTINUE ORDER
-
-                </button>
-
-                <button
-
-                  class="danger"
-
-                  onclick="deleteDraftOrder(${order.id})"
-
-                >
-
-                  DELETE
-
-                </button>
-
-              </div>
-
-            </div>
-
-          `).join("")
-
-          :
-
-          `
-
-          <div class="system-note">
-
-            No orders are currently on hold.
-
-          </div>
-
-          `
-
-        }
-
-      </div>
-
-    </div>
-
-  `;
+ </div>`;
 
 }
 
-function resumeDraftOrder(id){
+function resumeDraft(id){
 
-  const draft=
+ const d=draftOrders.find(x=>x.id===id);if(!d)return;
 
-    draftOrders.find(
+ currentDraftId=d.id;orderType=d.type;customer={...d.customer};
 
-      order=>order.id===id
-
-    );
-
-  if(!draft){
-
-    return;
-
-  }
-
-  currentDraftId=draft.id;
-
-  orderType=draft.type;
-
-  customer={
-
-    name:draft.customer.name || "",
-
-    phone:draft.customer.phone || "",
-
-    address:draft.customer.address || "",
-
-    table:draft.customer.table || ""
-
-  };
-
-  cart=
-
-    JSON.parse(
-
-      JSON.stringify(draft.items)
-
-    );
-
-  showCategories();
+ cart=JSON.parse(JSON.stringify(d.cart));menuCategories();
 
 }
-
-function deleteDraftOrder(id){
-
-  const draft=
-
-    draftOrders.find(
-
-      order=>order.id===id
-
-    );
-
-  if(!draft){
-
-    return;
-
-  }
-
-  if(
-
-    !confirm(
-
-      `Delete the held order for ${orderLabel(draft)}?`
-
-    )
-
-  ){
-
-    return;
-
-  }
-
-  draftOrders=
-
-    draftOrders.filter(
-
-      order=>order.id!==id
-
-    );
-
-  saveOrders();
-
-  showDraftOrders();
-
-}
-
-/* =========================
-
-   CHECKOUT
-
-========================= */
 
 function checkoutOrder(){
 
-  if(!cart.length){
+ if(!cart.length)return alert("Add at least one item before checkout.");
 
-    alert("Add at least one item before checkout.");
+ if(currentDraftId){
 
-    return;
+   draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
 
-  }
+ }
 
-  const order={
+ const order={
 
-    id:Date.now(),
+  number:nextOrderNumber++,
 
-    number:nextOrderNumber,
+  type:orderType,
 
-    type:orderType,
+  customer:{...customer},
 
-    customer:{
+  cart:JSON.parse(JSON.stringify(cart)),
 
-      name:customer.name,
+  startedAt:Date.now(),
 
-      phone:customer.phone,
+  readyAt:null,
 
-      address:customer.address,
+  status:"NEW"
 
-      table:customer.table
+ };
 
-    },
+ activeOrders.push(order);saveOrders();
 
-    items:
+ currentDraftId=null;cart=[];customer={name:"",phone:"",address:"",table:""};
 
-      JSON.parse(
+ orderType="";
 
-        JSON.stringify(cart)
+ document.getElementById("root").innerHTML=`
 
-      ),
+ <div class="app">
 
-    status:"NEW",
+  <div class="logo">MR K BURGERS<span>ORDER SENT</span></div>
 
-    locked:true,
+  <div class="panel">
 
-    startedAt:Date.now(),
+   <h1>Order #${padOrder(order.number)}</h1>
 
-    kitchenSent:true,
+   <p>Order has been added to Active Orders.</p>
 
-    receiptsQueued:2
+   <div class="system-note">👨‍🍳 Kitchen: Order queued for kitchen display.</div>
 
-  };
+   <div class="system-note">🧾 Printing: 2 receipts queued.</div>
 
-  activeOrders.push(order);
+   <button class="primary" style="margin-top:20px" onclick="home()">DONE</button>
 
-  nextOrderNumber++;
+  </div>
 
-  if(currentDraftId){
-
-    draftOrders=
-
-      draftOrders.filter(
-
-        draft=>draft.id!==currentDraftId
-
-      );
-
-  }
-
-  saveOrders();
-
-  resetCurrentOrder();
-
-  checkoutSuccess(order);
+ </div>`;
 
 }
 
-function checkoutSuccess(order){
+function showActiveOrders(){
 
-  document.getElementById("root").innerHTML=`
+ const newest=[...activeOrders].sort((a,b)=>b.number-a.number);
 
-    <div class="app">
+ document.getElementById("root").innerHTML=`
 
-      <div class="logo">
+ <div class="app">
 
-        MR K BURGERS
+  <button class="back" onclick="home()">← BACK</button>
 
-        <span>CHECKOUT COMPLETE</span>
+  <div class="logo">MR K BURGERS<span>ACTIVE ORDERS</span></div>
 
-      </div>
+  <div class="panel">
 
-      <div class="panel">
+   ${newest.length?newest.map(cashierOrderCard).join(""):
 
-        <div class="badge">
+   `<p class="muted">No active orders.</p>`}
 
-          ORDER CONFIRMED
+  </div>
 
-        </div>
+ </div>`;
 
-        <h1>
+ startTimerRefresh();
 
-          Order #${padOrder(order.number)}
+}
 
-        </h1>
+function activeOrderDetail(number){
 
-        <div class="summary">
+ const o=activeOrders.find(x=>x.number===number);if(!o)return;
 
-          <div class="info-row">
+ document.getElementById("root").innerHTML=`
 
-            <span>
+ <div class="app">
 
-              ${order.type==="DINE IN" ? "Table" : "Customer"}
+  <button class="back" onclick="showActiveOrders()">← BACK</button>
 
-            </span>
+  <div class="logo">MR K BURGERS<span>ACTIVE ORDER</span></div>
 
-            <strong>
+  <div class="panel">
 
-              ${
+   <div class="order-top">
 
-                order.type==="DINE IN"
+    <div><div class="order-number">#${padOrder(o.number)}</div>
 
-                ? order.customer.table
+    <h2>${esc(orderLabel(o))}</h2></div>
 
-                : order.customer.name
+    <div>
 
-              }
+     <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
 
-            </strong>
+      ${formatTimer(o.startedAt,o.readyAt)}
 
-          </div>
+     </div>
 
-          <div class="info-row">
-
-            <span>Order Type</span>
-
-            <strong>${order.type}</strong>
-
-          </div>
-
-          <div class="info-row">
-
-            <span>Kitchen</span>
-
-            <strong>SENT</strong>
-
-          </div>
-
-          <div class="info-row">
-
-            <span>Receipts</span>
-
-            <strong>2 QUEUED</strong>
-
-          </div>
-
-        </div>
-
-        <div class="system-note">
-
-          Kitchen tablet: Order queued for kitchen display.
-
-        </div>
-
-        <div class="system-note">
-
-          Printing: 2 receipts queued.
-
-        </div>
-
-        <div class="system-note">
-
-          Order timer: Started automatically at checkout.
-
-        </div>
-
-        <div class="actions">
-
-          <button onclick="home()">
-
-            CASHIER HOME
-
-          </button>
-
-          <button
-
-            class="primary"
-
-            onclick="newOrder()"
-
-          >
-
-            START ANOTHER ORDER
-
-          </button>
-
-        </div>
-
-      </div>
+     <span class="status ${o.status==="READY"?"ready":""}">${o.status}</span>
 
     </div>
 
-  `;
+   </div>
+
+   <div class="info-row"><span>Order Type</span><strong>${o.type}</strong></div>
+
+   ${o.type==="DINE IN"?
+
+   `<div class="info-row"><span>Table Number</span><strong>${esc(o.customer.table)}</strong></div>`:
+
+   `<div class="info-row"><span>Customer</span><strong>${esc(o.customer.name)}</strong></div>
+
+    ${o.customer.phone?`<div class="info-row"><span>Phone</span><strong>${esc(o.customer.phone)}</strong></div>`:""}`}
+
+   <h3>Items</h3>
+
+   ${o.cart.map(i=>`<div class="summary">
+
+    <strong>${i.qty} × ${i.name}</strong>
+
+    ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
+
+   </div>`).join("")}
+
+   <div class="system-note">🔒 Checked-out orders are read-only for cashier.</div>
+
+  </div>
+
+ </div>`;
+
+ startTimerRefresh();
 
 }
 
 /* =========================
 
-   ACTIVE ORDERS
+   KITCHEN
 
 ========================= */
 
-function showActiveOrders(){
+function kitchenHome(){
 
-  stopTimerRefresh();
+ clearInterval(timerInterval);
 
-  const newestOrders=
+ const orders=[...activeOrders].sort((a,b)=>a.number-b.number);
 
-    [...activeOrders].sort(
+ document.getElementById("root").innerHTML=`
 
-      (a,b)=>b.number-a.number
+ <div class="app">
 
-    );
+  <div class="kitchen-title">${header("KITCHEN DISPLAY")}</div>
 
-  document.getElementById("root").innerHTML=`
+  <div class="panel">
 
-    <div class="app">
+   <span class="badge">👨‍🍳 LIVE KITCHEN</span>
 
-      <button
+   <h1>Kitchen Orders</h1>
 
-        class="back"
+   ${orders.length?orders.map(kitchenCard).join(""):
 
-        onclick="home()"
+   `<p class="muted">No orders waiting in the kitchen.</p>`}
 
-      >
+  </div>
 
-        ← CASHIER HOME
+ </div>`;
 
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>ACTIVE ORDERS</span>
-
-      </div>
-
-      <div class="panel">
-
-        <h1>Active Orders</h1>
-
-        <p class="muted">
-
-          Checked-out orders are locked and cannot be modified by the cashier.
-
-        </p>
-
-        ${
-
-          newestOrders.length
-
-          ?
-
-          newestOrders.map(order=>`
-
-            <div
-
-              class="order-card clickable"
-
-              onclick="viewActiveOrder(${order.id})"
-
-            >
-
-              <div class="order-top">
-
-                <div>
-
-                  <div class="order-number">
-
-                    Order #${padOrder(order.number)}
-
-                  </div>
-
-                  <div class="muted">
-
-                    ${orderLabel(order)}
-
-                  </div>
-
-                </div>
-
-                <div
-
-                  class="timer"
-
-                  data-start="${order.startedAt}"
-
-                >
-
-                  ${formatTimer(order.startedAt)}
-
-                </div>
-
-              </div>
-
-              <div
-
-                class="info-row"
-
-                style="margin-top:12px"
-
-              >
-
-                <span>Type</span>
-
-                <strong>${order.type}</strong>
-
-              </div>
-
-              <div class="info-row">
-
-                <span>Items</span>
-
-                <strong>
-
-                  ${order.items.reduce(
-
-                    (total,item)=>total+item.qty,
-
-                    0
-
-                  )}
-
-                </strong>
-
-              </div>
-
-              <div style="margin-top:12px">
-
-                <span class="status">
-
-                  ${order.status}
-
-                </span>
-
-                <span class="locked">
-
-                  READ ONLY
-
-                </span>
-
-              </div>
-
-            </div>
-
-          `).join("")
-
-          :
-
-          `
-
-          <div class="system-note">
-
-            No active orders.
-
-          </div>
-
-          `
-
-        }
-
-      </div>
-
-    </div>
-
-  `;
-
-  startTimerRefresh();
+ startTimerRefresh();
 
 }
 
-function viewActiveOrder(id){
+function kitchenCard(o){
 
-  stopTimerRefresh();
+ return `
 
-  const order=
+ <div class="order-card">
 
-    activeOrders.find(
+  <div class="order-top">
 
-      order=>order.id===id
+   <div>
 
-    );
+    <div class="order-number">#${padOrder(o.number)}</div>
 
-  if(!order){
+    <h2>${esc(orderLabel(o))}</h2>
 
-    home();
+    <span class="muted">${o.type}</span>
 
-    return;
+   </div>
 
-  }
+   <div style="text-align:right">
 
-  document.getElementById("root").innerHTML=`
+    <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
 
-    <div class="app">
-
-      <button
-
-        class="back"
-
-        onclick="showActiveOrders()"
-
-      >
-
-        ← ACTIVE ORDERS
-
-      </button>
-
-      <div class="logo">
-
-        MR K BURGERS
-
-        <span>ORDER DETAILS</span>
-
-      </div>
-
-      <div class="panel">
-
-        <div class="order-top">
-
-          <div>
-
-            <div class="badge">
-
-              ACTIVE ORDER
-
-            </div>
-
-            <h1>
-
-              Order #${padOrder(order.number)}
-
-            </h1>
-
-            <p class="muted">
-
-              ${orderLabel(order)} · ${order.type}
-
-            </p>
-
-          </div>
-
-          <div
-
-            class="timer"
-
-            data-start="${order.startedAt}"
-
-          >
-
-            ${formatTimer(order.startedAt)}
-
-          </div>
-
-        </div>
-
-        <div style="margin-top:15px">
-
-          <span class="status">
-
-            ${order.status}
-
-          </span>
-
-          <span class="locked">
-
-            CASHIER READ ONLY
-
-          </span>
-
-        </div>
-
-        <div class="summary">
-
-          ${
-
-            order.type==="DINE IN"
-
-            ?
-
-            `
-
-            <div class="info-row">
-
-              <span>Table Number</span>
-
-              <strong>${order.customer.table}</strong>
-
-            </div>
-
-            `
-
-            :
-
-            `
-
-            <div class="info-row">
-
-              <span>Customer</span>
-
-              <strong>${order.customer.name}</strong>
-
-            </div>
-
-            <div class="info-row">
-
-              <span>Phone</span>
-
-              <strong>${order.customer.phone || "—"}</strong>
-
-            </div>
-
-            `
-
-          }
-
-          ${
-
-            order.type==="DELIVERY"
-
-            ?
-
-            `
-
-            <div class="info-row">
-
-              <span>Address</span>
-
-              <strong>${order.customer.address}</strong>
-
-            </div>
-
-            `
-
-            :
-
-            ""
-
-          }
-
-          <div class="info-row">
-
-            <span>Kitchen</span>
-
-            <strong>SENT</strong>
-
-          </div>
-
-          <div class="info-row">
-
-            <span>Receipts</span>
-
-            <strong>2 QUEUED</strong>
-
-          </div>
-
-        </div>
-
-        <div class="panel">
-
-          <div class="badge">
-
-            ORDER ITEMS
-
-          </div>
-
-          ${order.items.map(item=>`
-
-            <div class="summary">
-
-              <strong>
-
-                ${item.qty} × ${item.name}
-
-              </strong>
-
-              ${
-
-                item.removed &&
-
-                item.removed.length
-
-                ?
-
-                `
-
-                <p class="muted">
-
-                  Removed:
-
-                  ${item.removed.join(", ")}
-
-                </p>
-
-                `
-
-                :
-
-                ""
-
-              }
-
-              ${
-
-                item.extras &&
-
-                item.extras.length
-
-                ?
-
-                `
-
-                <div style="margin-top:10px">
-
-                  ${item.extras.map(extra=>`
-
-                    <div class="muted">
-
-                      + ${extra.qty} × ${extra.name}
-
-                    </div>
-
-                  `).join("")}
-
-                </div>
-
-                `
-
-                :
-
-                ""
-
-              }
-
-            </div>
-
-          `).join("")}
-
-        </div>
-
-      </div>
+     ${formatTimer(o.startedAt,o.readyAt)}
 
     </div>
 
-  `;
+    <span class="status ${o.status==="READY"?"ready":""}">${o.status}</span>
 
-  startTimerRefresh();
+   </div>
+
+  </div>
+
+  <div class="summary">
+
+   ${o.cart.map(i=>`
+
+    <div class="kitchen-item">
+
+     ${i.qty} × ${i.name}
+
+     ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
+
+    </div>`).join("")}
+
+  </div>
+
+  <div class="actions">
+
+   ${o.status==="NEW"?`
+
+    <button class="primary" onclick="setPreparing(${o.number})">START PREPARING</button>`:""}
+
+   ${o.status==="PREPARING"?`
+
+    <button class="green" onclick="setReady(${o.number})">MARK READY</button>`:""}
+
+   ${o.status==="READY"?`
+
+    <button class="secondary" onclick="completeOrder(${o.number})">COMPLETED</button>`:""}
+
+  </div>
+
+ </div>`;
+
+}
+
+function setPreparing(number){
+
+ const o=activeOrders.find(x=>x.number===number);if(!o)return;
+
+ o.status="PREPARING";saveOrders();kitchenHome();
+
+}
+
+function setReady(number){
+
+ const o=activeOrders.find(x=>x.number===number);if(!o)return;
+
+ o.status="READY";
+
+ o.readyAt=Date.now();
+
+ saveOrders();
+
+ kitchenHome();
+
+}
+
+function completeOrder(number){
+
+ const ix=activeOrders.findIndex(x=>x.number===number);if(ix<0)return;
+
+ const o=activeOrders[ix];
+
+ o.status="COMPLETED";
+
+ o.completedAt=Date.now();
+
+ completedOrders.push(o);
+
+ activeOrders.splice(ix,1);
+
+ saveOrders();
+
+ kitchenHome();
 
 }
 
@@ -3876,119 +1388,47 @@ function viewActiveOrder(id){
 
 ========================= */
 
-function formatTimer(startedAt){
+function formatTimer(startedAt,stopAt){
 
-  const seconds=
+ const end=stopAt?Number(stopAt):Date.now();
 
-    Math.max(
+ const seconds=Math.max(0,Math.floor((end-Number(startedAt))/1000));
 
-      0,
+ const h=Math.floor(seconds/3600);
 
-      Math.floor(
+ const m=Math.floor((seconds%3600)/60);
 
-        (Date.now()-startedAt)/1000
+ const s=seconds%60;
 
-      )
+ if(h>0){
 
-    );
+   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 
-  const hours=
+ }
 
-    Math.floor(seconds/3600);
-
-  const minutes=
-
-    Math.floor((seconds%3600)/60);
-
-  const secs=
-
-    seconds%60;
-
-  if(hours>0){
-
-    return (
-
-      String(hours).padStart(2,"0")
-
-      +":"
-
-      +String(minutes).padStart(2,"0")
-
-      +":"
-
-      +String(secs).padStart(2,"0")
-
-    );
-
-  }
-
-  return (
-
-    String(minutes).padStart(2,"0")
-
-    +":"
-
-    +String(secs).padStart(2,"0")
-
-  );
+ return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
 
 }
 
 function updateVisibleTimers(){
 
-  document
+ document.querySelectorAll(".timer").forEach(el=>{
 
-    .querySelectorAll(".timer[data-start]")
+   el.textContent=formatTimer(el.dataset.start,el.dataset.stop||null);
 
-    .forEach(timer=>{
-
-      timer.textContent=
-
-        formatTimer(
-
-          Number(timer.dataset.start)
-
-        );
-
-    });
+ });
 
 }
 
 function startTimerRefresh(){
 
-  stopTimerRefresh();
+ clearInterval(timerInterval);
 
-  updateVisibleTimers();
+ updateVisibleTimers();
 
-  timerInterval=
-
-    setInterval(
-
-      updateVisibleTimers,
-
-      1000
-
-    );
+ timerInterval=setInterval(updateVisibleTimers,1000);
 
 }
-
-function stopTimerRefresh(){
-
-  if(timerInterval){
-
-    clearInterval(timerInterval);
-
-    timerInterval=null;
-
-  }
-
-}
-
-/* =========================
-
-   START
-
-========================= */
 
 render();
 
