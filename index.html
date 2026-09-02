@@ -556,7 +556,7 @@ function managerHome(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerInventory()" style="cursor:pointer">
 
      <div class="category-icon">📦</div>
 
@@ -921,6 +921,117 @@ function managerHistoryCard(o){
     :`<p class="muted">No item details available.</p>`
 
    }
+
+  </div>
+
+ </div>`;
+
+} 
+function managerInventory(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — INVENTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📦 INVENTORY CONTROL
+
+   </span>
+
+   <h1>Inventory</h1>
+
+   <p class="muted">
+
+    Track ingredients, packaging and stock movements.
+
+   </p>
+
+   <div class="grid">
+
+    <div class="card">
+
+     <div class="category-icon">📋</div>
+
+     <h3>CURRENT STOCK</h3>
+
+     <p class="muted">View inventory levels</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📥</div>
+
+     <h3>STOCK IN</h3>
+
+     <p class="muted">Record deliveries</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📤</div>
+
+     <h3>STOCK OUT</h3>
+
+     <p class="muted">Record stock usage</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">🗑️</div>
+
+     <h3>WASTE / ADJUSTMENT</h3>
+
+     <p class="muted">Record waste or corrections</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📜</div>
+
+     <h3>STOCK HISTORY</h3>
+
+     <p class="muted">View inventory movements</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">⚠️</div>
+
+     <h3>LOW STOCK</h3>
+
+     <p class="muted">View low-stock items</p>
+
+    </div>
+
+   </div>
 
   </div>
 
