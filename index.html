@@ -991,7 +991,7 @@ function managerInventory(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerStockOut()" style="cursor:pointer">
 
      <div class="category-icon">📤</div>
 
@@ -1460,6 +1460,221 @@ function managerAddStock(){
  );
 
  managerStockIn();
+
+} 
+function managerStockOut(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — STOCK OUT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📤 STOCK OUT
+
+   </span>
+
+   <h1>Record Stock Out</h1>
+
+   <p class="muted">
+
+    Remove servings / units from the main inventory.
+
+   </p>
+
+   <label>ITEM</label>
+
+   <select
+
+    id="stockOutItem"
+
+    class="input">
+
+    <option value="">
+
+     Select inventory item
+
+    </option>
+
+    ${
+
+     inventoryItems
+
+     .map(item=>`
+
+      <option value="${item.id}">
+
+       ${esc(item.name)} — ${inventoryStock[item.id]||0} in stock
+
+      </option>
+
+     `)
+
+     .join("")
+
+    }
+
+   </select>
+
+   <label>QUANTITY</label>
+
+   <input
+
+    id="stockOutQty"
+
+    class="input"
+
+    type="number"
+
+    inputmode="numeric"
+
+    min="1"
+
+    step="1"
+
+    placeholder="Enter servings / units">
+
+   <button
+
+    class="primary"
+
+    onclick="managerRemoveStock()">
+
+    REMOVE FROM INVENTORY
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+
+function managerRemoveStock(){
+
+ const itemId=
+
+ document.getElementById("stockOutItem").value;
+
+ const qty=
+
+ Number(
+
+  document.getElementById("stockOutQty").value
+
+ );
+
+ if(!itemId){
+
+  return alert(
+
+   "Please select an inventory item."
+
+  );
+
+ }
+
+ if(
+
+  !Number.isInteger(qty)||
+
+  qty<=0
+
+ ){
+
+  return alert(
+
+   "Please enter a valid whole-number quantity."
+
+  );
+
+ }
+
+ const item=
+
+ inventoryItems.find(
+
+  i=>i.id===itemId
+
+ );
+
+ if(!item){
+
+  return alert(
+
+   "Inventory item not found."
+
+  );
+
+ }
+
+ const current=
+
+ Number(inventoryStock[itemId]||0);
+
+ if(qty>current){
+
+  return alert(
+
+   `Not enough ${item.name} in stock. Current stock: ${current}.`
+
+  );
+
+ }
+
+ inventoryStock[itemId]=
+
+ current-qty;
+
+ inventoryMovements.push({
+
+  id:Date.now(),
+
+  type:"STOCK OUT",
+
+  itemId:itemId,
+
+  itemName:item.name,
+
+  qty:-qty,
+
+  createdAt:Date.now()
+
+ });
+
+ saveInventory();
+
+ saveInventoryMovements();
+
+ alert(
+
+  `${item.name}: -${qty} units removed.`
+
+ );
+
+ managerStockOut();
 
 }
 /* CASHIER HOME */
