@@ -4398,7 +4398,49 @@ function removedHtml(i){
  .join("");
 
 }
+function itemUnitPrice(item){
 
+ let total=
+
+ Number(menuPrices[item.name]||0);
+
+ (item.extras||[]).forEach(extra=>{
+
+  total+=
+
+   Number(menuPrices[extra.name]||0)*
+
+   Number(extra.qty||0);
+
+ });
+
+ return total;
+
+}
+
+function itemLineTotal(item){
+
+ return (
+
+  itemUnitPrice(item)*
+
+  Number(item.qty||1)
+
+ );
+
+}
+
+function cartTotal(){
+
+ return cart.reduce(
+
+  (sum,item)=>sum+itemLineTotal(item),
+
+  0
+
+ );
+
+}
 function viewCart(){
 
  document.getElementById("root").innerHTML=`
@@ -4448,7 +4490,11 @@ function viewCart(){
        ${i.qty} × ${esc(i.name)}
 
       </strong>
+      <div class="muted" style="margin-top:6px">
 
+ ${itemLineTotal(i).toLocaleString()} CFA
+
+</div>
       ${removedHtml(i)}
 
       ${
@@ -4488,7 +4534,21 @@ function viewCart(){
     :`<p class="muted">Order is empty.</p>`
 
    }
+   <div class="summary" style="margin-top:20px">
 
+ <div class="order-top">
+
+  <strong>ORDER TOTAL</strong>
+
+  <div class="order-number">
+
+   ${cartTotal().toLocaleString()} CFA
+
+  </div>
+
+ </div>
+
+</div>
    <div class="actions">
 
     <button
