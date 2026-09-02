@@ -526,7 +526,7 @@ function managerHome(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerOrderHistory()" style="cursor:pointer">
 
      <div class="category-icon">📜</div>
 
@@ -714,6 +714,171 @@ function managerOrderCard(o){
     </span>
 
    </div>
+
+  </div>
+
+  <div class="summary">
+
+   ${
+
+    items.length
+
+    ?items.map(i=>`
+
+     <div class="kitchen-item">
+
+      ${i.qty} × ${esc(i.name)}
+
+      ${removedHtml(i)}
+
+      ${
+
+       (i.extras||[])
+
+       .map(e=>`
+
+        <div class="muted">
+
+         ${e.qty} × ${esc(e.name)}
+
+        </div>
+
+       `)
+
+       .join("")
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted">No item details available.</p>`
+
+   }
+
+  </div>
+
+ </div>`;
+
+} 
+function managerOrderHistory(){
+
+ clearInterval(timerInterval);
+
+ const orders=
+
+ [...completedOrders]
+
+ .sort(
+
+   (a,b)=>
+
+   Number(b.completedAt||0)-
+
+   Number(a.completedAt||0)
+
+ );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — ORDER HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <div class="system-note">
+
+    👁️ View only — Completed orders cannot be changed.
+
+   </div>
+
+   ${
+
+    orders.length
+
+    ?orders.map(managerHistoryCard).join("")
+
+    :`<p class="muted">No completed orders yet.</p>`
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+
+function managerHistoryCard(o){
+
+ const items=orderCart(o);
+
+ return `
+
+ <div class="order-card">
+
+  <div class="order-top">
+
+   <div>
+
+    <div class="order-number">
+
+     #${padOrder(o.number)}
+
+    </div>
+
+    <h2>
+
+     ${esc(orderLabel(o))}
+
+    </h2>
+
+    <span class="muted">
+
+     ${esc(o.type)}
+
+    </span>
+
+   </div>
+
+   <div style="text-align:right">
+
+    <div class="timer">
+
+     ${prepDuration(o)}
+
+    </div>
+
+    <span class="status ready">
+
+     COMPLETED
+
+    </span>
+
+   </div>
+
+  </div>
+
+  <div class="muted">
+
+   Completed: ${formatDateTime(o.completedAt)}
 
   </div>
 
