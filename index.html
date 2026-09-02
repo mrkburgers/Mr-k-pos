@@ -981,7 +981,7 @@ function managerInventory(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerStockIn()" style="cursor:pointer">
 
      <div class="category-icon">📥</div>
 
@@ -1239,6 +1239,227 @@ function managerCurrentStock(){
   </div>
 
  </div>`;
+
+} 
+let inventoryMovements=safeLoad(
+
+ "mrkInventoryMovements",
+
+ []
+
+);
+
+function saveInventoryMovements(){
+
+ localStorage.setItem(
+
+  "mrkInventoryMovements",
+
+  JSON.stringify(inventoryMovements)
+
+ );
+
+}
+
+function managerStockIn(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — STOCK IN</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📥 STOCK IN
+
+   </span>
+
+   <h1>Record Delivery</h1>
+
+   <p class="muted">
+
+    Add received servings / units to the main inventory.
+
+   </p>
+
+   <label>ITEM</label>
+
+   <select
+
+    id="stockInItem"
+
+    class="input">
+
+    <option value="">
+
+     Select inventory item
+
+    </option>
+
+    ${
+
+     inventoryItems
+
+     .map(item=>`
+
+      <option value="${item.id}">
+
+       ${esc(item.name)}
+
+      </option>
+
+     `)
+
+     .join("")
+
+    }
+
+   </select>
+
+   <label>QUANTITY</label>
+
+   <input
+
+    id="stockInQty"
+
+    class="input"
+
+    type="number"
+
+    inputmode="numeric"
+
+    min="1"
+
+    step="1"
+
+    placeholder="Enter servings / units">
+
+   <button
+
+    class="primary"
+
+    onclick="managerAddStock()">
+
+    ADD TO INVENTORY
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+
+function managerAddStock(){
+
+ const itemId=
+
+ document.getElementById("stockInItem").value;
+
+ const qty=
+
+ Number(
+
+  document.getElementById("stockInQty").value
+
+ );
+
+ if(!itemId){
+
+  return alert(
+
+   "Please select an inventory item."
+
+  );
+
+ }
+
+ if(
+
+  !Number.isInteger(qty)||
+
+  qty<=0
+
+ ){
+
+  return alert(
+
+   "Please enter a valid whole-number quantity."
+
+  );
+
+ }
+
+ const item=
+
+ inventoryItems.find(
+
+  i=>i.id===itemId
+
+ );
+
+ if(!item){
+
+  return alert(
+
+   "Inventory item not found."
+
+  );
+
+ }
+
+ inventoryStock[itemId]=
+
+ Number(inventoryStock[itemId]||0)+qty;
+
+ inventoryMovements.push({
+
+  id:Date.now(),
+
+  type:"STOCK IN",
+
+  itemId:itemId,
+
+  itemName:item.name,
+
+  qty:qty,
+
+  createdAt:Date.now()
+
+ });
+
+ saveInventory();
+
+ saveInventoryMovements();
+
+ alert(
+
+  `${item.name}: +${qty} units added.`
+
+ );
+
+ managerCurrentStock();
 
 }
 /* CASHIER HOME */
