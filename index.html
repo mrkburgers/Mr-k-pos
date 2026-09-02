@@ -381,7 +381,7 @@ function render(){
  if(!loggedIn)return loginScreen();
 
  if(role==="kitchen")return kitchenHome();
-
+ if(role==="manager")return managerHome();
  home();
 
 }
@@ -414,7 +414,8 @@ function loginScreen(){
 
     Cashier: cashier01<br>
 
-    Kitchen: kitchen01
+    Kitchen: kitchen01<br>
+    Manager: manager01
 
    </p>
 
@@ -453,7 +454,17 @@ function login(){
    return;
 
  }
+if(u==="manager01"&&p==="9012"){
 
+ loggedIn=true;
+
+ role="manager";
+
+ managerHome();
+
+ return;
+
+}
  alert("Invalid Staff ID or PIN.");
 
 }
@@ -479,7 +490,99 @@ function header(label){
  <button class="secondary" onclick="logout()">LOG OUT</button>`;
 
 }
+function managerHome(){
 
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <div class="kitchen-title">
+
+   ${header("MANAGER")}
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👔 MANAGER DASHBOARD
+
+   </span>
+
+   <h1>Management</h1>
+
+   <div class="grid">
+
+    <div class="card">
+
+     <div class="category-icon">📦</div>
+
+     <h3>ACTIVE ORDERS</h3>
+
+     <strong>${activeOrders.length}</strong>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📜</div>
+
+     <h3>ORDER HISTORY</h3>
+
+     <strong>${completedOrders.length}</strong>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">💰</div>
+
+     <h3>SALES</h3>
+
+     <p class="muted">Coming soon</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📅</div>
+
+     <h3>SALES HISTORY</h3>
+
+     <p class="muted">Coming soon</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📦</div>
+
+     <h3>INVENTORY</h3>
+
+     <p class="muted">Coming soon</p>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">🚫</div>
+
+     <h3>PRODUCT AVAILABILITY</h3>
+
+     <p class="muted">Coming soon</p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
 /* CASHIER HOME */
 
 function home(){
