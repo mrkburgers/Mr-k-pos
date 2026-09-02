@@ -971,7 +971,7 @@ function managerInventory(){
 
    <div class="grid">
 
-    <div class="card">
+    <div class="card" onclick="managerCurrentStock()" style="cursor:pointer">
 
      <div class="category-icon">📋</div>
 
@@ -1032,6 +1032,209 @@ function managerInventory(){
     </div>
 
    </div>
+
+  </div>
+
+ </div>`;
+
+} 
+const inventoryItems=[
+
+ {id:"beef120",name:"120g Beef Patty",category:"INGREDIENTS"},
+
+ {id:"chicken120",name:"120g Chicken Breast",category:"INGREDIENTS"},
+
+ {id:"bun",name:"Bun",category:"INGREDIENTS"},
+
+ {id:"mushroom",name:"Mushroom",category:"INGREDIENTS"},
+
+ {id:"beefTenderloin100",name:"100g Sautéed Beef Tenderloin",category:"INGREDIENTS"},
+
+ {id:"bacon",name:"Bacon",category:"INGREDIENTS"},
+
+ {id:"smokedTurkey",name:"Smoked Turkey",category:"INGREDIENTS"},
+
+ {id:"cheddar",name:"Cheddar Cheese",category:"INGREDIENTS"},
+
+ {id:"mozzarella",name:"Mozzarella Cheese",category:"INGREDIENTS"},
+
+ {id:"emmental",name:"Emmental Cheese",category:"INGREDIENTS"},
+
+ {id:"gratedCheese",name:"Grated Cheese",category:"INGREDIENTS"},
+
+ {id:"potatoes",name:"Potatoes",category:"INGREDIENTS"},
+
+ {id:"plantain",name:"Plantain Tostones",category:"INGREDIENTS"},
+
+ {id:"fajitaChicken100",name:"100g Fajita Chicken",category:"INGREDIENTS"},
+
+ {id:"coleslaw",name:"Coleslaw",category:"INGREDIENTS"},
+
+ {id:"smallWater",name:"Small Water",category:"SOFT DRINKS"},
+
+ {id:"bigWater",name:"Big Water",category:"SOFT DRINKS"},
+
+ {id:"cocaCola",name:"Coca-Cola",category:"SOFT DRINKS"},
+
+ {id:"sprite",name:"Sprite",category:"SOFT DRINKS"},
+
+ {id:"fanta",name:"Fanta",category:"SOFT DRINKS"},
+
+ {id:"chimichurri",name:"Chimichurri",category:"EXTRA SAUCES"},
+
+ {id:"mrkSauce",name:"Mr K Sauce",category:"EXTRA SAUCES"},
+
+ {id:"honeyBbq",name:"Honey BBQ",category:"EXTRA SAUCES"},
+
+ {id:"honeyMustard",name:"Honey Mustard",category:"EXTRA SAUCES"}
+
+];
+
+let inventoryStock=safeLoad(
+
+ "mrkInventoryStock",
+
+ {}
+
+);
+
+inventoryItems.forEach(item=>{
+
+ if(
+
+  typeof inventoryStock[item.id]!=="number"
+
+ ){
+
+  inventoryStock[item.id]=0;
+
+ }
+
+});
+
+function saveInventory(){
+
+ localStorage.setItem(
+
+  "mrkInventoryStock",
+
+  JSON.stringify(inventoryStock)
+
+ );
+
+}
+
+saveInventory();
+
+function managerCurrentStock(){
+
+ clearInterval(timerInterval);
+
+ const categories=[
+
+  "INGREDIENTS",
+
+  "SOFT DRINKS",
+
+  "EXTRA SAUCES"
+
+ ];
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — CURRENT STOCK</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 CURRENT STOCK
+
+   </span>
+
+   <h1>Inventory Levels</h1>
+
+   <p class="muted">
+
+    Every quantity represents one serving / unit.
+
+   </p>
+
+   ${
+
+    categories.map(category=>`
+
+     <h2>${category}</h2>
+
+     ${
+
+      inventoryItems
+
+      .filter(i=>i.category===category)
+
+      .map(item=>`
+
+       <div class="order-card">
+
+        <div class="order-top">
+
+         <div>
+
+          <h3>${esc(item.name)}</h3>
+
+          <span class="muted">
+
+           1 serving / unit
+
+          </span>
+
+         </div>
+
+         <div style="text-align:right">
+
+          <div class="order-number">
+
+           ${inventoryStock[item.id]}
+
+          </div>
+
+          <span class="muted">
+
+           IN STOCK
+
+          </span>
+
+         </div>
+
+        </div>
+
+       </div>
+
+      `).join("")
+
+     }
+
+    `).join("")
+
+   }
 
   </div>
 
