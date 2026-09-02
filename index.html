@@ -516,7 +516,7 @@ function managerHome(){
 
    <div class="grid">
 
-    <div class="card">
+    <div class="card"> onclick="managerActiveOrders()" style="cursor:pointer">
 
      <div class="category-icon">📦</div>
 
@@ -577,6 +577,185 @@ function managerHome(){
     </div>
 
    </div>
+
+  </div>
+
+ </div>`;
+
+} 
+function managerActiveOrders(){
+
+ clearInterval(timerInterval);
+
+ const orders=
+
+ [...activeOrders]
+
+ .sort(
+
+   (a,b)=>
+
+   Number(b.number)-
+
+   Number(a.number)
+
+ );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — ACTIVE ORDERS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <div class="system-note">
+
+    👁️ View only — Manager cannot change order status.
+
+   </div>
+
+   ${
+
+    orders.length
+
+    ?orders.map(managerOrderCard).join("")
+
+    :`<p class="muted">No active orders.</p>`
+
+   }
+
+  </div>
+
+ </div>`;
+
+ startTimerRefresh();
+
+}
+
+function managerOrderCard(o){
+
+ const items=orderCart(o);
+
+ return `
+
+ <div class="order-card">
+
+  <div class="order-top">
+
+   <div>
+
+    <div class="order-number">
+
+     #${padOrder(o.number)}
+
+    </div>
+
+    <h2>
+
+     ${esc(orderLabel(o))}
+
+    </h2>
+
+    <span class="muted">
+
+     ${esc(o.type)}
+
+    </span>
+
+   </div>
+
+   <div style="text-align:right">
+
+    <div
+
+     class="timer"
+
+     data-start="${o.startedAt||Date.now()}"
+
+     data-stop="${o.readyAt||""}">
+
+     ${
+
+      formatTimer(
+
+       o.startedAt||Date.now(),
+
+       o.readyAt
+
+      )
+
+     }
+
+    </div>
+
+    <span
+
+     class="status ${o.status==="READY"?"ready":""}">
+
+     ${esc(o.status||"NEW")}
+
+    </span>
+
+   </div>
+
+  </div>
+
+  <div class="summary">
+
+   ${
+
+    items.length
+
+    ?items.map(i=>`
+
+     <div class="kitchen-item">
+
+      ${i.qty} × ${esc(i.name)}
+
+      ${removedHtml(i)}
+
+      ${
+
+       (i.extras||[])
+
+       .map(e=>`
+
+        <div class="muted">
+
+         ${e.qty} × ${esc(e.name)}
+
+        </div>
+
+       `)
+
+       .join("")
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted">No item details available.</p>`
+
+   }
 
   </div>
 
