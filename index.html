@@ -1011,7 +1011,7 @@ function managerInventory(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerStockHistory()" style="cursor:pointer">
 
      <div class="category-icon">📜</div>
 
@@ -2369,6 +2369,194 @@ function managerRecordWaste(){
  );
 
  managerWasteAdjustment();
+
+} 
+function managerStockHistory(selectedDate){
+
+ clearInterval(timerInterval);
+
+ const now=
+
+ new Date();
+
+const today=
+
+ `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+ const dateValue=
+
+  selectedDate||today;
+
+ const movements=
+
+  [...inventoryMovements]
+
+  .filter(m=>{
+
+   const d=
+
+    new Date(m.createdAt);
+
+   const movementDate=
+
+    `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+   return movementDate===dateValue;
+
+  })
+
+  .sort(
+
+   (a,b)=>
+
+    Number(b.createdAt||0)-
+
+    Number(a.createdAt||0)
+
+  );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — STOCK HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📜 STOCK HISTORY
+
+   </span>
+
+   <h1>Inventory Movements</h1>
+
+   <p class="muted">
+
+    View inventory activity for a selected date.
+
+   </p>
+
+   <label>DATE</label>
+
+   <input
+
+    class="input"
+
+    type="date"
+
+    value="${dateValue}"
+
+    onchange="managerStockHistory(this.value)">
+
+   <div style="margin-top:20px">
+
+   ${
+
+    movements.length
+
+    ?movements.map(m=>`
+
+     <div class="order-card">
+
+      <div class="order-top">
+
+       <div>
+
+        <h3>${esc(m.itemName||m.itemId||"Inventory Item")}</h3>
+
+        <span class="muted">
+
+         ${esc(m.type||"MOVEMENT")}
+
+        </span>
+
+       </div>
+
+       <div style="text-align:right">
+
+        <div class="order-number">
+
+         ${Number(m.qty)>0?"+":""}${Number(m.qty||0)}
+
+        </div>
+
+        <span class="muted">
+
+         ${new Date(m.createdAt).toLocaleTimeString([],{
+
+          hour:"2-digit",
+
+          minute:"2-digit"
+
+         })}
+
+        </span>
+
+       </div>
+
+      </div>
+
+      ${
+
+       m.reason
+
+       ?`<div class="muted" style="margin-top:8px">
+
+          Reason: ${esc(m.reason)}
+
+         </div>`
+
+       :""
+
+      }
+
+      ${
+
+       m.orderNumber
+
+       ?`<div class="muted" style="margin-top:8px">
+
+          Order #${padOrder(m.orderNumber)}
+
+         </div>`
+
+       :""
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted" style="margin-top:20px">
+
+       No stock movements for this date.
+
+      </p>`
+
+   }
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 /* CASHIER HOME */
