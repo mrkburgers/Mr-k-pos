@@ -106,71 +106,151 @@ input{
 
 .extra-qty strong{min-width:28px;text-align:center;font-size:20px}
 
-.summary{background:#101010;border:1px solid #3b3b3b;border-radius:14px;padding:18px;margin-top:18px}
+.ingredient-row{
 
-.order-card{background:#202020;border:1px solid #3b3b3b;border-radius:16px;padding:18px;margin:14px 0}
+  display:flex;align-items:center;gap:12px;
 
-.order-top{display:flex;justify-content:space-between;align-items:flex-start;gap:15px}
+  background:#202020;border:1px solid #3b3b3b;border-radius:12px;
+
+  padding:14px;margin:8px 0
+
+}
+
+.ingredient-row input{
+
+  width:22px;height:22px;accent-color:#f3a51b;flex:0 0 auto
+
+}
+
+.ingredient-row label{font-weight:bold;flex:1}
+
+.no-item{
+
+  color:#ff9b9b;font-weight:bold;margin-top:5px
+
+}
+
+.summary{
+
+  background:#101010;border:1px solid #3b3b3b;
+
+  border-radius:14px;padding:18px;margin-top:18px
+
+}
+
+.order-card{
+
+  background:#202020;border:1px solid #3b3b3b;
+
+  border-radius:16px;padding:18px;margin:14px 0
+
+}
+
+.order-top{
+
+  display:flex;justify-content:space-between;
+
+  align-items:flex-start;gap:15px
+
+}
 
 .order-number{font-size:22px;font-weight:bold}
 
-.timer{font-size:24px;font-weight:800;color:#f3a51b;font-variant-numeric:tabular-nums}
+.timer{
+
+  font-size:24px;font-weight:800;color:#f3a51b;
+
+  font-variant-numeric:tabular-nums
+
+}
 
 .status{
 
-  display:inline-block;background:#302715;border:1px solid #6c5220;color:#f3a51b;
+  display:inline-block;background:#302715;border:1px solid #6c5220;
 
-  padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px
+  color:#f3a51b;padding:7px 10px;border-radius:999px;
+
+  font-size:11px;font-weight:bold;letter-spacing:1px
 
 }
 
-.status.ready{background:#17351e;border-color:#397548;color:#b8ffc8}
+.status.ready{
 
-.status.completed{background:#252525;border-color:#555;color:#aaa}
+  background:#17351e;border-color:#397548;color:#b8ffc8
+
+}
 
 .draft-status{
 
-  display:inline-block;background:#1c2730;border:1px solid #3e6176;color:#8ccdf3;
+  display:inline-block;background:#1c2730;border:1px solid #3e6176;
 
-  padding:7px 10px;border-radius:999px;font-size:11px;font-weight:bold;letter-spacing:1px
+  color:#8ccdf3;padding:7px 10px;border-radius:999px;
 
-}
-
-.locked{
-
-  display:inline-block;padding:7px 10px;border-radius:999px;background:#202020;
-
-  border:1px solid #555;color:#bbb;font-size:11px;font-weight:bold;letter-spacing:1px
+  font-size:11px;font-weight:bold;letter-spacing:1px
 
 }
 
-.info-row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid #333}
+.info-row{
+
+  display:flex;justify-content:space-between;gap:15px;
+
+  padding:9px 0;border-bottom:1px solid #333
+
+}
 
 .info-row:last-child{border-bottom:none}
 
-.system-note{border-left:4px solid #f3a51b;padding:12px 14px;background:#181818;margin-top:12px;color:#bbb}
+.system-note{
 
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+  border-left:4px solid #f3a51b;padding:12px 14px;
+
+  background:#181818;margin-top:12px;color:#bbb
+
+}
+
+.actions{
+
+  display:flex;gap:10px;flex-wrap:wrap;margin-top:15px
+
+}
 
 .actions button{flex:1;min-width:150px}
 
 .cart-count{
 
-  display:inline-block;margin-left:8px;padding:4px 8px;border-radius:999px;
+  display:inline-block;margin-left:8px;padding:4px 8px;
 
-  background:#f3a51b;color:#111;font-size:11px;font-weight:bold
+  border-radius:999px;background:#f3a51b;color:#111;
+
+  font-size:11px;font-weight:bold
 
 }
 
-.kitchen-title{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.kitchen-title{
 
-.kitchen-item{font-size:18px;font-weight:bold;padding:10px 0;border-bottom:1px solid #333}
+  display:flex;justify-content:space-between;
+
+  align-items:center;gap:15px;flex-wrap:wrap
+
+}
+
+.kitchen-item{
+
+  font-size:18px;font-weight:bold;
+
+  padding:10px 0;border-bottom:1px solid #333
+
+}
 
 .kitchen-item:last-child{border-bottom:none}
 
 @media(max-width:700px){
 
-  .app{padding:16px}.grid{grid-template-columns:1fr}.order-top{flex-direction:column}
+  .app{padding:16px}
+
+  .grid{grid-template-columns:1fr}
+
+  .order-top{flex-direction:column}
 
 }
 
@@ -196,17 +276,19 @@ let currentQty=1;
 
 let currentExtraQty={};
 
+let currentRemovedIngredients=[];
+
 let currentDraftId=null;
 
 let cart=[];
 
 let customer={name:"",phone:"",address:"",table:""};
 
-let activeOrders=JSON.parse(localStorage.getItem("mrkActiveOrders")||"[]");
+let activeOrders=safeLoad("mrkActiveOrders",[]);
 
-let draftOrders=JSON.parse(localStorage.getItem("mrkDraftOrders")||"[]");
+let draftOrders=safeLoad("mrkDraftOrders",[]);
 
-let completedOrders=JSON.parse(localStorage.getItem("mrkCompletedOrders")||"[]");
+let completedOrders=safeLoad("mrkCompletedOrders",[]);
 
 let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
 
@@ -214,25 +296,75 @@ let timerInterval=null;
 
 const burgers=[
 
-"Mr K Classic","Mushroom & Swiss","Honky Tonk","Philly Cheesesteak",
+ "Mr K Classic",
 
-"Only The Brave","Bohemian","Chicken Chimichurri"
+ "Mushroom & Swiss",
+
+ "Honky Tonk",
+
+ "Philly Cheesesteak",
+
+ "Only The Brave",
+
+ "Bohemian",
+
+ "Chicken Chimichurri"
 
 ];
 
 const sides=[
 
-"French Fries","Plantain Tostones","Onion Rings","Cheese Fries",
+ "French Fries",
 
-"Fajita Cheese Fries","Dirty Fries"
+ "Plantain Tostones",
+
+ "Onion Rings",
+
+ "Cheese Fries",
+
+ "Fajita Cheese Fries",
+
+ "Dirty Fries"
 
 ];
 
-const salads=["Mr K Coleslaw","Cheeseburger Salad"];
+const salads=[
 
-const drinks=["Small Water","Big Water","Coca Cola","Sprite","Fanta"];
+ "Mr K Coleslaw",
 
-const sauces=["Mr K Sauce","Chimichurri","Ketchup","Mayonnaise","Honey Mustard","Honey BBQ"];
+ "Cheeseburger Salad"
+
+];
+
+const drinks=[
+
+ "Small Water",
+
+ "Big Water",
+
+ "Coca Cola",
+
+ "Sprite",
+
+ "Fanta"
+
+];
+
+const sauces=[
+
+ "Mr K Sauce",
+
+ "Chimichurri",
+
+ "Ketchup",
+
+ "Mayonnaise",
+
+ "Honey Mustard",
+
+ "Honey BBQ"
+
+];
 
 const burgerDetails={
 
@@ -240,7 +372,23 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g","Burger bun","Rocket lettuce","Tomato","Onions","Pickled cucumbers","Mr K sauce"]
+ ingredients:[
+
+  "Beef steak 120g",
+
+  "Burger bun",
+
+  "Rocket lettuce",
+
+  "Tomato",
+
+  "Onions",
+
+  "Pickled cucumbers",
+
+  "Mr K sauce"
+
+ ]
 
 },
 
@@ -248,7 +396,21 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g","Burger bun","Mushrooms","Swiss cheese","Rocket lettuce","Sauce"]
+ ingredients:[
+
+  "Beef steak 120g",
+
+  "Burger bun",
+
+  "Mushrooms",
+
+  "Swiss cheese",
+
+  "Rocket lettuce",
+
+  "Sauce"
+
+ ]
 
 },
 
@@ -256,7 +418,25 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g","Burger bun","Bacon","Swiss cheese","Cheddar cheese","Rocket lettuce","Sauce","Onion rings"]
+ ingredients:[
+
+  "Beef steak 120g",
+
+  "Burger bun",
+
+  "Bacon",
+
+  "Swiss cheese",
+
+  "Cheddar cheese",
+
+  "Rocket lettuce",
+
+  "Sauce",
+
+  "Onion rings"
+
+ ]
 
 },
 
@@ -264,7 +444,23 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Sautéed beef tenderloin 100g","Rocket lettuce","Sauce"]
+ ingredients:[
+
+  "Beef steak 120g",
+
+  "Burger bun",
+
+  "Mozzarella cheese",
+
+  "Cheddar cheese",
+
+  "Sautéed beef tenderloin 100g",
+
+  "Rocket lettuce",
+
+  "Sauce"
+
+ ]
 
 },
 
@@ -272,7 +468,21 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g ×3","Burger bun","Cheddar cheese ×3","Bacon","Rocket lettuce","Sauce"]
+ ingredients:[
+
+  "Beef steak 120g ×3",
+
+  "Burger bun",
+
+  "Cheddar cheese ×3",
+
+  "Bacon",
+
+  "Rocket lettuce",
+
+  "Sauce"
+
+ ]
 
 },
 
@@ -280,7 +490,21 @@ const burgerDetails={
 
  meat:"beef",
 
- ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Smoked turkey","Rocket lettuce","Sauce"]
+ ingredients:[
+
+  "Beef steak 120g",
+
+  "Burger bun",
+
+  "Mozzarella cheese",
+
+  "Smoked turkey",
+
+  "Rocket lettuce",
+
+  "Sauce"
+
+ ]
 
 },
 
@@ -288,7 +512,23 @@ const burgerDetails={
 
  meat:"chicken",
 
- ingredients:["Chicken steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Chimichurri","Rocket lettuce","Sauce"]
+ ingredients:[
+
+  "Chicken steak 120g",
+
+  "Burger bun",
+
+  "Mozzarella cheese",
+
+  "Cheddar cheese",
+
+  "Chimichurri",
+
+  "Rocket lettuce",
+
+  "Sauce"
+
+ ]
 
 }
 
@@ -296,69 +536,173 @@ const burgerDetails={
 
 const beefExtras=[
 
-"Extra beef patty","Extra cheddar cheese","Extra mozzarella cheese",
+ "Extra beef patty",
 
-"Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
+ "Extra cheddar cheese",
+
+ "Extra mozzarella cheese",
+
+ "Extra Swiss cheese",
+
+ "Extra mushroom",
+
+ "Extra onion rings",
+
+ "Extra bacon"
 
 ];
 
 const chickenExtras=[
 
-"Extra chicken steak","Extra cheddar cheese","Extra mozzarella cheese",
+ "Extra chicken steak",
 
-"Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
+ "Extra cheddar cheese",
+
+ "Extra mozzarella cheese",
+
+ "Extra Swiss cheese",
+
+ "Extra mushroom",
+
+ "Extra onion rings",
+
+ "Extra bacon"
 
 ];
 
-const loadedFries=["Cheese Fries","Fajita Cheese Fries","Dirty Fries"];
+const loadedFries=[
 
-function esc(v){
+ "Cheese Fries",
 
- return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;")
+ "Fajita Cheese Fries",
 
- .replace(/</g,"&lt;").replace(/>/g,"&gt;");
+ "Dirty Fries"
+
+];
+
+function safeLoad(key,fallback){
+
+ try{
+
+  const value=JSON.parse(localStorage.getItem(key)||"null");
+
+  return Array.isArray(value)?value:fallback;
+
+ }catch(e){
+
+  return fallback;
+
+ }
 
 }
 
-function padOrder(n){return String(n).padStart(3,"0")}
+function esc(v){
+
+ return String(v||"")
+
+ .replace(/&/g,"&amp;")
+
+ .replace(/"/g,"&quot;")
+
+ .replace(/</g,"&lt;")
+
+ .replace(/>/g,"&gt;");
+
+}
+
+function padOrder(n){
+
+ return String(n).padStart(3,"0");
+
+}
+
+function orderCart(o){
+
+ if(Array.isArray(o.cart))return o.cart;
+
+ if(Array.isArray(o.items))return o.items;
+
+ return [];
+
+}
 
 function orderLabel(o){
 
  if(o.type==="DINE IN"){
 
-   if(o.customer&&o.customer.table)return `Table ${o.customer.table}`;
+  if(o.customer&&o.customer.table){
 
-   return o.customer?.name||"Dine In";
+   return `Table ${o.customer.table}`;
+
+  }
+
+  return o.customer?.name||"Dine In";
 
  }
 
- return o.customer?.name||o.type;
+ return o.customer?.name||o.type||"Order";
 
 }
 
 function currentCustomerLabel(){
 
- return orderType==="DINE IN"?`Table ${customer.table}`:customer.name;
+ return orderType==="DINE IN"
+
+ ?`Table ${customer.table}`
+
+ :customer.name;
 
 }
 
 function saveOrders(){
 
- localStorage.setItem("mrkActiveOrders",JSON.stringify(activeOrders));
+ localStorage.setItem(
 
- localStorage.setItem("mrkDraftOrders",JSON.stringify(draftOrders));
+  "mrkActiveOrders",
 
- localStorage.setItem("mrkCompletedOrders",JSON.stringify(completedOrders));
+  JSON.stringify(activeOrders)
 
- localStorage.setItem("mrkNextOrderNumber",String(nextOrderNumber));
+ );
+
+ localStorage.setItem(
+
+  "mrkDraftOrders",
+
+  JSON.stringify(draftOrders)
+
+ );
+
+ localStorage.setItem(
+
+  "mrkCompletedOrders",
+
+  JSON.stringify(completedOrders)
+
+ );
+
+ localStorage.setItem(
+
+  "mrkNextOrderNumber",
+
+  String(nextOrderNumber)
+
+ );
 
 }
 
 function render(){
 
- if(!loggedIn)return loginScreen();
+ if(!loggedIn){
 
- if(role==="kitchen")return kitchenHome();
+  return loginScreen();
+
+ }
+
+ if(role==="kitchen"){
+
+  return kitchenHome();
+
+ }
 
  home();
 
@@ -372,7 +716,13 @@ function loginScreen(){
 
   <div class="loginbox">
 
-   <div class="logo">MR K BURGERS<span>POS SYSTEM</span></div>
+   <div class="logo">
+
+    MR K BURGERS
+
+    <span>POS SYSTEM</span>
+
+   </div>
 
    <div class="form" style="margin-top:30px">
 
@@ -384,19 +734,31 @@ function loginScreen(){
 
     <input id="pin" type="password" placeholder="PIN">
 
-    <button class="primary" onclick="login()">LOGIN</button>
+    <button
+
+     class="primary"
+
+     onclick="login()">
+
+     LOGIN
+
+    </button>
 
    </div>
 
    <p class="muted" style="margin-top:20px">
 
-    Cashier: cashier01<br>Kitchen: kitchen01
+    Cashier: cashier01<br>
+
+    Kitchen: kitchen01
 
    </p>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
@@ -408,13 +770,25 @@ function login(){
 
  if(u==="cashier01"&&p==="1234"){
 
-   loggedIn=true;role="cashier";home();return;
+  loggedIn=true;
+
+  role="cashier";
+
+  home();
+
+  return;
 
  }
 
  if(u==="kitchen01"&&p==="5678"){
 
-   loggedIn=true;role="kitchen";kitchenHome();return;
+  loggedIn=true;
+
+  role="kitchen";
+
+  kitchenHome();
+
+  return;
 
  }
 
@@ -424,7 +798,13 @@ function login(){
 
 function logout(){
 
- loggedIn=false;role="";clearInterval(timerInterval);render();
+ loggedIn=false;
+
+ role="";
+
+ clearInterval(timerInterval);
+
+ render();
 
 }
 
@@ -432,29 +812,57 @@ function header(label){
 
  return `
 
- <div class="logo">MR K BURGERS<span>${label}</span></div>
+ <div class="logo">
 
- <button class="secondary" onclick="logout()">LOG OUT</button>`;
+  MR K BURGERS
+
+  <span>${label}</span>
+
+ </div>
+
+ <button
+
+  class="secondary"
+
+  onclick="logout()">
+
+  LOG OUT
+
+ </button>
+
+ `;
 
 }
+
+/* CASHIER HOME */
 
 function home(){
 
  clearInterval(timerInterval);
 
- const newest=[...activeOrders].sort((a,b)=>b.number-a.number);
+ const newest=[...activeOrders]
+
+ .sort((a,b)=>Number(b.number)-Number(a.number));
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <div class="kitchen-title">${header("CASHIER POS")}</div>
+  <div class="kitchen-title">
+
+   ${header("CASHIER POS")}
+
+  </div>
 
   <div class="panel">
 
    <div class="grid">
 
-    <div class="card clickable" onclick="newOrder()">
+    <div
+
+     class="card clickable"
+
+     onclick="newOrder()">
 
      <div class="category-icon">🧾</div>
 
@@ -462,7 +870,11 @@ function home(){
 
     </div>
 
-    <div class="card clickable" onclick="showDraftOrders()">
+    <div
+
+     class="card clickable"
+
+     onclick="showDraftOrders()">
 
      <div class="category-icon">⏸️</div>
 
@@ -472,7 +884,11 @@ function home(){
 
     </div>
 
-    <div class="card clickable" onclick="showActiveOrders()">
+    <div
+
+     class="card clickable"
+
+     onclick="showActiveOrders()">
 
      <div class="category-icon">🔥</div>
 
@@ -488,17 +904,29 @@ function home(){
 
   <div class="panel">
 
-   <span class="badge">LIVE KITCHEN ORDERS</span>
+   <span class="badge">
+
+    LIVE KITCHEN ORDERS
+
+   </span>
 
    <h2>Current Orders</h2>
 
-   ${newest.length?newest.map(cashierOrderCard).join(""):
+   ${
 
-   `<p class="muted">No active orders.</p>`}
+    newest.length
+
+    ?newest.map(cashierOrderCard).join("")
+
+    :`<p class="muted">No active orders.</p>`
+
+   }
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
  startTimerRefresh();
 
@@ -508,29 +936,61 @@ function cashierOrderCard(o){
 
  return `
 
- <div class="order-card clickable" onclick="activeOrderDetail(${o.number})">
+ <div
+
+  class="order-card clickable"
+
+  onclick="activeOrderDetail(${Number(o.number)})">
 
   <div class="order-top">
 
    <div>
 
-    <div class="order-number">#${padOrder(o.number)}</div>
+    <div class="order-number">
 
-    <strong>${esc(orderLabel(o))}</strong><br>
+     #${padOrder(o.number)}
 
-    <span class="muted">${esc(o.type)}</span>
+    </div>
+
+    <strong>
+
+     ${esc(orderLabel(o))}
+
+    </strong>
+
+    <br>
+
+    <span class="muted">
+
+     ${esc(o.type)}
+
+    </span>
 
    </div>
 
    <div style="text-align:right">
 
-    <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
+    <div
 
-     ${formatTimer(o.startedAt,o.readyAt)}
+     class="timer"
+
+     data-start="${o.startedAt||Date.now()}"
+
+     data-stop="${o.readyAt||""}">
+
+     ${formatTimer(
+
+      o.startedAt||Date.now(),
+
+      o.readyAt
+
+     )}
 
     </div>
 
-    <span class="status ${o.status==="READY"?"ready":""}">
+    <span
+
+     class="status ${o.status==="READY"?"ready":""}">
 
      ${esc(o.status||"NEW")}
 
@@ -540,23 +1000,55 @@ function cashierOrderCard(o){
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
+/* NEW ORDER */
+
 function newOrder(){
 
- orderType="";currentDraftId=null;cart=[];
+ orderType="";
 
- customer={name:"",phone:"",address:"",table:""};
+ currentDraftId=null;
+
+ cart=[];
+
+ customer={
+
+  name:"",
+
+  phone:"",
+
+  address:"",
+
+  table:""
+
+ };
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="home()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>NEW ORDER</span></div>
+   class="back"
+
+   onclick="home()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>NEW ORDER</span>
+
+  </div>
 
   <div class="panel">
 
@@ -564,21 +1056,39 @@ function newOrder(){
 
    <div class="grid">
 
-    <div class="card category clickable" onclick="selectOrderType('DINE IN')">
+    <div
 
-     <div class="category-icon">🍽️</div><h3>DINE IN</h3>
+     class="card category clickable"
+
+     onclick="selectOrderType('DINE IN')">
+
+     <div class="category-icon">🍽️</div>
+
+     <h3>DINE IN</h3>
 
     </div>
 
-    <div class="card category clickable" onclick="selectOrderType('TAKEAWAY')">
+    <div
 
-     <div class="category-icon">🥡</div><h3>TAKEAWAY</h3>
+     class="card category clickable"
+
+     onclick="selectOrderType('TAKEAWAY')">
+
+     <div class="category-icon">🥡</div>
+
+     <h3>TAKEAWAY</h3>
 
     </div>
 
-    <div class="card category clickable" onclick="selectOrderType('DELIVERY')">
+    <div
 
-     <div class="category-icon">🛵</div><h3>DELIVERY</h3>
+     class="card category clickable"
+
+     onclick="selectOrderType('DELIVERY')">
+
+     <div class="category-icon">🛵</div>
+
+     <h3>DELIVERY</h3>
 
     </div>
 
@@ -586,13 +1096,17 @@ function newOrder(){
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function selectOrderType(t){
 
- orderType=t;customerForm();
+ orderType=t;
+
+ customerForm();
 
 }
 
@@ -602,33 +1116,81 @@ function customerForm(){
 
  if(orderType==="DINE IN"){
 
-   fields=`<label>Table Number</label>
+  fields=`
 
-   <input id="table" inputmode="numeric" value="${esc(customer.table)}" placeholder="Example: 6">`;
+  <label>Table Number</label>
 
- }else if(orderType==="TAKEAWAY"){
+  <input
 
-   fields=`<label>Customer Name</label>
+   id="table"
 
-   <input id="name" value="${esc(customer.name)}">
+   inputmode="numeric"
 
-   <label>Phone Number (optional)</label>
+   value="${esc(customer.table)}"
 
-   <input id="phone" value="${esc(customer.phone)}" placeholder="+223">`;
+   placeholder="Example: 6">
 
- }else{
+  `;
 
-   fields=`<label>Customer Name</label>
+ }
 
-   <input id="name" value="${esc(customer.name)}">
+ else if(orderType==="TAKEAWAY"){
 
-   <label>Phone Number</label>
+  fields=`
 
-   <input id="phone" value="${esc(customer.phone)}" placeholder="+223">
+  <label>Customer Name</label>
 
-   <label>Delivery Address</label>
+  <input
 
-   <input id="address" value="${esc(customer.address)}">`;
+   id="name"
+
+   value="${esc(customer.name)}">
+
+  <label>Phone Number (optional)</label>
+
+  <input
+
+   id="phone"
+
+   value="${esc(customer.phone)}"
+
+   placeholder="+223">
+
+  `;
+
+ }
+
+ else{
+
+  fields=`
+
+  <label>Customer Name</label>
+
+  <input
+
+   id="name"
+
+   value="${esc(customer.name)}">
+
+  <label>Phone Number</label>
+
+  <input
+
+   id="phone"
+
+   value="${esc(customer.phone)}"
+
+   placeholder="+223">
+
+  <label>Delivery Address</label>
+
+  <input
+
+   id="address"
+
+   value="${esc(customer.address)}">
+
+  `;
 
  }
 
@@ -636,23 +1198,49 @@ function customerForm(){
 
  <div class="app">
 
-  <button class="back" onclick="newOrder()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>${orderType}</span></div>
+   class="back"
+
+   onclick="newOrder()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${orderType}</span>
+
+  </div>
 
   <div class="panel">
 
    <h2>Order Details</h2>
 
-   <div class="form">${fields}
+   <div class="form">
 
-    <button class="primary" onclick="saveCustomer()">CONTINUE TO MENU</button>
+    ${fields}
+
+    <button
+
+     class="primary"
+
+     onclick="saveCustomer()">
+
+     CONTINUE TO MENU
+
+    </button>
 
    </div>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
@@ -660,35 +1248,105 @@ function saveCustomer(){
 
  if(orderType==="DINE IN"){
 
-   const table=document.getElementById("table").value.trim();
+  const table=
 
-   if(!table)return alert("Enter the table number.");
+  document.getElementById("table")
 
-   customer={name:"",phone:"",address:"",table};
+  .value.trim();
 
- }else if(orderType==="TAKEAWAY"){
+  if(!table){
 
-   const name=document.getElementById("name").value.trim();
+   return alert("Enter the table number.");
 
-   if(!name)return alert("Enter the customer name.");
+  }
 
-   customer={
+  customer={
 
-    name,phone:document.getElementById("phone").value.trim(),address:"",table:""
+   name:"",
 
-   };
+   phone:"",
 
- }else{
+   address:"",
 
-   const name=document.getElementById("name").value.trim();
+   table
 
-   const phone=document.getElementById("phone").value.trim();
+  };
 
-   const address=document.getElementById("address").value.trim();
+ }
 
-   if(!name||!phone||!address)return alert("Complete all delivery details.");
+ else if(orderType==="TAKEAWAY"){
 
-   customer={name,phone,address,table:""};
+  const name=
+
+  document.getElementById("name")
+
+  .value.trim();
+
+  if(!name){
+
+   return alert("Enter the customer name.");
+
+  }
+
+  customer={
+
+   name,
+
+   phone:
+
+    document.getElementById("phone")
+
+    .value.trim(),
+
+   address:"",
+
+   table:""
+
+  };
+
+ }
+
+ else{
+
+  const name=
+
+   document.getElementById("name")
+
+   .value.trim();
+
+  const phone=
+
+   document.getElementById("phone")
+
+   .value.trim();
+
+  const address=
+
+   document.getElementById("address")
+
+   .value.trim();
+
+  if(!name||!phone||!address){
+
+   return alert(
+
+    "Complete all delivery details."
+
+   );
+
+  }
+
+  customer={
+
+   name,
+
+   phone,
+
+   address,
+
+   table:""
+
+  };
 
  }
 
@@ -696,15 +1354,31 @@ function saveCustomer(){
 
 }
 
+/* MENU */
+
 function menuCategories(){
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="customerForm()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>MENU</span></div>
+   class="back"
+
+   onclick="customerForm()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MENU</span>
+
+  </div>
 
   <div class="panel">
 
@@ -724,27 +1398,73 @@ function menuCategories(){
 
    <div class="actions">
 
-    <button class="secondary" onclick="viewCart()">VIEW ORDER
+    <button
 
-     <span class="cart-count">${cart.reduce((a,b)=>a+b.qty,0)}</span>
+     class="secondary"
+
+     onclick="viewCart()">
+
+     VIEW ORDER
+
+     <span class="cart-count">
+
+      ${
+
+       cart.reduce(
+
+        (a,b)=>a+Number(b.qty||0),
+
+        0
+
+       )
+
+      }
+
+     </span>
 
     </button>
 
-    <button class="secondary" onclick="saveAndHoldOrder()">SAVE & HOLD</button>
+    <button
+
+     class="secondary"
+
+     onclick="saveAndHoldOrder()">
+
+     SAVE & HOLD
+
+    </button>
 
    </div>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function cat(icon,name){
 
- return `<div class="card category clickable" onclick="openCategory('${name}')">
+ return `
 
- <div class="category-icon">${icon}</div><h3>${name}</h3></div>`;
+ <div
+
+  class="card category clickable"
+
+  onclick="openCategory('${name}')">
+
+  <div class="category-icon">
+
+   ${icon}
+
+  </div>
+
+  <h3>${name}</h3>
+
+ </div>
+
+ `;
 
 }
 
@@ -752,35 +1472,77 @@ function openCategory(name){
 
  currentCategory=name;
 
- let items=name==="Burgers"?burgers:
+ let items=
 
- name==="Sides"?sides:
+ name==="Burgers"
 
- name==="Salads"?salads:
+ ?burgers:
 
- name==="Soft Drinks"?drinks:sauces;
+ name==="Sides"
+
+ ?sides:
+
+ name==="Salads"
+
+ ?salads:
+
+ name==="Soft Drinks"
+
+ ?drinks:
+
+ sauces;
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="menuCategories()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>${name.toUpperCase()}</span></div>
+   class="back"
+
+   onclick="menuCategories()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${name.toUpperCase()}</span>
+
+  </div>
 
   <div class="panel">
 
    <div class="grid">
 
-    ${items.map(i=>`<div class="card clickable" onclick='selectItem(${JSON.stringify(i)})'>
+    ${
 
-     <h3>${i}</h3></div>`).join("")}
+     items.map(i=>`
+
+     <div
+
+      class="card clickable"
+
+      onclick='selectItem(${JSON.stringify(i)})'>
+
+      <h3>${i}</h3>
+
+     </div>
+
+     `).join("")
+
+    }
 
    </div>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
@@ -788,21 +1550,135 @@ function selectItem(name){
 
  currentQty=1;
 
- if(burgerDetails[name])return burgerCustomize(name);
+ if(burgerDetails[name]){
 
- if(loadedFries.includes(name))return loadedCustomize(name);
+  return burgerCustomize(name);
+
+ }
+
+ if(loadedFries.includes(name)){
+
+  return loadedCustomize(name);
+
+ }
 
  simpleItem(name);
 
 }
 
+/* CUSTOMIZATION */
+
 function resetExtras(extras){
 
- currentExtraQty={};extras.forEach(e=>currentExtraQty[e]=0);
+ currentExtraQty={};
+
+ extras.forEach(
+
+  e=>currentExtraQty[e]=0
+
+ );
 
 }
 
-function safeId(t){return "x"+t.replace(/[^a-zA-Z0-9]/g,"")}
+function resetIngredients(){
+
+ currentRemovedIngredients=[];
+
+}
+
+function safeId(t){
+
+ return "x"+
+
+ t.replace(
+
+  /[^a-zA-Z0-9]/g,
+
+  ""
+
+ );
+
+}
+
+function ingredientId(i){
+
+ return "ing"+i;
+
+}
+
+function ingredientRows(ingredients){
+
+ return ingredients.map(
+
+  (ingredient,index)=>`
+
+ <div class="ingredient-row">
+
+  <input
+
+   type="checkbox"
+
+   id="${ingredientId(index)}"
+
+   checked
+
+   onchange='toggleIngredient(
+
+    ${JSON.stringify(ingredient)},
+
+    this.checked
+
+   )'>
+
+  <label for="${ingredientId(index)}">
+
+   ${esc(ingredient)}
+
+  </label>
+
+ </div>
+
+ `).join("");
+
+}
+
+function toggleIngredient(
+
+ ingredient,
+
+ isChecked
+
+){
+
+ if(isChecked){
+
+  currentRemovedIngredients=
+
+  currentRemovedIngredients.filter(
+
+   x=>x!==ingredient
+
+  );
+
+ }else{
+
+  if(
+
+   !currentRemovedIngredients
+
+   .includes(ingredient)
+
+  ){
+
+   currentRemovedIngredients
+
+   .push(ingredient);
+
+  }
+
+ }
+
+}
 
 function extraRows(extras){
 
@@ -810,27 +1686,79 @@ function extraRows(extras){
 
  <div class="extra-row">
 
-  <div class="extra-name">${e}</div>
+  <div class="extra-name">
 
-  <div class="extra-qty">
-
-   <button onclick='changeExtraQty(${JSON.stringify(e)},-1)'>−</button>
-
-   <strong id="${safeId(e)}">${currentExtraQty[e]||0}</strong>
-
-   <button onclick='changeExtraQty(${JSON.stringify(e)},1)'>+</button>
+   ${e}
 
   </div>
 
- </div>`).join("");
+  <div class="extra-qty">
+
+   <button
+
+    onclick='changeExtraQty(
+
+     ${JSON.stringify(e)},
+
+     -1
+
+    )'>
+
+    −
+
+   </button>
+
+   <strong id="${safeId(e)}">
+
+    ${currentExtraQty[e]||0}
+
+   </strong>
+
+   <button
+
+    onclick='changeExtraQty(
+
+     ${JSON.stringify(e)},
+
+     1
+
+    )'>
+
+    +
+
+   </button>
+
+  </div>
+
+ </div>
+
+ `).join("");
 
 }
 
 function changeExtraQty(e,n){
 
- currentExtraQty[e]=Math.max(0,(currentExtraQty[e]||0)+n);
+ currentExtraQty[e]=Math.max(
 
- const el=document.getElementById(safeId(e));if(el)el.textContent=currentExtraQty[e];
+  0,
+
+  (currentExtraQty[e]||0)+n
+
+ );
+
+ const el=
+
+ document.getElementById(
+
+  safeId(e)
+
+ );
+
+ if(el){
+
+  el.textContent=currentExtraQty[e];
+
+ }
 
 }
 
@@ -838,17 +1766,39 @@ function burgerCustomize(name){
 
  const d=burgerDetails[name];
 
- const extras=d.meat==="chicken"?chickenExtras:beefExtras;
+ const extras=
+
+ d.meat==="chicken"
+
+ ?chickenExtras
+
+ :beefExtras;
 
  resetExtras(extras);
+
+ resetIngredients();
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="openCategory('Burgers')">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>CUSTOMIZE</span></div>
+   class="back"
+
+   onclick="openCategory('Burgers')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>CUSTOMIZE</span>
+
+  </div>
 
   <div class="panel">
 
@@ -856,7 +1806,13 @@ function burgerCustomize(name){
 
    <h3>Ingredients</h3>
 
-   ${d.ingredients.map(i=>`<div class="muted">• ${i}</div>`).join("")}
+   <p class="muted">
+
+    Uncheck any ingredient the customer does not want.
+
+   </p>
+
+   ${ingredientRows(d.ingredients)}
 
    <h3>Extras</h3>
 
@@ -866,27 +1822,61 @@ function burgerCustomize(name){
 
    ${qtyHtml()}
 
-   <button class="primary" style="margin-top:20px;width:100%"
+   <button
 
-    onclick='addCustomizedItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick='addCustomizedItem(
+
+     ${JSON.stringify(name)}
+
+    )'>
+
+    ADD TO ORDER
+
+   </button>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function loadedCustomize(name){
 
- resetExtras(["Extra grated cheese"]);
+ resetExtras([
+
+  "Extra grated cheese"
+
+ ]);
+
+ currentRemovedIngredients=[];
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="openCategory('Sides')">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>CUSTOMIZE</span></div>
+   class="back"
+
+   onclick="openCategory('Sides')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>CUSTOMIZE</span>
+
+  </div>
 
   <div class="panel">
 
@@ -894,75 +1884,183 @@ function loadedCustomize(name){
 
    <h3>Extras</h3>
 
-   ${extraRows(["Extra grated cheese"])}
+   ${extraRows([
 
-   <h3>PRODUCT QUANTITY</h3>${qtyHtml()}
+    "Extra grated cheese"
 
-   <button class="primary" style="margin-top:20px;width:100%"
+   ])}
 
-    onclick='addCustomizedItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
+   <h3>PRODUCT QUANTITY</h3>
+
+   ${qtyHtml()}
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick='addCustomizedItem(
+
+     ${JSON.stringify(name)}
+
+    )'>
+
+    ADD TO ORDER
+
+   </button>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function simpleItem(name){
 
+ currentRemovedIngredients=[];
+
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="openCategory('${currentCategory}')">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>ADD ITEM</span></div>
+   class="back"
+
+   onclick="openCategory('${currentCategory}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>ADD ITEM</span>
+
+  </div>
 
   <div class="panel">
 
    <h2>${name}</h2>
 
-   <h3>PRODUCT QUANTITY</h3>${qtyHtml()}
+   <h3>PRODUCT QUANTITY</h3>
 
-   <button class="primary" style="margin-top:20px;width:100%"
+   ${qtyHtml()}
 
-    onclick='addSimpleItem(${JSON.stringify(name)})'>ADD TO ORDER</button>
+   <button
+
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick='addSimpleItem(
+
+     ${JSON.stringify(name)}
+
+    )'>
+
+    ADD TO ORDER
+
+   </button>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function qtyHtml(){
 
- return `<div class="qty">
+ return `
 
- <button onclick="changeQty(-1)">−</button>
+ <div class="qty">
 
- <strong id="qty">${currentQty}</strong>
+  <button onclick="changeQty(-1)">
 
- <button onclick="changeQty(1)">+</button>
+   −
 
- </div>`;
+  </button>
+
+  <strong id="qty">
+
+   ${currentQty}
+
+  </strong>
+
+  <button onclick="changeQty(1)">
+
+   +
+
+  </button>
+
+ </div>
+
+ `;
 
 }
 
 function changeQty(n){
 
- currentQty=Math.max(1,currentQty+n);
+ currentQty=Math.max(
 
- const el=document.getElementById("qty");if(el)el.textContent=currentQty;
+  1,
+
+  currentQty+n
+
+ );
+
+ const el=
+
+ document.getElementById("qty");
+
+ if(el){
+
+  el.textContent=currentQty;
+
+ }
 
 }
 
 function addCustomizedItem(name){
 
- const extras=Object.entries(currentExtraQty)
+ const extras=
 
- .filter(([n,q])=>q>0).map(([name,qty])=>({name,qty}));
+ Object.entries(currentExtraQty)
 
- cart.push({name,qty:currentQty,extras});
+ .filter(([n,q])=>q>0)
+
+ .map(([name,qty])=>({
+
+  name,
+
+  qty
+
+ }));
+
+ cart.push({
+
+  name,
+
+  qty:currentQty,
+
+  extras,
+
+  removed:[
+
+   ...currentRemovedIngredients
+
+  ]
+
+ });
+
+ currentRemovedIngredients=[];
 
  menuCategories();
 
@@ -970,9 +2068,37 @@ function addCustomizedItem(name){
 
 function addSimpleItem(name){
 
- cart.push({name,qty:currentQty,extras:[]});
+ cart.push({
+
+  name,
+
+  qty:currentQty,
+
+  extras:[],
+
+  removed:[]
+
+ });
 
  menuCategories();
+
+}
+
+/* CART */
+
+function removedHtml(i){
+
+ return (i.removed||[])
+
+ .map(r=>`
+
+ <div class="no-item">
+
+  NO ${esc(String(r).toUpperCase())}
+
+ </div>
+
+ `).join("");
 
 }
 
@@ -982,71 +2108,217 @@ function viewCart(){
 
  <div class="app">
 
-  <button class="back" onclick="menuCategories()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>ORDER SUMMARY</span></div>
+   class="back"
+
+   onclick="menuCategories()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>ORDER SUMMARY</span>
+
+  </div>
 
   <div class="panel">
 
-   <h2>${orderType} — ${esc(currentCustomerLabel())}</h2>
+   <h2>
 
-   ${cart.length?cart.map((i,index)=>`
+    ${orderType}
+
+    —
+
+    ${esc(currentCustomerLabel())}
+
+   </h2>
+
+   ${
+
+    cart.length
+
+    ?cart.map((i,index)=>`
 
     <div class="summary">
 
-     <strong>${i.qty} × ${i.name}</strong>
+     <strong>
 
-     ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
+      ${i.qty} × ${esc(i.name)}
 
-     <button class="danger" style="margin-top:12px"
+     </strong>
 
-      onclick="removeCartItem(${index})">REMOVE ITEM</button>
+     ${removedHtml(i)}
 
-    </div>`).join(""):`<p class="muted">Order is empty.</p>`}
+     ${
+
+      (i.extras||[])
+
+      .map(e=>`
+
+       <div class="muted">
+
+        ${e.qty} × ${esc(e.name)}
+
+       </div>
+
+      `).join("")
+
+     }
+
+     <button
+
+      class="danger"
+
+      style="margin-top:12px"
+
+      onclick="removeCartItem(${index})">
+
+      REMOVE ITEM
+
+     </button>
+
+    </div>
+
+    `).join("")
+
+    :`<p class="muted">
+
+      Order is empty.
+
+     </p>`
+
+   }
 
    <div class="actions">
 
-    <button class="secondary" onclick="saveAndHoldOrder()">SAVE & HOLD</button>
+    <button
 
-    <button class="primary" onclick="checkoutOrder()">CHECKOUT</button>
+     class="secondary"
+
+     onclick="saveAndHoldOrder()">
+
+     SAVE & HOLD
+
+    </button>
+
+    <button
+
+     class="primary"
+
+     onclick="checkoutOrder()">
+
+     CHECKOUT
+
+    </button>
 
    </div>
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
-function removeCartItem(i){cart.splice(i,1);viewCart()}
+function removeCartItem(i){
+
+ cart.splice(i,1);
+
+ viewCart();
+
+}
+
+/* SAVE & HOLD */
 
 function saveAndHoldOrder(){
 
- if(!cart.length)return alert("Add at least one item first.");
+ if(!cart.length){
+
+  return alert(
+
+   "Add at least one item first."
+
+  );
+
+ }
 
  const draft={
 
-  id:currentDraftId||Date.now(),
+  id:
+
+   currentDraftId||
+
+   Date.now(),
 
   type:orderType,
 
-  customer:{...customer},
+  customer:{
 
-  cart:JSON.parse(JSON.stringify(cart)),
+   ...customer
 
-  savedAt:Date.now()
+  },
+
+  cart:
+
+   JSON.parse(
+
+    JSON.stringify(cart)
+
+   ),
+
+  savedAt:
+
+   Date.now()
 
  };
 
- const ix=draftOrders.findIndex(d=>d.id===draft.id);
+ const ix=
 
- if(ix>=0)draftOrders[ix]=draft;else draftOrders.push(draft);
+ draftOrders.findIndex(
 
- currentDraftId=draft.id;saveOrders();
+  d=>d.id===draft.id
 
- currentDraftId=null;cart=[];customer={name:"",phone:"",address:"",table:""};
+ );
 
- orderType="";home();
+ if(ix>=0){
+
+  draftOrders[ix]=draft;
+
+ }else{
+
+  draftOrders.push(draft);
+
+ }
+
+ currentDraftId=draft.id;
+
+ saveOrders();
+
+ currentDraftId=null;
+
+ cart=[];
+
+ customer={
+
+  name:"",
+
+  phone:"",
+
+  address:"",
+
+  table:""
+
+ };
+
+ orderType="";
+
+ home();
 
 }
 
@@ -1056,71 +2328,225 @@ function showDraftOrders(){
 
  <div class="app">
 
-  <button class="back" onclick="home()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>ORDERS IN PROGRESS</span></div>
+   class="back"
 
-  <div class="panel">
+   onclick="home()">
 
-   ${draftOrders.length?draftOrders.map(d=>`
+   ← BACK
 
-    <div class="order-card clickable" onclick="resumeDraft(${d.id})">
+  </button>
 
-     <span class="draft-status">ON HOLD</span>
+  <div class="logo">
 
-     <h3>${esc(orderLabel(d))}</h3>
+   MR K BURGERS
 
-     <div class="muted">${d.type} • ${d.cart.reduce((a,b)=>a+b.qty,0)} items</div>
-
-    </div>`).join(""):`<p class="muted">No orders on hold.</p>`}
+   <span>ORDERS IN PROGRESS</span>
 
   </div>
 
- </div>`;
+  <div class="panel">
+
+   ${
+
+    draftOrders.length
+
+    ?draftOrders.map(d=>`
+
+     <div
+
+      class="order-card clickable"
+
+      onclick="resumeDraft(${d.id})">
+
+      <span class="draft-status">
+
+       ON HOLD
+
+      </span>
+
+      <h3>
+
+       ${esc(orderLabel(d))}
+
+      </h3>
+
+      <div class="muted">
+
+       ${esc(d.type)}
+
+       •
+
+       ${
+
+        orderCart(d)
+
+        .reduce(
+
+         (a,b)=>
+
+         a+Number(b.qty||0),
+
+         0
+
+        )
+
+       }
+
+       items
+
+      </div>
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted">
+
+      No orders on hold.
+
+     </p>`
+
+   }
+
+  </div>
+
+ </div>
+
+ `;
 
 }
 
 function resumeDraft(id){
 
- const d=draftOrders.find(x=>x.id===id);if(!d)return;
+ const d=
 
- currentDraftId=d.id;orderType=d.type;customer={...d.customer};
+ draftOrders.find(
 
- cart=JSON.parse(JSON.stringify(d.cart));menuCategories();
+  x=>x.id===id
+
+ );
+
+ if(!d){
+
+  return;
+
+ }
+
+ currentDraftId=d.id;
+
+ orderType=d.type;
+
+ customer={
+
+  ...d.customer
+
+ };
+
+ cart=
+
+ JSON.parse(
+
+  JSON.stringify(
+
+   orderCart(d)
+
+  )
+
+ );
+
+ menuCategories();
 
 }
 
+/* CHECKOUT */
+
 function checkoutOrder(){
 
- if(!cart.length)return alert("Add at least one item before checkout.");
+ if(!cart.length){
+
+  return alert(
+
+   "Add at least one item before checkout."
+
+  );
+
+ }
 
  if(currentDraftId){
 
-   draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
+  draftOrders=
+
+  draftOrders.filter(
+
+   d=>d.id!==currentDraftId
+
+  );
 
  }
 
  const order={
 
-  number:nextOrderNumber++,
+  number:
 
-  type:orderType,
+   nextOrderNumber++,
 
-  customer:{...customer},
+  type:
 
-  cart:JSON.parse(JSON.stringify(cart)),
+   orderType,
 
-  startedAt:Date.now(),
+  customer:{
 
-  readyAt:null,
+   ...customer
 
-  status:"NEW"
+  },
+
+  cart:
+
+   JSON.parse(
+
+    JSON.stringify(cart)
+
+   ),
+
+  startedAt:
+
+   Date.now(),
+
+  readyAt:
+
+   null,
+
+  completedAt:
+
+   null,
+
+  status:
+
+   "NEW"
 
  };
 
- activeOrders.push(order);saveOrders();
+ activeOrders.push(order);
 
- currentDraftId=null;cart=[];customer={name:"",phone:"",address:"",table:""};
+ saveOrders();
+
+ currentDraftId=null;
+
+ cart=[];
+
+ customer={
+
+  name:"",
+
+  phone:"",
+
+  address:"",
+
+  table:""
+
+ };
 
  orderType="";
 
@@ -1128,47 +2554,129 @@ function checkoutOrder(){
 
  <div class="app">
 
-  <div class="logo">MR K BURGERS<span>ORDER SENT</span></div>
+  <div class="logo">
 
-  <div class="panel">
+   MR K BURGERS
 
-   <h1>Order #${padOrder(order.number)}</h1>
-
-   <p>Order has been added to Active Orders.</p>
-
-   <div class="system-note">👨‍🍳 Kitchen: Order queued for kitchen display.</div>
-
-   <div class="system-note">🧾 Printing: 2 receipts queued.</div>
-
-   <button class="primary" style="margin-top:20px" onclick="home()">DONE</button>
+   <span>ORDER SENT</span>
 
   </div>
 
- </div>`;
+  <div class="panel">
+
+   <h1>
+
+    Order #${padOrder(order.number)}
+
+   </h1>
+
+   <p>
+
+    Order has been added to Active Orders.
+
+   </p>
+
+   <div class="system-note">
+
+    👨‍🍳 Kitchen:
+
+    Order queued for kitchen display.
+
+   </div>
+
+   <div class="system-note">
+
+    🧾 Printing:
+
+    2 receipts queued.
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px"
+
+    onclick="home()">
+
+    DONE
+
+   </button>
+
+  </div>
+
+ </div>
+
+ `;
 
 }
 
+/* CASHIER ACTIVE ORDERS */
+
 function showActiveOrders(){
 
- const newest=[...activeOrders].sort((a,b)=>b.number-a.number);
+ const newest=
+
+ [...activeOrders]
+
+ .sort(
+
+  (a,b)=>
+
+  Number(b.number)-
+
+  Number(a.number)
+
+ );
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="home()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>ACTIVE ORDERS</span></div>
+   class="back"
 
-  <div class="panel">
+   onclick="home()">
 
-   ${newest.length?newest.map(cashierOrderCard).join(""):
+   ← BACK
 
-   `<p class="muted">No active orders.</p>`}
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>ACTIVE ORDERS</span>
 
   </div>
 
- </div>`;
+  <div class="panel">
+
+   ${
+
+    newest.length
+
+    ?newest.map(
+
+     cashierOrderCard
+
+    ).join("")
+
+    :`<p class="muted">
+
+      No active orders.
+
+     </p>`
+
+   }
+
+  </div>
+
+ </div>
+
+ `;
 
  startTimerRefresh();
 
@@ -1176,105 +2684,449 @@ function showActiveOrders(){
 
 function activeOrderDetail(number){
 
- const o=activeOrders.find(x=>x.number===number);if(!o)return;
+ const o=
+
+ activeOrders.find(
+
+  x=>
+
+  Number(x.number)===
+
+  Number(number)
+
+ );
+
+ if(!o){
+
+  return home();
+
+ }
+
+ const items=
+
+ orderCart(o);
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <button class="back" onclick="showActiveOrders()">← BACK</button>
+  <button
 
-  <div class="logo">MR K BURGERS<span>ACTIVE ORDER</span></div>
+   class="back"
+
+   onclick="showActiveOrders()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>ACTIVE ORDER</span>
+
+  </div>
 
   <div class="panel">
 
    <div class="order-top">
 
-    <div><div class="order-number">#${padOrder(o.number)}</div>
-
-    <h2>${esc(orderLabel(o))}</h2></div>
-
     <div>
 
-     <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
+     <div class="order-number">
 
-      ${formatTimer(o.startedAt,o.readyAt)}
+      #${padOrder(o.number)}
 
      </div>
 
-     <span class="status ${o.status==="READY"?"ready":""}">${o.status}</span>
+     <h2>
+
+      ${esc(orderLabel(o))}
+
+     </h2>
+
+    </div>
+
+    <div>
+
+     <div
+
+      class="timer"
+
+      data-start="${o.startedAt||Date.now()}"
+
+      data-stop="${o.readyAt||""}">
+
+      ${
+
+       formatTimer(
+
+        o.startedAt||Date.now(),
+
+        o.readyAt
+
+       )
+
+      }
+
+     </div>
+
+     <span
+
+      class="status ${o.status==="READY"?"ready":""}">
+
+      ${esc(o.status||"NEW")}
+
+     </span>
 
     </div>
 
    </div>
 
-   <div class="info-row"><span>Order Type</span><strong>${o.type}</strong></div>
+   <div class="info-row">
 
-   ${o.type==="DINE IN"?
+    <span>Order Type</span>
 
-   `<div class="info-row"><span>Table Number</span><strong>${esc(o.customer.table)}</strong></div>`:
+    <strong>
 
-   `<div class="info-row"><span>Customer</span><strong>${esc(o.customer.name)}</strong></div>
+     ${esc(o.type)}
 
-    ${o.customer.phone?`<div class="info-row"><span>Phone</span><strong>${esc(o.customer.phone)}</strong></div>`:""}`}
+    </strong>
+
+   </div>
+
+   ${
+
+    o.type==="DINE IN"
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Table Number</span>
+
+      <strong>
+
+       ${esc(o.customer?.table)}
+
+      </strong>
+
+     </div>
+
+    `
+
+    :`
+
+     <div class="info-row">
+
+      <span>Customer</span>
+
+      <strong>
+
+       ${esc(o.customer?.name)}
+
+      </strong>
+
+     </div>
+
+     ${
+
+      o.customer?.phone
+
+      ?`
+
+       <div class="info-row">
+
+        <span>Phone</span>
+
+        <strong>
+
+         ${esc(o.customer.phone)}
+
+        </strong>
+
+       </div>
+
+      `
+
+      :""
+
+     }
+
+     ${
+
+      o.type==="DELIVERY"&&
+
+      o.customer?.address
+
+      ?`
+
+       <div class="info-row">
+
+        <span>Address</span>
+
+        <strong>
+
+         ${esc(o.customer.address)}
+
+        </strong>
+
+       </div>
+
+      `
+
+      :""
+
+     }
+
+    `
+
+   }
 
    <h3>Items</h3>
 
-   ${o.cart.map(i=>`<div class="summary">
+   ${
 
-    <strong>${i.qty} × ${i.name}</strong>
+    items.length
 
-    ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
+    ?items.map(i=>`
 
-   </div>`).join("")}
+     <div class="summary">
 
-   <div class="system-note">🔒 Checked-out orders are read-only for cashier.</div>
+      <strong>
+
+       ${i.qty} × ${esc(i.name)}
+
+      </strong>
+
+      ${removedHtml(i)}
+
+      ${
+
+       (i.extras||[])
+
+       .map(e=>`
+
+        <div class="muted">
+
+         ${e.qty} × ${esc(e.name)}
+
+        </div>
+
+       `).join("")
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`
+
+     <p class="muted">
+
+      No item details available.
+
+     </p>
+
+    `
+
+   }
+
+   ${
+
+    o.status==="READY"
+
+    ?`
+
+     <div class="system-note">
+
+      ✅ Kitchen has marked this
+
+      order READY.
+
+      Hand it over,
+
+      then complete it.
+
+     </div>
+
+     <button
+
+      class="green"
+
+      style="margin-top:18px;width:100%"
+
+      onclick="cashierCompleteOrder(
+
+       ${Number(o.number)}
+
+      )">
+
+      COMPLETED
+
+     </button>
+
+    `
+
+    :`
+
+     <div class="system-note">
+
+      🔒 Checked-out orders are
+
+      read-only until the kitchen
+
+      marks them READY.
+
+     </div>
+
+    `
+
+   }
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
  startTimerRefresh();
 
 }
 
-/* =========================
+function cashierCompleteOrder(number){
 
-   KITCHEN
+ const ix=
 
-========================= */
+ activeOrders.findIndex(
+
+  x=>
+
+  Number(x.number)===
+
+  Number(number)
+
+ );
+
+ if(ix<0){
+
+  return home();
+
+ }
+
+ const o=
+
+ activeOrders[ix];
+
+ if(o.status!=="READY"){
+
+  return alert(
+
+   "Kitchen must mark the order READY first."
+
+  );
+
+ }
+
+ o.status="COMPLETED";
+
+ o.completedAt=Date.now();
+
+ completedOrders.push(o);
+
+ activeOrders.splice(
+
+  ix,
+
+  1
+
+ );
+
+ saveOrders();
+
+ home();
+
+}
+
+/* KITCHEN */
 
 function kitchenHome(){
 
  clearInterval(timerInterval);
 
- const orders=[...activeOrders].sort((a,b)=>a.number-b.number);
+ const orders=
+
+ [...activeOrders]
+
+ .sort(
+
+  (a,b)=>
+
+  Number(a.number)-
+
+  Number(b.number)
+
+ );
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
-  <div class="kitchen-title">${header("KITCHEN DISPLAY")}</div>
+  <div class="kitchen-title">
 
-  <div class="panel">
-
-   <span class="badge">👨‍🍳 LIVE KITCHEN</span>
-
-   <h1>Kitchen Orders</h1>
-
-   ${orders.length?orders.map(kitchenCard).join(""):
-
-   `<p class="muted">No orders waiting in the kitchen.</p>`}
+   ${header("KITCHEN DISPLAY")}
 
   </div>
 
- </div>`;
+  <div class="panel">
+
+   <span class="badge">
+
+    👨‍🍳 LIVE KITCHEN
+
+   </span>
+
+   <h1>Kitchen Orders</h1>
+
+   ${
+
+    orders.length
+
+    ?orders.map(
+
+     kitchenCard
+
+    ).join("")
+
+    :`
+
+     <p class="muted">
+
+      No orders waiting in the kitchen.
+
+     </p>
+
+    `
+
+   }
+
+  </div>
+
+ </div>
+
+ `;
 
  startTimerRefresh();
 
 }
 
 function kitchenCard(o){
+
+ const items=
+
+ orderCart(o);
 
  return `
 
@@ -1284,23 +3136,57 @@ function kitchenCard(o){
 
    <div>
 
-    <div class="order-number">#${padOrder(o.number)}</div>
+    <div class="order-number">
 
-    <h2>${esc(orderLabel(o))}</h2>
+     #${padOrder(o.number)}
 
-    <span class="muted">${o.type}</span>
+    </div>
+
+    <h2>
+
+     ${esc(orderLabel(o))}
+
+    </h2>
+
+    <span class="muted">
+
+     ${esc(o.type)}
+
+    </span>
 
    </div>
 
    <div style="text-align:right">
 
-    <div class="timer" data-start="${o.startedAt}" data-stop="${o.readyAt||""}">
+    <div
 
-     ${formatTimer(o.startedAt,o.readyAt)}
+     class="timer"
+
+     data-start="${o.startedAt||Date.now()}"
+
+     data-stop="${o.readyAt||""}">
+
+     ${
+
+      formatTimer(
+
+       o.startedAt||Date.now(),
+
+       o.readyAt
+
+      )
+
+     }
 
     </div>
 
-    <span class="status ${o.status==="READY"?"ready":""}">${o.status}</span>
+    <span
+
+     class="status ${o.status==="READY"?"ready":""}">
+
+     ${esc(o.status||"NEW")}
+
+    </span>
 
    </div>
 
@@ -1308,113 +3194,307 @@ function kitchenCard(o){
 
   <div class="summary">
 
-   ${o.cart.map(i=>`
+   ${
 
-    <div class="kitchen-item">
+    items.length
 
-     ${i.qty} × ${i.name}
+    ?items.map(i=>`
 
-     ${(i.extras||[]).map(e=>`<div class="muted">${e.qty} × ${e.name}</div>`).join("")}
+     <div class="kitchen-item">
 
-    </div>`).join("")}
+      ${i.qty} × ${esc(i.name)}
+
+      ${removedHtml(i)}
+
+      ${
+
+       (i.extras||[])
+
+       .map(e=>`
+
+        <div class="muted">
+
+         ${e.qty} × ${esc(e.name)}
+
+        </div>
+
+       `).join("")
+
+      }
+
+     </div>
+
+    `).join("")
+
+    :`
+
+     <p class="muted">
+
+      No item details available.
+
+     </p>
+
+    `
+
+   }
 
   </div>
 
   <div class="actions">
 
-   ${o.status==="NEW"?`
+   ${
 
-    <button class="primary" onclick="setPreparing(${o.number})">START PREPARING</button>`:""}
+    o.status==="NEW"
 
-   ${o.status==="PREPARING"?`
+    ?`
 
-    <button class="green" onclick="setReady(${o.number})">MARK READY</button>`:""}
+     <button
 
-   ${o.status==="READY"?`
+      class="primary"
 
-    <button class="secondary" onclick="completeOrder(${o.number})">COMPLETED</button>`:""}
+      onclick="setPreparing(
+
+       ${Number(o.number)}
+
+      )">
+
+      START PREPARING
+
+     </button>
+
+    `
+
+    :""
+
+   }
+
+   ${
+
+    o.status==="PREPARING"
+
+    ?`
+
+     <button
+
+      class="green"
+
+      onclick="setReady(
+
+       ${Number(o.number)}
+
+      )">
+
+      MARK READY
+
+     </button>
+
+    `
+
+    :""
+
+   }
+
+   ${
+
+    o.status==="READY"
+
+    ?`
+
+     <div
+
+      class="system-note"
+
+      style="width:100%">
+
+      ✅ READY —
+
+      Waiting for cashier to
+
+      hand over and complete
+
+      the order.
+
+     </div>
+
+    `
+
+    :""
+
+   }
 
   </div>
 
- </div>`;
+ </div>
+
+ `;
 
 }
 
 function setPreparing(number){
 
- const o=activeOrders.find(x=>x.number===number);if(!o)return;
+ const o=
 
- o.status="PREPARING";saveOrders();kitchenHome();
+ activeOrders.find(
+
+  x=>
+
+  Number(x.number)===
+
+  Number(number)
+
+ );
+
+ if(!o){
+
+  return;
+
+ }
+
+ o.status="PREPARING";
+
+ saveOrders();
+
+ kitchenHome();
 
 }
 
 function setReady(number){
 
- const o=activeOrders.find(x=>x.number===number);if(!o)return;
+ const o=
 
- o.status="READY";
+ activeOrders.find(
 
- o.readyAt=Date.now();
+  x=>
 
- saveOrders();
+  Number(x.number)===
 
- kitchenHome();
+  Number(number)
 
-}
+ );
 
-function completeOrder(number){
+ if(!o){
 
- const ix=activeOrders.findIndex(x=>x.number===number);if(ix<0)return;
-
- const o=activeOrders[ix];
-
- o.status="COMPLETED";
-
- o.completedAt=Date.now();
-
- completedOrders.push(o);
-
- activeOrders.splice(ix,1);
-
- saveOrders();
-
- kitchenHome();
-
-}
-
-/* =========================
-
-   TIMER
-
-========================= */
-
-function formatTimer(startedAt,stopAt){
-
- const end=stopAt?Number(stopAt):Date.now();
-
- const seconds=Math.max(0,Math.floor((end-Number(startedAt))/1000));
-
- const h=Math.floor(seconds/3600);
-
- const m=Math.floor((seconds%3600)/60);
-
- const s=seconds%60;
-
- if(h>0){
-
-   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  return;
 
  }
 
- return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+ o.status="READY";
+
+ o.readyAt=
+
+ Date.now();
+
+ saveOrders();
+
+ kitchenHome();
+
+}
+
+/* TIMER */
+
+function formatTimer(
+
+ startedAt,
+
+ stopAt
+
+){
+
+ const start=
+
+ Number(startedAt)||
+
+ Date.now();
+
+ const end=
+
+ stopAt
+
+ ?Number(stopAt)
+
+ :Date.now();
+
+ const seconds=
+
+ Math.max(
+
+  0,
+
+  Math.floor(
+
+   (end-start)/1000
+
+  )
+
+ );
+
+ const h=
+
+ Math.floor(
+
+  seconds/3600
+
+ );
+
+ const m=
+
+ Math.floor(
+
+  (seconds%3600)/60
+
+ );
+
+ const s=
+
+ seconds%60;
+
+ if(h>0){
+
+  return `${
+
+   String(h).padStart(2,"0")
+
+  }:${
+
+   String(m).padStart(2,"0")
+
+  }:${
+
+   String(s).padStart(2,"0")
+
+  }`;
+
+ }
+
+ return `${
+
+  String(m).padStart(2,"0")
+
+ }:${
+
+  String(s).padStart(2,"0")
+
+ }`;
 
 }
 
 function updateVisibleTimers(){
 
- document.querySelectorAll(".timer").forEach(el=>{
+ document
 
-   el.textContent=formatTimer(el.dataset.start,el.dataset.stop||null);
+ .querySelectorAll(".timer")
+
+ .forEach(el=>{
+
+  el.textContent=
+
+  formatTimer(
+
+   el.dataset.start,
+
+   el.dataset.stop||null
+
+  );
 
  });
 
@@ -1422,13 +3502,99 @@ function updateVisibleTimers(){
 
 function startTimerRefresh(){
 
- clearInterval(timerInterval);
+ clearInterval(
+
+  timerInterval
+
+ );
 
  updateVisibleTimers();
 
- timerInterval=setInterval(updateVisibleTimers,1000);
+ timerInterval=
+
+ setInterval(
+
+  updateVisibleTimers,
+
+  1000
+
+ );
 
 }
+
+/* SAME-BROWSER TAB SYNC */
+
+window.addEventListener(
+
+ "storage",
+
+ e=>{
+
+  if(
+
+   ![
+
+    "mrkActiveOrders",
+
+    "mrkCompletedOrders",
+
+    "mrkDraftOrders"
+
+   ].includes(e.key)
+
+  ){
+
+   return;
+
+  }
+
+  activeOrders=
+
+  safeLoad(
+
+   "mrkActiveOrders",
+
+   []
+
+  );
+
+  draftOrders=
+
+  safeLoad(
+
+   "mrkDraftOrders",
+
+   []
+
+  );
+
+  completedOrders=
+
+  safeLoad(
+
+   "mrkCompletedOrders",
+
+   []
+
+  );
+
+  if(loggedIn){
+
+   if(role==="kitchen"){
+
+    kitchenHome();
+
+   }else{
+
+    home();
+
+   }
+
+  }
+
+ }
+
+);
 
 render();
 
