@@ -393,7 +393,23 @@ function orderCart(o){
  return [];
 
 }
+function orderTotal(o){
 
+ if(Number.isFinite(Number(o.total))){
+
+  return Number(o.total);
+
+ }
+
+ return orderCart(o).reduce(
+
+  (sum,item)=>sum+itemLineTotal(item),
+
+  0
+
+ );
+
+}
 function orderLabel(o){
 
  if(o.type==="DINE IN"){
@@ -947,7 +963,11 @@ function managerHistoryCard(o){
    Completed: ${formatDateTime(o.completedAt)}
 
   </div>
+<div class="muted" style="margin-top:6px">
 
+  Order Value: <strong>${orderTotal(o).toLocaleString()} CFA</strong>
+
+</div>
   <div class="summary">
 
    ${
@@ -3366,7 +3386,13 @@ function completedOrderDetail(index){
     <strong>${esc(formatDateTime(o.completedAt))}</strong>
 
    </div>
+  <div class="info-row">
 
+  <span>Order Value</span>
+
+  <strong>${orderTotal(o).toLocaleString()} CFA</strong>
+
+</div>
    <div class="info-row">
 
     <span>Final Prep Time</span>
@@ -4905,7 +4931,21 @@ function showDraftOrders(){
       </div>
 
      </div>
+     <div class="muted">
 
+  VALUE • ${
+
+    orderCart(d).reduce(
+
+      (sum,item)=>sum+itemLineTotal(item),
+
+      0
+
+    )
+
+  }.toLocaleString()} CFA
+
+</div>
     `).join("")
 
     :`<p class="muted">No orders on hold.</p>`
@@ -5271,7 +5311,13 @@ function activeOrderDetail(number){
     <strong>${esc(o.type)}</strong>
 
    </div>
+<div class="info-row">
 
+  <span>Order Value</span>
+
+  <strong>${orderTotal(o).toLocaleString()} CFA</strong>
+
+</div>
    ${
 
     o.type==="DINE IN"
