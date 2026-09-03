@@ -949,7 +949,317 @@ function header(label){
   0
 
  );
+const fromDate=new Date(from+"T00:00:00");
 
+const toDate=new Date(to+"T00:00:00");
+
+const dailySalesData=[];
+
+for(
+
+ let dt=new Date(fromDate);
+
+ dt<=toDate;
+
+ dt.setDate(dt.getDate()+1)
+
+){
+
+ const y=dt.getFullYear();
+
+ const m=String(dt.getMonth()+1).padStart(2,"0");
+
+ const d=String(dt.getDate()).padStart(2,"0");
+
+ const dateKey=`${y}-${m}-${d}`;
+
+ let dineIn=0;
+
+ let takeaway=0;
+
+ let delivery=0;
+
+ orders.forEach(order=>{
+
+  const orderDt=new Date(Number(order.completedAt));
+
+  const oy=orderDt.getFullYear();
+
+  const om=String(orderDt.getMonth()+1).padStart(2,"0");
+
+  const od=String(orderDt.getDate()).padStart(2,"0");
+
+  if(`${oy}-${om}-${od}`!==dateKey)return;
+
+  const value=orderTotal(order);
+
+  if(order.type==="Dine-In"){
+
+   dineIn+=value;
+
+  }
+
+  if(order.type==="Takeaway"){
+
+   takeaway+=value;
+
+  }
+
+  if(order.type==="Delivery"){
+
+   delivery+=value;
+
+  }
+
+ });
+
+ dailySalesData.push({
+
+  date:dateKey,
+
+  dineIn,
+
+  takeaway,
+
+  delivery
+
+ });
+
+}
+const maxSales=Math.max(
+
+ 1,
+
+ ...dailySalesData.flatMap(d=>[
+
+  d.dineIn,
+
+  d.takeaway,
+
+  d.delivery
+
+ ])
+
+);
+
+const graphWidth=800;
+
+const graphHeight=300;
+
+const padLeft=70;
+
+const padRight=20;
+
+const padTop=25;
+
+const padBottom=45;
+
+const innerWidth=
+
+ graphWidth-padLeft-padRight;
+
+const innerHeight=
+
+ graphHeight-padTop-padBottom;
+
+function salesGraphPoints(key){
+
+ return dailySalesData.map((d,i)=>{
+
+  const x=
+
+  dailySalesData.length===1
+
+  ?padLeft+innerWidth/2
+
+  :padLeft+
+
+   (i/(dailySalesData.length-1))*innerWidth;
+
+  const y=
+
+  padTop+
+
+  innerHeight-
+
+  (d[key]/maxSales)*innerHeight;
+
+  return `${x},${y}`;
+
+ }).join(" ");
+
+}
+
+const dineInPoints=
+
+ salesGraphPoints("dineIn");
+
+const takeawayPoints=
+
+ salesGraphPoints("takeaway");
+
+const deliveryPoints=
+
+ salesGraphPoints("delivery");
+const salesGraphSvg=`
+
+<svg
+
+ viewBox="0 0 ${graphWidth} ${graphHeight}"
+
+ style="
+
+  width:100%;
+
+  height:auto;
+
+  margin-top:20px;
+
+  background:#151515;
+
+  border:1px solid #333;
+
+  border-radius:14px;
+
+ ">
+
+ <line
+
+  x1="${padLeft}"
+
+  y1="${padTop}"
+
+  x2="${padLeft}"
+
+  y2="${graphHeight-padBottom}"
+
+  stroke="#666"
+
+ />
+
+ <line
+
+  x1="${padLeft}"
+
+  y1="${graphHeight-padBottom}"
+
+  x2="${graphWidth-padRight}"
+
+  y2="${graphHeight-padBottom}"
+
+  stroke="#666"
+
+ />
+
+ <polyline
+
+  points="${dineInPoints}"
+
+  fill="none"
+
+  stroke="#f3a51b"
+
+  stroke-width="4"
+
+  stroke-linecap="round"
+
+  stroke-linejoin="round"
+
+ />
+
+ <polyline
+
+  points="${takeawayPoints}"
+
+  fill="none"
+
+  stroke="#4da6ff"
+
+  stroke-width="4"
+
+  stroke-linecap="round"
+
+  stroke-linejoin="round"
+
+ />
+
+ <polyline
+
+  points="${deliveryPoints}"
+
+  fill="none"
+
+  stroke="#66cc88"
+
+  stroke-width="4"
+
+  stroke-linecap="round"
+
+  stroke-linejoin="round"
+
+ />
+
+ <text
+
+  x="${padLeft}"
+
+  y="${graphHeight-12}"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  ${dailySalesData[0]?.date||""}
+
+ </text>
+
+ <text
+
+  x="${graphWidth-padRight}"
+
+  y="${graphHeight-12}"
+
+  text-anchor="end"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  ${dailySalesData[dailySalesData.length-1]?.date||""}
+
+ </text>
+
+ <text
+
+  x="8"
+
+  y="${padTop+5}"
+
+  fill="#aaa"
+
+  font-size="16">
+
+  ${maxSales.toLocaleString()}
+
+ </text>
+
+ <text
+
+  x="40"
+
+  y="${graphHeight-padBottom+5}"
+
+  fill="#aaa"
+
+  font-size="16">
+
+  0
+
+ </text>
+
+</svg>
+
+`;
  results.innerHTML=`
 
   <div style="margin-top:24px">
@@ -1021,7 +1331,37 @@ function header(label){
     </div>
 
    </div>
+<div style="margin-top:28px">
 
+ <h3>SALES PER DAY</h3>
+
+ <div
+
+  class="muted"
+
+  style="
+
+   display:flex;
+
+   gap:18px;
+
+   flex-wrap:wrap;
+
+   margin-top:12px;
+
+  ">
+
+  <span>🟠 Dine-In</span>
+
+  <span>🔵 Takeaway</span>
+
+  <span>🟢 Delivery</span>
+
+ </div>
+
+ ${salesGraphSvg}
+
+</div>
   </div>
 
  `;
