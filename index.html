@@ -3773,7 +3773,9 @@ function managerAddStock(){
 
   qty:qty,
 
-  createdAt:Date.now()
+actorRole:role==="owner"?"OWNER":"MANAGER",
+
+createdAt:Date.now()
 
  });
 
@@ -3988,7 +3990,9 @@ function managerRemoveStock(){
 
   qty:-qty,
 
-  createdAt:Date.now()
+actorRole:role==="owner"?"OWNER":"MANAGER",
+
+createdAt:Date.now()
 
  });
 
@@ -4271,7 +4275,9 @@ function managerRecordWaste(){
 
   reason:reason,
 
-  createdAt:Date.now()
+actorRole:role==="owner"?"OWNER":"MANAGER",
+
+createdAt:Date.now()
 
  });
 
@@ -4456,6 +4462,21 @@ const today=
        :""
 
       }
+    <div class="muted" style="margin-top:8px">
+
+ Made by: ${
+
+  m.actorRole ||
+
+  (m.type==="SALE / CHECKOUT"
+
+   ?"SYSTEM / CHECKOUT"
+
+   :"LEGACY")
+
+ }
+
+</div>
 
      </div>
 
