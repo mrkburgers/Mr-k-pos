@@ -916,15 +916,15 @@ function header(label){
 
  const dineInOrders=
 
- orders.filter(o=>o.type==="Dine-In");
+ orders.filter(o=>o.type==="DINE IN");
 
  const takeawayOrders=
 
- orders.filter(o=>o.type==="Takeaway");
+ orders.filter(o=>o.type==="TAKEAWAY");
 
  const deliveryOrders=
 
- orders.filter(o=>o.type==="Delivery");
+ orders.filter(o=>o.type==="DELIVERY");
 
  const dineInSales=dineInOrders.reduce(
 
@@ -993,19 +993,19 @@ for(
 
   const value=orderTotal(order);
 
-  if(order.type==="Dine-In"){
+  if(order.type==="DINE IN"){
 
    dineIn+=value;
 
   }
 
-  if(order.type==="Takeaway"){
+  if(order.type==="TAKEAWAY"){
 
    takeaway+=value;
 
   }
 
-  if(order.type==="Delivery"){
+  if(order.type==="DELIVERY"){
 
    delivery+=value;
 
