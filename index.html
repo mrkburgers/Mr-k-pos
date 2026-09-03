@@ -637,7 +637,7 @@ function header(label){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerSalesHistory()" style="cursor:pointer">
 
      <div class="category-icon">📅</div>
 
@@ -851,6 +851,132 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerSalesHistory(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALES HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📅 SALES HISTORY
+
+   </span>
+
+   <h1>Sales History</h1>
+
+   <div class="info-row">
+
+    <span>Period</span>
+
+    <select onchange="ownerSalesHistoryPeriod(this.value)">
+
+     <option value="daily">Daily</option>
+
+     <option value="weekly">Weekly</option>
+
+     <option value="monthly">Monthly</option>
+
+     <option value="yearly">Yearly</option>
+
+    </select>
+
+   </div>
+
+   <div id="ownerSalesHistoryContent">
+
+    <p class="muted">Select a period to view sales history.</p>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerSalesHistoryPeriod(period){
+
+ const content=
+
+  document.getElementById("ownerSalesHistoryContent");
+
+ if(!content)return;
+
+ if(period==="daily"){
+
+  content.innerHTML=`
+
+   <p class="muted">
+
+    Daily sales history selected.
+
+   </p>
+
+  `;
+
+ }
+
+ if(period==="weekly"){
+
+  content.innerHTML=`
+
+   <p class="muted">
+
+    Weekly sales history selected.
+
+   </p>
+
+  `;
+
+ }
+
+ if(period==="monthly"){
+
+  content.innerHTML=`
+
+   <p class="muted">
+
+    Monthly sales history selected.
+
+   </p>
+
+  `;
+
+ }
+
+ if(period==="yearly"){
+
+  content.innerHTML=`
+
+   <p class="muted">
+
+    Yearly sales history selected.
+
+   </p>
+
+  `;
+
+ }
 
 }
   function ownerOrders(){
