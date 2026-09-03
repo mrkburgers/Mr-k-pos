@@ -3624,9 +3624,27 @@ function cashierOrderCard(o){
 function showOrderHistory(){
 
  clearInterval(timerInterval);
+const today=new Date();
 
+const todayY=today.getFullYear();
+
+const todayM=today.getMonth();
+
+const todayD=today.getDate();
  const history=[...completedOrders]
+.filter(o=>{
 
+ if(!o.completedAt)return false;
+
+ const date=new Date(Number(o.completedAt));
+
+ return date.getFullYear()===todayY &&
+
+        date.getMonth()===todayM &&
+
+        date.getDate()===todayD;
+
+})
  .sort((a,b)=>Number(b.completedAt||0)-Number(a.completedAt||0));
 
  document.getElementById("root").innerHTML=`
