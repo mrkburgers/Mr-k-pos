@@ -157,7 +157,7 @@ let currentQty=1;
 let currentExtraQty={};
 
 let currentRemovedIngredients=[];
-
+let currentCustomizeItem="";
 let currentDraftId=null;
 
 let cart=[];
@@ -4037,15 +4037,117 @@ function toggleIngredient(ingredient,isChecked){
 
 }
 
+function extraInventoryId(e){
+
+ const map={
+
+  "Extra beef patty":"beef120",
+
+  "Extra chicken steak":"chicken120",
+
+  "Extra cheddar cheese":"cheddar",
+
+  "Extra mozzarella cheese":"mozzarella",
+
+  "Extra Swiss cheese":"emmental",
+
+  "Extra mushroom":"mushroom",
+
+  "Extra bacon":"bacon",
+
+  "Extra grated cheese":"gratedCheese"
+
+ };
+
+ return map[e]||null;
+
+}
+
 function extraRows(extras){
 
- return extras.map(e=>`
+ return extras.map(e=>{
+
+  const id=
+
+   extraInventoryId(e);
+
+  const current=
+
+   Number(currentExtraQty[e]||0);
+
+  const testExtras=
+
+   Object.entries(currentExtraQty)
+
+   .map(([name,qty])=>({
+
+    name,
+
+    qty:
+
+     name===e
+
+     ?current+1
+
+     :Number(qty||0)
+
+   }))
+
+   .filter(extra=>extra.qty>0);
+
+  const needs=
+
+   getOrderInventoryNeeds({
+
+    cart:[{
+
+     name:currentCustomizeItem,
+
+     qty:Number(currentQty||1),
+
+     extras:testExtras,
+
+     removed:[
+
+      ...currentRemovedIngredients
+
+     ]
+
+    }]
+
+   });
+
+  const outOfStock=
+
+   id
+
+   ?Number(needs[id]||0)>
+
+     Number(inventoryStock[id]||0)
+
+   :false;
+
+  return `
 
  <div class="extra-row">
 
   <div class="extra-name">
 
    ${e}
+
+   ${
+
+    outOfStock
+
+    ?`<div class="muted" style="font-weight:800">
+
+       OUT OF STOCK
+
+      </div>`
+
+    :""
+
+   }
 
   </div>
 
@@ -4067,6 +4169,8 @@ function extraRows(extras){
 
    <button
 
+    ${outOfStock?"disabled":""}
+
     onclick='changeExtraQty(${JSON.stringify(e)},1)'>
 
     +
@@ -4075,34 +4179,103 @@ function extraRows(extras){
 
   </div>
 
- </div>`).join("");
+ </div>`;
+
+ }).join("");
 
 }
 
 function changeExtraQty(e,n){
 
- currentExtraQty[e]=Math.max(
+ const current=
 
-   0,
+  Number(currentExtraQty[e]||0);
 
-   (currentExtraQty[e]||0)+n
+ const next=
 
- );
+  Math.max(0,current+n);
 
- const el=document.getElementById(safeId(e));
+ if(n>0){
+
+  const testExtras=
+
+   Object.entries(currentExtraQty)
+
+   .map(([name,qty])=>({
+
+    name,
+
+    qty:
+
+     name===e
+
+     ?next
+
+     :Number(qty||0)
+
+   }))
+
+   .filter(extra=>extra.qty>0);
+
+  const missing=
+
+   checkOrderInventory({
+
+    cart:[{
+
+     name:currentCustomizeItem,
+
+     qty:Number(currentQty||1),
+
+     extras:testExtras,
+
+     removed:[
+
+      ...currentRemovedIngredients
+
+     ]
+
+    }]
+
+   });
+
+  if(missing.length){
+
+   return alert(
+
+    "NOT ENOUGH STOCK\n\n"+
+
+    missing.join("\n")
+
+   );
+
+  }
+
+ }
+
+ currentExtraQty[e]=next;
+
+ const el=
+
+  document.getElementById(
+
+   safeId(e)
+
+  );
 
  if(el){
 
-   el.textContent=currentExtraQty[e];
+  el.textContent=
+
+   currentExtraQty[e];
 
  }
 
 }
-
 function burgerCustomize(name){
 
  const d=burgerDetails[name];
-
+currentCustomizeItem=name;
  const extras=
 
  d.meat==="chicken"
@@ -4178,7 +4351,7 @@ function burgerCustomize(name){
 }
 
 function loadedCustomize(name){
-
+currentCustomizeItem=name;
  resetExtras(["Extra grated cheese"]);
 
  currentRemovedIngredients=[];
