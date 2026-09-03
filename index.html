@@ -661,7 +661,7 @@ function header(label){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerOrders()" style="cursor:pointer">
 
      <div class="category-icon">📈</div>
 
@@ -690,6 +690,135 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerOrders(){
+
+ clearInterval(timerInterval);
+const today=new Date();
+
+const todayOrders=completedOrders.filter(o=>{
+
+ if(!o.completedAt)return false;
+
+ const date=new Date(Number(o.completedAt));
+
+ return date.getFullYear()===today.getFullYear() &&
+
+        date.getMonth()===today.getMonth() &&
+
+        date.getDate()===today.getDate();
+
+});
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ORDERS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 ORDERS
+
+   </span>
+
+   <h1>Order Management</h1>
+
+   <div class="grid">
+
+    <div class="card" onclick="ownerActiveOrders()" style="cursor:pointer">
+
+     <div class="category-icon">📦</div>
+
+     <h3>ACTIVE ORDERS</h3>
+
+     <strong>${activeOrders.length}</strong>
+
+    </div>
+
+    <div class="card" onclick="ownerOrderHistory()" style="cursor:pointer">
+
+     <div class="category-icon">📜</div>
+
+     <h3>ORDER HISTORY</h3>
+     <strong>${todayOrders.length}</strong>
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerActiveOrders(){
+
+ clearInterval(timerInterval);
+const orders=[...activeOrders]
+
+.sort((a,b)=>Number(b.number)-Number(a.number));
+
+document.getElementById("root").innerHTML=`
+
+<div class="app">
+
+ <button class="back" onclick="ownerOrders()">
+
+  ← BACK
+
+ </button>
+
+ <div class="logo">
+
+  MR K BURGERS
+
+  <span>OWNER — ACTIVE ORDERS</span>
+
+ </div>
+
+ <div class="panel">
+
+  <span class="badge">
+
+   📦 ACTIVE ORDERS
+
+  </span>
+
+  <h1>Active Orders</h1>
+
+  ${
+
+   orders.length
+
+   ?orders.map(managerActiveOrderCard).join("")
+
+   :`<p class="muted">No active orders.</p>`
+
+  }
+
+ </div>
+
+</div>`;
+
+startTimerRefresh();
+}
+function ownerOrderHistory(selectedDate){
+
+ clearInterval(timerInterval);
 
 }
 function managerHome(){
