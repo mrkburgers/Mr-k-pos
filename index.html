@@ -1003,17 +1003,75 @@ function header(label){
 }
  if(period==="monthly"){
 
-  content.innerHTML=`
+ const today=new Date();
 
-   <p class="muted">
+ const currentMonth=today.getMonth();
 
-    Monthly sales history selected.
+ const currentYear=today.getFullYear();
 
-   </p>
+ content.innerHTML=`
 
-  `;
+  <div class="info-row">
 
- }
+   <span>Month</span>
+
+   <select id="ownerSalesMonth"
+
+    onchange="ownerSalesHistoryMonthly()">
+
+    <option value="0" ${currentMonth===0?"selected":""}>January</option>
+
+    <option value="1" ${currentMonth===1?"selected":""}>February</option>
+
+    <option value="2" ${currentMonth===2?"selected":""}>March</option>
+
+    <option value="3" ${currentMonth===3?"selected":""}>April</option>
+
+    <option value="4" ${currentMonth===4?"selected":""}>May</option>
+
+    <option value="5" ${currentMonth===5?"selected":""}>June</option>
+
+    <option value="6" ${currentMonth===6?"selected":""}>July</option>
+
+    <option value="7" ${currentMonth===7?"selected":""}>August</option>
+
+    <option value="8" ${currentMonth===8?"selected":""}>September</option>
+
+    <option value="9" ${currentMonth===9?"selected":""}>October</option>
+
+    <option value="10" ${currentMonth===10?"selected":""}>November</option>
+
+    <option value="11" ${currentMonth===11?"selected":""}>December</option>
+
+   </select>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Year</span>
+
+   <select id="ownerSalesYear"
+
+    onchange="ownerSalesHistoryMonthly()">
+
+    <option value="${currentYear-2}">${currentYear-2}</option>
+
+    <option value="${currentYear-1}">${currentYear-1}</option>
+
+    <option value="${currentYear}" selected>${currentYear}</option>
+
+    <option value="${currentYear+1}">${currentYear+1}</option>
+
+   </select>
+
+  </div>
+
+ `;
+
+ ownerSalesHistoryMonthly();
+
+}
 
  if(period==="yearly"){
 
@@ -1242,6 +1300,185 @@ function header(label){
    <span>Week</span>
 
    <strong>${weekLabel}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Total Sales</span>
+
+   <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Completed Orders</span>
+
+   <strong>${totalOrders}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Average Order</span>
+
+   <strong>${averageOrder.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <h3 style="margin-top:20px">Breakdown</h3>
+
+  <div class="info-row">
+
+   <span>Dine-In</span>
+
+   <strong>
+
+    ${dineInOrders.length} orders • ${dineInSales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Takeaway</span>
+
+   <strong>
+
+    ${takeawayOrders.length} orders • ${takeawaySales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Delivery</span>
+
+   <strong>
+
+    ${deliveryOrders.length} orders • ${deliverySales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+ `;
+
+}
+  function ownerSalesHistoryMonthly(){
+
+ const monthSelect=
+
+  document.getElementById("ownerSalesMonth");
+
+ const yearSelect=
+
+  document.getElementById("ownerSalesYear");
+
+ if(!monthSelect || !yearSelect)return;
+
+ const selectedMonth=Number(monthSelect.value);
+
+ const selectedYear=Number(yearSelect.value);
+
+ const orders=completedOrders.filter(o=>{
+
+  if(!o.completedAt)return false;
+
+  const dt=new Date(Number(o.completedAt));
+
+  return (
+
+   dt.getMonth()===selectedMonth &&
+
+   dt.getFullYear()===selectedYear
+
+  );
+
+ });
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const totalOrders=orders.length;
+
+ const averageOrder=
+
+  totalOrders
+
+   ?Math.round(totalSales/totalOrders)
+
+   :0;
+
+ const dineInOrders=
+
+  orders.filter(o=>o.type==="DINE IN");
+
+ const takeawayOrders=
+
+  orders.filter(o=>o.type==="TAKEAWAY");
+
+ const deliveryOrders=
+
+  orders.filter(o=>o.type==="DELIVERY");
+
+ const dineInSales=dineInOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const takeawaySales=takeawayOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const deliverySales=deliveryOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const monthName=
+
+  new Date(selectedYear,selectedMonth,1)
+
+  .toLocaleString("default",{month:"long"});
+
+ let results=
+
+  document.getElementById("ownerMonthlyResults");
+
+ if(!results){
+
+  results=document.createElement("div");
+
+  results.id="ownerMonthlyResults";
+
+  yearSelect
+
+   .closest(".info-row")
+
+   .after(results);
+
+ }
+
+ results.innerHTML=`
+
+  <div class="info-row">
+
+   <span>Period</span>
+
+   <strong>${monthName} ${selectedYear}</strong>
 
   </div>
 
