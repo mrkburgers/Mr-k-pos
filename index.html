@@ -1291,14 +1291,40 @@ function managerOrderCard(o){
  </div>`;
 
 } 
-function managerOrderHistory(){
+function managerOrderHistory(selectedDate){
 
  clearInterval(timerInterval);
+if(!selectedDate){
 
+ const today=new Date();
+
+ const y=today.getFullYear();
+
+ const m=String(today.getMonth()+1).padStart(2,"0");
+
+ const d=String(today.getDate()).padStart(2,"0");
+
+ selectedDate=`${y}-${m}-${d}`;
+
+}
  const orders=
 
  [...completedOrders]
+.filter(o=>{
 
+ if(!o.completedAt)return false;
+
+ const date=new Date(Number(o.completedAt));
+
+ const y=date.getFullYear();
+
+ const m=String(date.getMonth()+1).padStart(2,"0");
+
+ const d=String(date.getDate()).padStart(2,"0");
+
+ return `${y}-${m}-${d}`===selectedDate;
+
+})
  .sort(
 
    (a,b)=>
@@ -1332,6 +1358,21 @@ function managerOrderHistory(){
   </div>
 
   <div class="panel">
+  <div class="info-row">
+
+ <span>Date</span>
+
+ <input
+
+  type="date"
+
+  value="${selectedDate}"
+
+  onchange="managerOrderHistory(this.value)"
+
+ >
+
+</div>
 
    <div class="system-note">
 
