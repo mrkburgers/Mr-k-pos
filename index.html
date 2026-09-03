@@ -960,18 +960,47 @@ function header(label){
 
  if(period==="weekly"){
 
-  content.innerHTML=`
+ const today=new Date();
 
-   <p class="muted">
+ const day=today.getDay();
 
-    Weekly sales history selected.
+ const diff=today.getDate()-day+(day===0?-6:1);
 
-   </p>
+ const monday=new Date(today);
 
-  `;
+ monday.setDate(diff);
 
- }
+ const y=monday.getFullYear();
 
+ const m=String(monday.getMonth()+1).padStart(2,"0");
+
+ const d=String(monday.getDate()).padStart(2,"0");
+
+ const selectedWeek=`${y}-${m}-${d}`;
+
+ content.innerHTML=`
+
+  <div class="info-row">
+
+   <span>Week Starting</span>
+
+   <input
+
+    type="date"
+
+    value="${selectedWeek}"
+
+    onchange="ownerSalesHistoryWeekly(this.value)"
+
+   >
+
+  </div>
+
+ `;
+
+ ownerSalesHistoryWeekly(selectedWeek);
+
+}
  if(period==="monthly"){
 
   content.innerHTML=`
@@ -1120,6 +1149,161 @@ function header(label){
    <span>Delivery</span>
 
    <strong>${deliveryOrders.length} orders • ${deliverySales.toLocaleString()} CFA</strong>
+
+  </div>
+
+ `;
+
+}
+  function ownerSalesHistoryWeekly(selectedWeek){
+
+ const start=new Date(`${selectedWeek}T00:00:00`);
+
+ const end=new Date(start);
+
+ end.setDate(end.getDate()+7);
+
+ const orders=completedOrders.filter(o=>{
+
+  if(!o.completedAt)return false;
+
+  const dt=new Date(Number(o.completedAt));
+
+  return dt>=start && dt<end;
+
+ });
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const totalOrders=orders.length;
+
+ const averageOrder=
+
+  totalOrders
+
+   ?Math.round(totalSales/totalOrders)
+
+   :0;
+
+ const dineInOrders=orders.filter(o=>o.type==="DINE IN");
+
+ const takeawayOrders=orders.filter(o=>o.type==="TAKEAWAY");
+
+ const deliveryOrders=orders.filter(o=>o.type==="DELIVERY");
+
+ const dineInSales=dineInOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const takeawaySales=takeawayOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const deliverySales=deliveryOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const content=
+
+  document.getElementById("ownerSalesHistoryContent");
+
+ if(!content)return;
+
+ const weekSelector=
+
+  content.querySelector(".info-row").outerHTML;
+
+ const endDisplay=new Date(start);
+
+ endDisplay.setDate(endDisplay.getDate()+6);
+
+ const weekLabel=
+
+  `${start.toLocaleDateString()} — ${endDisplay.toLocaleDateString()}`;
+
+ content.innerHTML=`
+
+  ${weekSelector}
+
+  <div class="info-row">
+
+   <span>Week</span>
+
+   <strong>${weekLabel}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Total Sales</span>
+
+   <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Completed Orders</span>
+
+   <strong>${totalOrders}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Average Order</span>
+
+   <strong>${averageOrder.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <h3 style="margin-top:20px">Breakdown</h3>
+
+  <div class="info-row">
+
+   <span>Dine-In</span>
+
+   <strong>
+
+    ${dineInOrders.length} orders • ${dineInSales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Takeaway</span>
+
+   <strong>
+
+    ${takeawayOrders.length} orders • ${takeawaySales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Delivery</span>
+
+   <strong>
+
+    ${deliveryOrders.length} orders • ${deliverySales.toLocaleString()} CFA
+
+   </strong>
 
   </div>
 
