@@ -472,6 +472,7 @@ function render(){
 
  if(role==="kitchen")return kitchenHome();
  if(role==="manager")return managerHome();
+if(role==="owner")return ownerHome();
  home();
 
 }
@@ -504,8 +505,11 @@ function loginScreen(){
 
     Cashier: cashier01<br>
 
-    Kitchen: kitchen01<br>
-    Manager: manager01
+Kitchen: kitchen01<br>
+
+Manager: manager01<br>
+
+Owner: owner01
 
    </p>
 
@@ -555,6 +559,17 @@ if(u==="manager01"&&p==="9012"){
  return;
 
 }
+  if(u==="owner01"&&p==="1991"){
+
+ loggedIn=true;
+
+ role="owner";
+
+ ownerHome();
+
+ return;
+
+}
  alert("Invalid Staff ID or PIN.");
 
 }
@@ -578,6 +593,103 @@ function header(label){
  <div class="logo">MR K BURGERS<span>${label}</span></div>
 
  <button class="secondary" onclick="logout()">LOG OUT</button>`;
+
+}
+  function ownerHome(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <div class="kitchen-title">
+
+   ${header("OWNER")}
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👑 OWNER DASHBOARD
+
+   </span>
+
+   <h1>Business Management</h1>
+
+   <div class="grid">
+
+    <div class="card">
+
+     <div class="category-icon">📊</div>
+
+     <h3>BUSINESS OVERVIEW</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">💰</div>
+
+     <h3>SALES</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📅</div>
+
+     <h3>SALES HISTORY</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📦</div>
+
+     <h3>INVENTORY</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📋</div>
+
+     <h3>ORDERS</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">📈</div>
+
+     <h3>REPORTS</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">👥</div>
+
+     <h3>STAFF MANAGEMENT</h3>
+
+    </div>
+
+    <div class="card">
+
+     <div class="category-icon">⚙️</div>
+
+     <h3>POS SETTINGS</h3>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
 
 }
 function managerHome(){
