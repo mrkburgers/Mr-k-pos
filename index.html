@@ -645,7 +645,7 @@ function header(label){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerInventory()" style="cursor:pointer">
 
      <div class="category-icon">📦</div>
 
@@ -2903,6 +2903,140 @@ function managerInventory(){
  </div>`;
 
 } 
+  function ownerInventory(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — INVENTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📦 INVENTORY CONTROL
+
+   </span>
+
+   <h1>Inventory</h1>
+
+   <p class="muted">
+
+    Track ingredients, stock movements and availability.
+
+   </p>
+
+   <div class="grid">
+
+    <div class="card" onclick="managerCurrentStock()" style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>CURRENT STOCK</h3>
+
+     <p class="muted">View inventory levels</p>
+
+    </div>
+
+    <div class="card" onclick="managerStockIn()" style="cursor:pointer">
+
+     <div class="category-icon">📥</div>
+
+     <h3>STOCK IN</h3>
+
+     <p class="muted">Record deliveries</p>
+
+    </div>
+
+    <div class="card" onclick="managerStockOut()" style="cursor:pointer">
+
+     <div class="category-icon">📤</div>
+
+     <h3>STOCK OUT</h3>
+
+     <p class="muted">Record stock usage</p>
+
+    </div>
+
+    <div class="card" onclick="managerWasteAdjustment()" style="cursor:pointer">
+
+     <div class="category-icon">🗑️</div>
+
+     <h3>WASTE / ADJUSTMENT</h3>
+
+     <p class="muted">Record waste or corrections</p>
+
+    </div>
+
+    <div class="card" onclick="managerStockHistory()" style="cursor:pointer">
+
+     <div class="category-icon">📜</div>
+
+     <h3>STOCK HISTORY</h3>
+
+     <p class="muted">View inventory movements</p>
+
+    </div>
+
+    <div class="card clickable" onclick="managerLowStock()">
+
+     <div class="category-icon">⚠️</div>
+
+     <h3>LOW STOCK</h3>
+
+     <p class="muted">View low-stock items</p>
+
+    </div>
+
+    <div class="card clickable" onclick="managerProductAvailability()">
+
+     <div class="category-icon">🟢</div>
+
+     <h3>PRODUCT AVAILABILITY</h3>
+
+     <p class="muted">View available and out-of-stock items</p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function inventoryHome(){
+
+ if(role==="owner"){
+
+  ownerInventory();
+
+  return;
+
+ }
+
+ managerInventory();
+
+}
 const inventoryItems=[
 
  {id:"beef120",name:"120g Beef Patty",category:"INGREDIENTS"},
@@ -3476,7 +3610,7 @@ function managerCurrentStock(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -3486,7 +3620,7 @@ function managerCurrentStock(){
 
    MR K BURGERS
 
-   <span>MANAGER — CURRENT STOCK</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — CURRENT STOCK</span>
 
   </div>
 
@@ -3601,7 +3735,7 @@ function managerStockIn(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -3611,7 +3745,7 @@ function managerStockIn(){
 
    MR K BURGERS
 
-   <span>MANAGER — STOCK IN</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — STOCK IN</span>
 
   </div>
 
@@ -3804,7 +3938,7 @@ function managerStockOut(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -3814,7 +3948,7 @@ function managerStockOut(){
 
    MR K BURGERS
 
-   <span>MANAGER — STOCK OUT</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — STOCK OUT</span>
 
   </div>
 
@@ -4021,7 +4155,7 @@ function managerWasteAdjustment(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -4031,7 +4165,7 @@ function managerWasteAdjustment(){
 
    MR K BURGERS
 
-   <span>MANAGER — WASTE / ADJUSTMENT</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — WASTE / ADJUSTMENT</span>
 
   </div>
 
@@ -4345,7 +4479,7 @@ const today=
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -4355,7 +4489,7 @@ const today=
 
    MR K BURGERS
 
-   <span>MANAGER — STOCK HISTORY</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — STOCK HISTORY</span>
 
   </div>
 
@@ -4545,7 +4679,7 @@ function managerLowStock(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -4555,7 +4689,7 @@ function managerLowStock(){
 
    MR K BURGERS
 
-   <span>MANAGER — LOW STOCK</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — LOW STOCK</span>
 
   </div>
 
@@ -4662,7 +4796,7 @@ function managerProductAvailability(){
 
    class="back"
 
-   onclick="managerInventory()">
+   onclick="inventoryHome()">
 
    ← BACK
 
@@ -4672,7 +4806,7 @@ function managerProductAvailability(){
 
    MR K BURGERS
 
-   <span>MANAGER — PRODUCT AVAILABILITY</span>
+   <span>${role==="owner"?"OWNER":"MANAGER"} — PRODUCT AVAILABILITY</span>
 
   </div>
 
