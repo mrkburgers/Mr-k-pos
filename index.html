@@ -350,9 +350,11 @@ function safeLoad(key,fallback){
 
  try{
 
-   const v=JSON.parse(localStorage.getItem(key)||"null");
+   const raw=localStorage.getItem(key);
 
-   return Array.isArray(v)?v:fallback;
+   if(raw===null)return fallback;
+
+   return JSON.parse(raw);
 
  }catch(e){
 
