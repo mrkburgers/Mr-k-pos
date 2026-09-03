@@ -667,7 +667,25 @@ function managerHome(){
 } 
 function managerSales(){
 
- const orders=[...completedOrders];
+ const today=new Date();
+
+const orders=completedOrders.filter(o=>{
+
+ if(!o.completedAt)return false;
+
+ const dt=new Date(Number(o.completedAt));
+
+ return (
+
+  dt.getFullYear()===today.getFullYear() &&
+
+  dt.getMonth()===today.getMonth() &&
+
+  dt.getDate()===today.getDate()
+
+ );
+
+});
 
  const totalSales=orders.reduce(
 
