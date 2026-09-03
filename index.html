@@ -870,7 +870,35 @@ function managerSalesHistory(selectedDate){
   0
 
  );
+ const dineInOrders=orders.filter(o=>o.type==="DINE IN");
 
+const takeawayOrders=orders.filter(o=>o.type==="TAKEAWAY");
+
+const deliveryOrders=orders.filter(o=>o.type==="DELIVERY");
+
+const dineInSales=dineInOrders.reduce(
+
+ (sum,o)=>sum+orderTotal(o),
+
+ 0
+
+);
+
+const takeawaySales=takeawayOrders.reduce(
+
+ (sum,o)=>sum+orderTotal(o),
+
+ 0
+
+);
+
+const deliverySales=deliveryOrders.reduce(
+
+ (sum,o)=>sum+orderTotal(o),
+
+ 0
+
+);
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -928,7 +956,43 @@ function managerSalesHistory(selectedDate){
     <strong>${totalSales.toLocaleString()} CFA</strong>
 
    </div>
+  <h3 style="margin-top:20px">Breakdown</h3>
 
+<div class="info-row">
+
+  <span>Dine-In</span>
+
+  <strong>
+
+    ${dineInOrders.length} orders • ${dineInSales.toLocaleString()} CFA
+
+  </strong>
+
+</div>
+
+<div class="info-row">
+
+  <span>Takeaway</span>
+
+  <strong>
+
+    ${takeawayOrders.length} orders • ${takeawaySales.toLocaleString()} CFA
+
+  </strong>
+
+</div>
+
+<div class="info-row">
+
+  <span>Delivery</span>
+
+  <strong>
+
+    ${deliveryOrders.length} orders • ${deliverySales.toLocaleString()} CFA
+
+  </strong>
+
+</div>
   </div>
 
  </div>
