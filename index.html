@@ -1079,17 +1079,39 @@ function header(label){
 
  if(period==="yearly"){
 
-  content.innerHTML=`
+ const currentYear=new Date().getFullYear();
 
-   <p class="muted">
+ content.innerHTML=`
 
-    Yearly sales history selected.
+  <div class="info-row">
 
-   </p>
+   <span>Year</span>
 
-  `;
+   <select id="ownerSalesHistoryYear"
 
- }
+    onchange="ownerSalesHistoryYearly(this.value)">
+
+    ${Array.from(
+
+     {length:(currentYear+10)-2026+1},
+
+     (_,i)=>2026+i
+
+    ).map(year=>
+
+     `<option value="${year}" ${year===currentYear?"selected":""}>${year}</option>`
+
+    ).join("")}
+
+   </select>
+
+  </div>
+
+ `;
+
+ ownerSalesHistoryYearly(currentYear);
+
+}
 
 }
   function ownerSalesHistoryDaily(selectedDate){
@@ -1483,6 +1505,165 @@ function header(label){
    <span>Period</span>
 
    <strong>${monthName} ${selectedYear}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Total Sales</span>
+
+   <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Completed Orders</span>
+
+   <strong>${totalOrders}</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Average Order</span>
+
+   <strong>${averageOrder.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <h3 style="margin-top:20px">Breakdown</h3>
+
+  <div class="info-row">
+
+   <span>Dine-In</span>
+
+   <strong>
+
+    ${dineInOrders.length} orders • ${dineInSales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Takeaway</span>
+
+   <strong>
+
+    ${takeawayOrders.length} orders • ${takeawaySales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>Delivery</span>
+
+   <strong>
+
+    ${deliveryOrders.length} orders • ${deliverySales.toLocaleString()} CFA
+
+   </strong>
+
+  </div>
+
+ `;
+
+}
+  function ownerSalesHistoryYearly(selectedYear){
+
+ selectedYear=Number(selectedYear);
+
+ const orders=completedOrders.filter(o=>{
+
+  if(!o.completedAt)return false;
+
+  const dt=new Date(Number(o.completedAt));
+
+  return dt.getFullYear()===selectedYear;
+
+ });
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const totalOrders=orders.length;
+
+ const averageOrder=
+
+  totalOrders
+
+   ?Math.round(totalSales/totalOrders)
+
+   :0;
+
+ const dineInOrders=
+
+  orders.filter(o=>o.type==="DINE IN");
+
+ const takeawayOrders=
+
+  orders.filter(o=>o.type==="TAKEAWAY");
+
+ const deliveryOrders=
+
+  orders.filter(o=>o.type==="DELIVERY");
+
+ const dineInSales=dineInOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const takeawaySales=takeawayOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ const deliverySales=deliveryOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),0
+
+ );
+
+ let results=
+
+  document.getElementById("ownerYearlyResults");
+
+ if(!results){
+
+  results=document.createElement("div");
+
+  results.id="ownerYearlyResults";
+
+  const yearSelect=
+
+   document.getElementById("ownerSalesHistoryYear");
+
+  yearSelect
+
+   .closest(".info-row")
+
+   .after(results);
+
+ }
+
+ results.innerHTML=`
+
+  <div class="info-row">
+
+   <span>Period</span>
+
+   <strong>${selectedYear}</strong>
 
   </div>
 
