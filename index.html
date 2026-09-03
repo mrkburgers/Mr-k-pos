@@ -5013,7 +5013,7 @@ if(missingStock.length){
    customer:{...customer},
 
    cart:JSON.parse(JSON.stringify(cart)),
-
+   total:cartTotal(),
    startedAt:Date.now(),
 
    readyAt:null,
