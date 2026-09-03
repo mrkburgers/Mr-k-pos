@@ -768,7 +768,9 @@ const orders=completedOrders.filter(o=>{
  `;
 
 }
-function managerSalesHistory(){
+function managerSalesHistory(selectedDate){
+
+ if(!selectedDate){
 
  const today=new Date();
 
@@ -778,7 +780,9 @@ function managerSalesHistory(){
 
  const d=String(today.getDate()).padStart(2,"0");
 
- const selectedDate=`${y}-${m}-${d}`;
+ selectedDate=`${y}-${m}-${d}`;
+
+}
 
  const orders=completedOrders.filter(o=>{
 
@@ -832,11 +836,19 @@ function managerSalesHistory(){
 
    <div class="info-row">
 
-    <span>Date</span>
+  <span>Date</span>
 
-    <strong>${selectedDate}</strong>
+  <input
 
-   </div>
+   type="date"
+
+   value="${selectedDate}"
+
+   onchange="managerSalesHistory(this.value)"
+
+  >
+
+</div>
 
    <div class="info-row">
 
