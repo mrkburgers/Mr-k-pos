@@ -1055,13 +1055,17 @@ function header(label){
 
     onchange="ownerSalesHistoryMonthly()">
 
-    <option value="${currentYear-2}">${currentYear-2}</option>
+    ${Array.from(
 
-    <option value="${currentYear-1}">${currentYear-1}</option>
+ {length:(currentYear+10)-2026+1},
 
-    <option value="${currentYear}" selected>${currentYear}</option>
+ (_,i)=>2026+i
 
-    <option value="${currentYear+1}">${currentYear+1}</option>
+).map(year=>
+
+ `<option value="${year}" ${year===currentYear?"selected":""}>${year}</option>`
+
+).join("")}
 
    </select>
 
