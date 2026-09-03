@@ -777,6 +777,256 @@ function header(label){
  </div>`;
 
 }
+  function ownerSalesPerformance(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerReports()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALES PERFORMANCE</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📊 SALES PERFORMANCE
+
+   </span>
+
+   <h1>Sales Performance</h1>
+
+   <p class="muted">
+
+    Analyse sales between any two dates.
+
+   </p>
+
+   <div class="info-row">
+
+    <span>From</span>
+
+    <input type="date" id="salesReportFrom">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>To</span>
+
+    <input type="date" id="salesReportTo">
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick="runSalesPerformanceReport()">
+
+    VIEW REPORT
+
+   </button>
+
+   <div id="salesPerformanceResults"></div>
+
+  </div>
+
+ </div>`;
+
+}
+  function runSalesPerformanceReport(){
+
+ const from=document.getElementById("salesReportFrom").value;
+
+ const to=document.getElementById("salesReportTo").value;
+
+ const results=document.getElementById("salesPerformanceResults");
+
+ if(!from || !to){
+
+  alert("Please choose a From date and To date.");
+
+  return;
+
+ }
+
+ if(from>to){
+
+  alert("From date cannot be after To date.");
+
+  return;
+
+ }
+
+ const orders=completedOrders.filter(order=>{
+
+  if(!order.completedAt)return false;
+
+  const dt=new Date(Number(order.completedAt));
+
+  const y=dt.getFullYear();
+
+  const m=String(dt.getMonth()+1).padStart(2,"0");
+
+  const d=String(dt.getDate()).padStart(2,"0");
+
+  const orderDate=`${y}-${m}-${d}`;
+
+  return orderDate>=from && orderDate<=to;
+
+ });
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const totalOrders=orders.length;
+
+ const averageOrder=
+
+ totalOrders
+
+ ?Math.round(totalSales/totalOrders)
+
+ :0;
+
+ const dineInOrders=
+
+ orders.filter(o=>o.type==="Dine-In");
+
+ const takeawayOrders=
+
+ orders.filter(o=>o.type==="Takeaway");
+
+ const deliveryOrders=
+
+ orders.filter(o=>o.type==="Delivery");
+
+ const dineInSales=dineInOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const takeawaySales=takeawayOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const deliverySales=deliveryOrders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ results.innerHTML=`
+
+  <div style="margin-top:24px">
+
+   <p class="muted">
+
+    ${from} → ${to}
+
+   </p>
+
+   <div class="grid">
+
+    <div class="card">
+
+     <h3>${totalSales.toLocaleString()} CFA</h3>
+
+     <p class="muted">TOTAL SALES</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>${totalOrders}</h3>
+
+     <p class="muted">COMPLETED ORDERS</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>${averageOrder.toLocaleString()} CFA</h3>
+
+     <p class="muted">AVERAGE ORDER VALUE</p>
+
+    </div>
+
+   </div>
+
+   <div class="grid" style="margin-top:20px">
+
+    <div class="card">
+
+     <h3>DINE-IN</h3>
+
+     <p>${dineInSales.toLocaleString()} CFA</p>
+
+     <p class="muted">${dineInOrders.length} orders</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>TAKEAWAY</h3>
+
+     <p>${takeawaySales.toLocaleString()} CFA</p>
+
+     <p class="muted">${takeawayOrders.length} orders</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>DELIVERY</h3>
+
+     <p>${deliverySales.toLocaleString()} CFA</p>
+
+     <p class="muted">${deliveryOrders.length} orders</p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ `;
+
+}
   function ownerItemPerformance(){
 
  clearInterval(timerInterval);
