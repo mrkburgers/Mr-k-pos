@@ -695,7 +695,21 @@ function header(label){
 function managerHome(){
 
  clearInterval(timerInterval);
+const today=new Date();
 
+const todayOrders=completedOrders.filter(o=>{
+
+ if(!o.completedAt)return false;
+
+ const date=new Date(Number(o.completedAt));
+
+ return date.getFullYear()===today.getFullYear() &&
+
+        date.getMonth()===today.getMonth() &&
+
+        date.getDate()===today.getDate();
+
+});
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -734,7 +748,7 @@ function managerHome(){
 
      <h3>ORDER HISTORY</h3>
 
-     <strong>${completedOrders.length}</strong>
+     <strong>${todayOrders.length}</strong>
 
     </div>
 
@@ -3488,7 +3502,21 @@ function managerProductAvailability(){
 function home(){
 
  clearInterval(timerInterval);
+const today=new Date();
 
+const todayOrders=completedOrders.filter(o=>{
+
+ if(!o.completedAt)return false;
+
+ const date=new Date(Number(o.completedAt));
+
+ return date.getFullYear()===today.getFullYear() &&
+
+        date.getMonth()===today.getMonth() &&
+
+        date.getDate()===today.getDate();
+
+});
  const newest=[...activeOrders]
 
  .sort((a,b)=>Number(b.number)-Number(a.number));
@@ -3541,7 +3569,7 @@ function home(){
 
      <h3>ORDER HISTORY</h3>
 
-     <strong>${completedOrders.length}</strong>
+     <strong>${todayOrders.length}</strong>
 
     </div>
 
