@@ -626,23 +626,23 @@ function managerHome(){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerSales()">
 
      <div class="category-icon">💰</div>
 
      <h3>SALES</h3>
 
-     <p class="muted">Coming soon</p>
+     
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="managerSalesHistory()">
 
      <div class="category-icon">📅</div>
 
      <h3>SALES HISTORY</h3>
 
-     <p class="muted">Coming soon</p>
+    
 
     </div>
 
@@ -652,7 +652,7 @@ function managerHome(){
 
      <h3>INVENTORY</h3>
 
-     <p class="muted">Coming soon</p>
+     
 
     </div>
 
@@ -665,6 +665,184 @@ function managerHome(){
  </div>`;
 
 } 
+function managerSales(){
+
+ const orders=[...completedOrders];
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ const totalOrders=orders.length;
+
+ const averageOrder=
+
+  totalOrders
+
+   ?Math.round(totalSales/totalOrders)
+
+   :0;
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <div class="kitchen-title">
+
+   ${header("SALES")}
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    💰 SALES DASHBOARD
+
+   </span>
+
+   <h1>Sales</h1>
+
+   <div class="info-row">
+
+    <span>Total Sales</span>
+
+    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Completed Orders</span>
+
+    <strong>${totalOrders}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Average Order</span>
+
+    <strong>${averageOrder.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <button
+
+    class="secondary"
+
+    onclick="managerHome()"
+
+   >
+
+    BACK
+
+   </button>
+
+  </div>
+
+ </div>
+
+ `;
+
+}
+function managerSalesHistory(){
+
+ const today=new Date();
+
+ const y=today.getFullYear();
+
+ const m=String(today.getMonth()+1).padStart(2,"0");
+
+ const d=String(today.getDate()).padStart(2,"0");
+
+ const selectedDate=`${y}-${m}-${d}`;
+
+ const orders=completedOrders.filter(o=>{
+
+  if(!o.completedAt)return false;
+
+  const dt=new Date(Number(o.completedAt));
+
+  const oy=dt.getFullYear();
+
+  const om=String(dt.getMonth()+1).padStart(2,"0");
+
+  const od=String(dt.getDate()).padStart(2,"0");
+
+  return `${oy}-${om}-${od}`===selectedDate;
+
+ });
+
+ const totalSales=orders.reduce(
+
+  (sum,o)=>sum+orderTotal(o),
+
+  0
+
+ );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="managerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>MANAGER — SALES HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <h1>Sales History</h1>
+
+   <div class="info-row">
+
+    <span>Date</span>
+
+    <strong>${selectedDate}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Completed Orders</span>
+
+    <strong>${orders.length}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Total Sales</span>
+
+    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+  </div>
+
+ </div>
+
+ `;
+
+}
 function managerActiveOrders(){
 
  clearInterval(timerInterval);
