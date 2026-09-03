@@ -655,13 +655,13 @@ function header(label){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerReports()" style="cursor:pointer">
 
-     <div class="category-icon">📈</div>
+ <div class="category-icon">📈</div>
 
-     <h3>REPORTS</h3>
+ <h3>REPORTS</h3>
 
-    </div>
+</div>
 
     <div class="card">
 
@@ -686,7 +686,343 @@ function header(label){
  </div>`;
 
 }
-  
+  function ownerReports(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — REPORTS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📈 PERFORMANCE REPORTS
+
+   </span>
+
+   <h1>Reports</h1>
+
+   <p class="muted">
+
+    Analyse menu items and sales between any two dates.
+
+   </p>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerItemPerformance()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🍔</div>
+
+     <h3>ITEM PERFORMANCE</h3>
+
+     <p class="muted">
+
+      Analyse any menu item
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerSalesPerformance()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📊</div>
+
+     <h3>SALES PERFORMANCE</h3>
+
+     <p class="muted">
+
+      Analyse sales by order type
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerItemPerformance(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerReports()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ITEM PERFORMANCE</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🍔 ITEM PERFORMANCE
+
+   </span>
+
+   <h1>Item Performance</h1>
+
+   <p class="muted">
+
+    Choose an item and analyse its performance between two dates.
+
+   </p>
+
+   <div class="info-row">
+
+    <span>From</span>
+
+    <input type="date" id="itemReportFrom">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>To</span>
+
+    <input type="date" id="itemReportTo">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Menu Item</span>
+
+    <select id="itemReportProduct">
+
+ <option value="">
+
+  Choose an item
+
+ </option>
+
+ ${Object.keys(menuPrices).map(name=>`
+
+  <option value="${name}">
+
+   ${name}
+
+  </option>
+
+ `).join("")}
+
+</select>
+
+   </div>
+<button
+
+ class="primary"
+
+ style="margin-top:20px;width:100%"
+
+ onclick="runItemPerformanceReport()">
+
+ VIEW REPORT
+
+</button>
+
+<div id="itemPerformanceResults"></div>
+  </div>
+
+ </div>`;
+
+}
+  function runItemPerformanceReport(){
+
+ const from=document.getElementById("itemReportFrom").value;
+
+ const to=document.getElementById("itemReportTo").value;
+
+ const product=document.getElementById("itemReportProduct").value;
+
+ const results=document.getElementById("itemPerformanceResults");
+
+ if(!from || !to || !product){
+
+  alert("Please choose a From date, To date and menu item.");
+
+  return;
+
+ }
+
+ if(from>to){
+
+  alert("From date cannot be after To date.");
+
+  return;
+
+ }
+
+ let quantitySold=0;
+
+ let revenue=0;
+
+ let ordersContaining=0;
+
+ completedOrders.forEach(order=>{
+
+  if(!order.completedAt)return;
+
+  const dt=new Date(Number(order.completedAt));
+
+  const y=dt.getFullYear();
+
+  const m=String(dt.getMonth()+1).padStart(2,"0");
+
+  const d=String(dt.getDate()).padStart(2,"0");
+
+  const orderDate=`${y}-${m}-${d}`;
+
+  if(orderDate<from || orderDate>to)return;
+
+  let foundInOrder=false;
+
+  orderCart(order).forEach(item=>{
+
+   if(item.name!==product)return;
+
+   const qty=Number(item.qty||1);
+
+   quantitySold+=qty;
+
+   revenue+=itemLineTotal(item);
+
+   foundInOrder=true;
+
+  });
+
+  if(foundInOrder){
+
+   ordersContaining++;
+
+  }
+
+ });
+
+ const fromDate=new Date(from+"T00:00:00");
+
+ const toDate=new Date(to+"T00:00:00");
+
+ const days=
+
+ Math.floor(
+
+  (toDate-fromDate)/(1000*60*60*24)
+
+ )+1;
+
+ const averagePerDay=
+
+ days>0
+
+ ?quantitySold/days
+
+ :0;
+
+ results.innerHTML=`
+
+  <div style="margin-top:24px">
+
+   <h2>${product}</h2>
+
+   <p class="muted">
+
+    ${from} → ${to}
+
+   </p>
+
+   <div class="grid">
+
+    <div class="card">
+
+     <h3>${quantitySold}</h3>
+
+     <p class="muted">QUANTITY SOLD</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>${revenue.toLocaleString()} CFA</h3>
+
+     <p class="muted">REVENUE</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>${ordersContaining}</h3>
+
+     <p class="muted">ORDERS CONTAINING ITEM</p>
+
+    </div>
+
+    <div class="card">
+
+     <h3>${averagePerDay.toFixed(1)}</h3>
+
+     <p class="muted">AVERAGE SOLD / DAY</p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ `;
+
+}
   function ownerSales(){
 
  clearInterval(timerInterval);
