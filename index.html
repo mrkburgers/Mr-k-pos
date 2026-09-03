@@ -969,7 +969,280 @@ function header(label){
  ?quantitySold/days
 
  :0;
+const dailyData=[];
 
+for(
+
+ let dt=new Date(fromDate);
+
+ dt<=toDate;
+
+ dt.setDate(dt.getDate()+1)
+
+){
+
+ const y=dt.getFullYear();
+
+ const m=String(dt.getMonth()+1).padStart(2,"0");
+
+ const d=String(dt.getDate()).padStart(2,"0");
+
+ const dateKey=`${y}-${m}-${d}`;
+
+ let qty=0;
+
+ completedOrders.forEach(order=>{
+
+  if(!order.completedAt)return;
+
+  const orderDt=new Date(Number(order.completedAt));
+
+  const oy=orderDt.getFullYear();
+
+  const om=String(orderDt.getMonth()+1).padStart(2,"0");
+
+  const od=String(orderDt.getDate()).padStart(2,"0");
+
+  if(`${oy}-${om}-${od}`!==dateKey)return;
+
+  orderCart(order).forEach(item=>{
+
+   if(item.name===product){
+
+    qty+=Number(item.qty||1);
+
+   }
+
+  });
+
+ });
+
+ dailyData.push({
+
+  date:dateKey,
+
+  qty
+
+ });
+
+}
+const maxQty=Math.max(
+
+ 1,
+
+ ...dailyData.map(d=>d.qty)
+
+);
+
+const graphWidth=800;
+
+const graphHeight=260;
+
+const padLeft=50;
+
+const padRight=20;
+
+const padTop=20;
+
+const padBottom=40;
+
+const innerWidth=
+
+ graphWidth-padLeft-padRight;
+
+const innerHeight=
+
+ graphHeight-padTop-padBottom;
+
+const points=dailyData.map((d,i)=>{
+
+ const x=
+
+ dailyData.length===1
+
+ ?padLeft+innerWidth/2
+
+ :padLeft+
+
+  (i/(dailyData.length-1))*innerWidth;
+
+ const y=
+
+ padTop+
+
+ innerHeight-
+
+ (d.qty/maxQty)*innerHeight;
+
+ return `${x},${y}`;
+
+}).join(" ");
+
+const graphSvg=`
+
+<svg
+
+ viewBox="0 0 ${graphWidth} ${graphHeight}"
+
+ style="
+
+  width:100%;
+
+  height:auto;
+
+  margin-top:20px;
+
+  background:#151515;
+
+  border:1px solid #333;
+
+  border-radius:14px;
+
+ ">
+
+ <line
+
+  x1="${padLeft}"
+
+  y1="${padTop}"
+
+  x2="${padLeft}"
+
+  y2="${graphHeight-padBottom}"
+
+  stroke="#666"
+
+ />
+
+ <line
+
+  x1="${padLeft}"
+
+  y1="${graphHeight-padBottom}"
+
+  x2="${graphWidth-padRight}"
+
+  y2="${graphHeight-padBottom}"
+
+  stroke="#666"
+
+ />
+
+ <polyline
+
+  points="${points}"
+
+  fill="none"
+
+  stroke="#f3a51b"
+
+  stroke-width="4"
+
+  stroke-linecap="round"
+
+  stroke-linejoin="round"
+
+ />
+
+ ${dailyData.map((d,i)=>{
+
+  const x=
+
+  dailyData.length===1
+
+  ?padLeft+innerWidth/2
+
+  :padLeft+
+
+   (i/(dailyData.length-1))*innerWidth;
+
+  const y=
+
+  padTop+
+
+  innerHeight-
+
+  (d.qty/maxQty)*innerHeight;
+
+  return `
+
+   <circle
+
+    cx="${x}"
+
+    cy="${y}"
+
+    r="5"
+
+    fill="#f3a51b"
+
+   />
+
+  `;
+
+ }).join("")}
+
+ <text
+
+  x="${padLeft}"
+
+  y="${graphHeight-12}"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  ${dailyData[0]?.date||""}
+
+ </text>
+
+ <text
+
+  x="${graphWidth-padRight}"
+
+  y="${graphHeight-12}"
+
+  text-anchor="end"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  ${dailyData[dailyData.length-1]?.date||""}
+
+ </text>
+
+ <text
+
+  x="12"
+
+  y="${padTop+5}"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  ${maxQty}
+
+ </text>
+
+ <text
+
+  x="22"
+
+  y="${graphHeight-padBottom+5}"
+
+  fill="#aaa"
+
+  font-size="18">
+
+  0
+
+ </text>
+
+</svg>
+
+`;
  results.innerHTML=`
 
   <div style="margin-top:24px">
@@ -1015,7 +1288,13 @@ function header(label){
      <p class="muted">AVERAGE SOLD / DAY</p>
 
     </div>
+   <div style="margin-top:28px">
 
+ <h3>QUANTITY SOLD PER DAY</h3>
+
+ ${graphSvg}
+
+</div>
    </div>
 
   </div>
