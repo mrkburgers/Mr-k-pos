@@ -10435,7 +10435,17 @@ function saveCustomer(){
 /* MENU */
 
 function menuCategories(){
+ const cashierCategories=
 
+  menuCategoryData.filter(
+
+   category=>
+
+    category.active &&
+
+    category.id!=="extraToppings"
+
+  );
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -10454,15 +10464,11 @@ function menuCategories(){
 
    <div class="grid">
 
-    ${cat("🍔","Burgers")}
+    ${cashierCategories.map(category=>
 
-    ${cat("🍟","Sides")}
+ cat("🍽️",category.name,category.id)
 
-    ${cat("🥗","Salads")}
-
-    ${cat("🥤","Soft Drinks")}
-
-    ${cat("🥫","Extra Sauces")}
+).join("")}
 
    </div>
 
@@ -10502,7 +10508,7 @@ function menuCategories(){
 
 }
 
-function cat(icon,name){
+function cat(icon,name,id){
 
  return `
 
@@ -10510,7 +10516,7 @@ function cat(icon,name){
 
   class="card category clickable"
 
-  onclick="openCategory('${name}')">
+  onclick="openCategory('${id}')">
 
   <div class="category-icon">
 
@@ -10542,21 +10548,33 @@ function isProductAvailable(name){
  }).length===0;
 
 }
-function openCategory(name){
+function openCategory(categoryId){
 
- currentCategory=name;
+  const category=
+
+  menuCategoryData.find(
+
+   item=>item.id===categoryId
+
+  );
+
+ if(!category)return;
+
+ currentCategory=categoryId;
 
  let items=
 
- name==="Burgers"?burgers:
+  categoryId==="burgers"?burgers:
 
- name==="Sides"?sides:
+  categoryId==="sides"?sides:
 
- name==="Salads"?salads:
+  categoryId==="salads"?salads:
 
- name==="Soft Drinks"?drinks:
+  categoryId==="softDrinks"?drinks:
 
- sauces;
+  categoryId==="sauces"?sauces:
+
+  [];
 
  document.getElementById("root").innerHTML=`
 
@@ -10576,7 +10594,7 @@ function openCategory(name){
 
    MR K BURGERS
 
-   <span>${name.toUpperCase()}</span>
+  <span>${category.name.toUpperCase()}</span>
 
   </div>
 
