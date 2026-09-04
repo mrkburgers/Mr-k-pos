@@ -1099,7 +1099,7 @@ function header(label){
 
  }
 
- const duplicate=menuCategories.some(
+ const duplicate=menuCategoryData.some(
 
   category=>
 
@@ -1129,7 +1129,7 @@ function header(label){
 
    .slice(2,8);
 
- menuCategories.push({
+ menuCategoryData.push({
 
   id:id,
 
@@ -1146,7 +1146,7 @@ function header(label){
 }
   function ownerCategoryList(){
 
- const rows=menuCategories
+ const rows=menuCategoryData
 
   .map(category=>`
 
@@ -1231,10 +1231,7 @@ function header(label){
 }
   function toggleCategoryActive(id){
 
- const category=
-
-  menuCategories.find(
-
+ const category=menuCategoryData.find(
    category=>category.id===id
 
   );
@@ -1254,7 +1251,7 @@ function header(label){
 
  const category=
 
-  menuCategories.find(
+ menuCategoryData.find(
 
    category=>category.id===id
 
@@ -1309,7 +1306,7 @@ function header(label){
 
  const category=
 
-  menuCategories.find(
+ menuCategoryData.find(
 
    category=>category.id===id
 
@@ -1337,7 +1334,7 @@ function header(label){
 
  const duplicate=
 
-  menuCategories.some(
+ menuCategoryData.some(
 
    other=>
 
@@ -1449,7 +1446,7 @@ function header(label){
  </div>`;
 
 }
-  let menuCategories=safeLoad("mrkMenuCategories",[
+  let menuCategoryData=safeLoad("mrkMenuCategories",[
 
  {
 
@@ -1519,7 +1516,7 @@ function saveMenuCategories(){
 
   "mrkMenuCategories",
 
-  JSON.stringify(menuCategories)
+  JSON.stringify(menuCategoryData)
 
  );
 
@@ -2404,7 +2401,7 @@ const extraOptions=ownerMenuData
  `)
 
  .join("");
- const categoryOptions=menuCategories
+ const categoryOptions=menuCategoryData
 
  .filter(category=>category.active)
 
@@ -2728,7 +2725,7 @@ const allowedExtraIds=[
 
  (
 
-  menuCategories.find(
+  menuCategoryData.find(
 
    category=>category.id===item.category
 
@@ -2964,7 +2961,7 @@ const extraOptions=ownerMenuData
  `)
 
  .join("");
-const categoryOptions=menuCategories
+const categoryOptions=menuCategoryData
 
  .filter(category=>
 
