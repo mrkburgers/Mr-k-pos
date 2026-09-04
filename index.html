@@ -898,10 +898,10 @@ function header(label){
 
  display:grid;
 
- grid-template-columns:1fr 1fr 1fr;
+ grid-template-columns:0.8fr 1.4fr 0.9fr;
 
  gap:8px;
-
+font-size:13px;
  margin-top:16px;
 
 ">
@@ -1101,11 +1101,15 @@ function header(label){
 
    <div class="info-row">
 
-    <span>Staff ID</span>
+ <span>Staff ID</span>
 
-    <strong>${staff.staffId}</strong>
+ <input
 
-   </div>
+  id="editStaffId"
+
+  value="${staff.staffId}">
+
+</div>
 
    <div class="info-row">
 
@@ -1197,7 +1201,11 @@ function header(label){
   .getElementById("editStaffName")
 
   .value.trim();
+const newStaffId=document
 
+ .getElementById("editStaffId")
+
+ .value.trim();
  const pin=document
 
   .getElementById("editStaffPin")
@@ -1217,7 +1225,39 @@ function header(label){
   return;
 
  }
+ if(!newStaffId){
 
+ alert("Staff ID cannot be empty.");
+
+ return;
+
+}
+
+if(newStaffId.toLowerCase()==="owner01"){
+
+ alert("owner01 is reserved for the Owner account.");
+
+ return;
+
+}
+
+const duplicate=staffAccounts.find(
+
+ s=>
+
+  s!==staff &&
+
+  s.staffId.toLowerCase()===newStaffId.toLowerCase()
+
+);
+
+if(duplicate){
+
+ alert("That Staff ID is already in use.");
+
+ return;
+
+}
  if(pin && !/^\d{4}$/.test(pin)){
 
   alert("PIN must contain exactly 4 numbers.");
