@@ -10486,7 +10486,7 @@ function menuCategories(){
 
     ${cashierCategories.map(category=>
 
- cat("🍽️",category.name,category.id)
+ cat(category.icon||"🍽️",category.name,category.id)
 
 ).join("")}
 
