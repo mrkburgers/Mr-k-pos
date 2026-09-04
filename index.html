@@ -1459,14 +1459,19 @@ const newStaffId=document
 
 }
 
-if(newStaffId.toLowerCase()==="owner01"){
+if(
 
- alert("owner01 is reserved for the Owner account.");
+ newStaffId.toLowerCase()===
+
+ ownerAccount.staffId.toLowerCase()
+
+){
+
+ alert("That Staff ID is reserved for the Owner account.");
 
  return;
 
 }
-
 const duplicate=staffAccounts.find(
 
  s=>
@@ -1666,13 +1671,19 @@ staff.staffId=newStaffId;
 
  }
 
- if(staffId.toLowerCase()==="owner01"){
+ if(
 
-  alert("This Staff ID is reserved.");
+ staffId.toLowerCase()===
+
+ ownerAccount.staffId.toLowerCase()
+
+){
+
+  alert("That Staff ID is reserved for the Owner account.");
 
   return;
 
- }
+}
 
  const alreadyExists=staffAccounts.some(
 
