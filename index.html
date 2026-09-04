@@ -503,11 +503,15 @@ function loginScreen(){
 
    <p class="muted" style="margin-top:20px">
 
-    Cashier: cashier01<br>
+    ${staffAccounts
 
-Kitchen: kitchen01<br>
+ .filter(s=>s.active)
 
-Manager: manager01<br>
+ .map(s=>`${esc(s.name)}: ${esc(s.staffId)}`)
+
+ .join("<br>")}
+
+<br>
 
 Owner: owner01
 
