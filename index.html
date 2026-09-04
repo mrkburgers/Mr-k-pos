@@ -908,6 +908,184 @@ function header(label){
  </div>`;
 
 }
+  function ownerEditAccount(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerStaffManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ACCOUNT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👑 OWNER ACCOUNT
+
+   </span>
+
+   <h1>${esc(ownerAccount.name)}</h1>
+
+   <div class="info-row">
+
+    <span>Name</span>
+
+    <input
+
+     id="editOwnerName"
+
+     value="${esc(ownerAccount.name)}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Staff ID</span>
+
+    <input
+
+     id="editOwnerStaffId"
+
+     value="${esc(ownerAccount.staffId)}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>New PIN</span>
+
+    <input
+
+     id="editOwnerPin"
+
+     type="password"
+
+     inputmode="numeric"
+
+     maxlength="4"
+
+     placeholder="Leave blank to keep current PIN">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Role</span>
+
+    <strong>OWNER</strong>
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick="saveOwnerEdit()">
+
+    SAVE CHANGES
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveOwnerEdit(){
+
+ const name=document
+
+  .getElementById("editOwnerName")
+
+  .value.trim();
+
+ const newStaffId=document
+
+  .getElementById("editOwnerStaffId")
+
+  .value.trim();
+
+ const pin=document
+
+  .getElementById("editOwnerPin")
+
+  .value.trim();
+
+ if(!name){
+
+  alert("Name cannot be empty.");
+
+  return;
+
+ }
+
+ if(!newStaffId){
+
+  alert("Staff ID cannot be empty.");
+
+  return;
+
+ }
+
+ const duplicate=staffAccounts.find(
+
+  s=>s.staffId.toLowerCase()===newStaffId.toLowerCase()
+
+ );
+
+ if(duplicate){
+
+  alert("That Staff ID is already in use.");
+
+  return;
+
+ }
+
+ if(pin && !/^\d{4}$/.test(pin)){
+
+  alert("PIN must contain exactly 4 numbers.");
+
+  return;
+
+ }
+
+ ownerAccount.name=name;
+
+ ownerAccount.staffId=newStaffId;
+
+ if(pin){
+
+  ownerAccount.pin=pin;
+
+ }
+
+ saveOwnerAccount();
+
+ alert("Owner account updated successfully.");
+
+ ownerEditAccount();
+
+}
   function ownerStaffList(){
 
  clearInterval(timerInterval);
