@@ -1308,7 +1308,17 @@ function header(label){
     type="text"
 
     value="${esc(category.name)}">
+<label>Category Icon</label>
 
+<input
+
+ id="editCategoryIcon"
+
+ type="text"
+
+ maxlength="4"
+
+ value="${esc(category.icon||"🍽️")}">
    <button
 
     onclick="saveEditedCategory('${category.id}')">
@@ -1343,7 +1353,15 @@ function header(label){
    .value
 
    .trim();
+const icon=
 
+ document
+
+  .getElementById("editCategoryIcon")
+
+  .value
+
+  .trim() || "🍽️";
  if(!name){
 
   alert("Enter a category name.");
@@ -1375,7 +1393,7 @@ function header(label){
  }
 
  category.name=name;
-
+category.icon=icon;
  saveMenuCategories();
 
  ownerCategoryList();
