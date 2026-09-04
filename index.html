@@ -577,56 +577,85 @@ function saveStaffAccounts(){
 }
 function login(){
 
- const u=document.getElementById("user").value.trim();
+ const u=document
 
- const p=document.getElementById("pin").value.trim();
+  .getElementById("user")
 
- if(u==="cashier01"&&p==="1234"){
+  .value.trim();
 
-   loggedIn=true;
+ const p=document
 
-   role="cashier";
+  .getElementById("pin")
 
-   home();
+  .value.trim();
 
-   return;
+ if(u==="owner01"&&p==="1991"){
+
+  loggedIn=true;
+
+  role="owner";
+
+  ownerHome();
+
+  return;
+
+ }
+
+ const staff=staffAccounts.find(
+
+  s=>
+
+   s.staffId.toLowerCase()===u.toLowerCase() &&
+
+   s.pin===p
+
+ );
+
+ if(!staff){
+
+  alert("Invalid Staff ID or PIN.");
+
+  return;
 
  }
 
- if(u==="kitchen01"&&p==="5678"){
+ if(!staff.active){
 
-   loggedIn=true;
+  alert("This staff account is inactive.");
 
-   role="kitchen";
-
-   kitchenHome();
-
-   return;
+  return;
 
  }
-if(u==="manager01"&&p==="9012"){
 
  loggedIn=true;
 
- role="manager";
+ role=staff.role;
 
- managerHome();
+ if(role==="manager"){
 
- return;
+  managerHome();
 
-}
-  if(u==="owner01"&&p==="1991"){
+  return;
 
- loggedIn=true;
+ }
 
- role="owner";
+ if(role==="kitchen"){
 
- ownerHome();
+  kitchenHome();
 
- return;
+  return;
 
-}
- alert("Invalid Staff ID or PIN.");
+ }
+
+ if(role==="cashier"){
+
+  home();
+
+  return;
+
+ }
+
+ alert("Invalid staff role.");
 
 }
 
