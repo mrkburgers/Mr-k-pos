@@ -147,7 +147,9 @@ input{width:100%;padding:14px;border-radius:10px;border:1px solid #444;backgroun
 let loggedIn=false;
 
 let role="";
+let currentStaffName="";
 
+let currentStaffId="";
 let orderType="";
 
 let currentCategory="";
@@ -624,7 +626,9 @@ function login(){
  loggedIn=true;
 
  role="owner";
+currentStaffName=ownerAccount.name;
 
+currentStaffId=ownerAccount.staffId;
  ownerHome();
 
  return;
@@ -660,7 +664,9 @@ function login(){
  loggedIn=true;
 
  role=staff.role;
+currentStaffName=staff.name;
 
+currentStaffId=staff.staffId;
  if(role==="manager"){
 
   managerHome();
@@ -694,7 +700,9 @@ function logout(){
  loggedIn=false;
 
  role="";
+currentStaffName="";
 
+currentStaffId="";
  clearInterval(timerInterval);
 
  render();
@@ -6143,7 +6151,9 @@ function managerAddStock(){
   qty:qty,
 
 actorRole:role==="owner"?"OWNER":"MANAGER",
+actorName:currentStaffName,
 
+actorStaffId:currentStaffId,
 createdAt:Date.now()
 
  });
@@ -6360,7 +6370,9 @@ function managerRemoveStock(){
   qty:-qty,
 
 actorRole:role==="owner"?"OWNER":"MANAGER",
+actorName:currentStaffName,
 
+actorStaffId:currentStaffId,
 createdAt:Date.now()
 
  });
@@ -6645,7 +6657,9 @@ function managerRecordWaste(){
   reason:reason,
 
 actorRole:role==="owner"?"OWNER":"MANAGER",
+actorName:currentStaffName,
 
+actorStaffId:currentStaffId,
 createdAt:Date.now()
 
  });
@@ -6835,15 +6849,19 @@ const today=
 
  Made by: ${
 
-  m.actorRole ||
+ m.actorName && m.actorStaffId
 
-  (m.type==="SALE / CHECKOUT"
+ ? `${esc(m.actorName)} (${esc(m.actorStaffId)})`
 
-   ?"SYSTEM / CHECKOUT"
+ : m.actorRole ||
 
-   :"LEGACY")
+   (m.type==="SALE / CHECKOUT"
 
- }
+    ?"SYSTEM / CHECKOUT"
+
+    :"LEGACY")
+
+}
 
 </div>
 
