@@ -567,7 +567,27 @@ let staffAccounts=safeLoad("mrkStaffAccounts",[
  }
 
 ]);
+let ownerAccount=safeLoad("mrkOwnerAccount",{
 
+ name:"Owner",
+
+ staffId:"owner01",
+
+ pin:"1991"
+
+});
+
+function saveOwnerAccount(){
+
+ localStorage.setItem(
+
+  "mrkOwnerAccount",
+
+  JSON.stringify(ownerAccount)
+
+ );
+
+}
 function saveStaffAccounts(){
 
  localStorage.setItem(
