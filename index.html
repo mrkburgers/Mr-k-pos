@@ -835,6 +835,40 @@ function header(label){
 
  clearInterval(timerInterval);
 
+ const staffCards=staffAccounts.map(s=>`
+
+  <div class="card">
+
+   <h3>${s.name}</h3>
+
+   <div class="info-row">
+
+    <span>Role</span>
+
+    <strong>${s.role.toUpperCase()}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Staff ID</span>
+
+    <strong>${s.staffId}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Status</span>
+
+    <strong>${s.active?"ACTIVE":"INACTIVE"}</strong>
+
+   </div>
+
+  </div>
+
+ `).join("");
+
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -867,71 +901,7 @@ function header(label){
 
    <h1>Staff Accounts</h1>
 
-   <div class="card">
-
-    <h3>MANAGER</h3>
-
-    <div class="info-row">
-
-     <span>Staff ID</span>
-
-     <strong>manager01</strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>Status</span>
-
-     <strong>ACTIVE</strong>
-
-    </div>
-
-   </div>
-
-   <div class="card">
-
-    <h3>CASHIER</h3>
-
-    <div class="info-row">
-
-     <span>Staff ID</span>
-
-     <strong>cashier01</strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>Status</span>
-
-     <strong>ACTIVE</strong>
-
-    </div>
-
-   </div>
-
-   <div class="card">
-
-    <h3>KITCHEN</h3>
-
-    <div class="info-row">
-
-     <span>Staff ID</span>
-
-     <strong>kitchen01</strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>Status</span>
-
-     <strong>ACTIVE</strong>
-
-    </div>
-
-   </div>
+   ${staffCards}
 
   </div>
 
