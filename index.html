@@ -894,7 +894,51 @@ function header(label){
 
    </div>
 
-  </div>
+  <div style="
+
+ display:grid;
+
+ grid-template-columns:1fr 1fr 1fr;
+
+ gap:8px;
+
+ margin-top:16px;
+
+">
+
+ <button
+
+  class="secondary"
+
+  onclick="ownerEditStaff('${s.staffId}')">
+
+  EDIT
+
+ </button>
+
+ <button
+
+  class="secondary"
+
+  onclick="ownerToggleStaff('${s.staffId}')">
+
+  ${s.active?"DEACTIVATE":"ACTIVATE"}
+
+ </button>
+
+ <button
+
+  class="secondary"
+
+  onclick="ownerDeleteStaff('${s.staffId}')">
+
+  DELETE
+
+ </button>
+
+</div>
+
+</div>
 
  `).join("");
 
@@ -935,6 +979,268 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerToggleStaff(staffId){
+
+ const staff=staffAccounts.find(
+
+  s=>s.staffId===staffId
+
+ );
+
+ if(!staff)return;
+
+ const action=staff.active
+
+  ?"deactivate"
+
+  :"activate";
+
+ if(!confirm(
+
+  `Are you sure you want to ${action} ${staff.name}?`
+
+ )){
+
+  return;
+
+ }
+
+ staff.active=!staff.active;
+
+ saveStaffAccounts();
+
+ ownerStaffList();
+
+}
+  function ownerDeleteStaff(staffId){
+
+ const staff=staffAccounts.find(
+
+  s=>s.staffId===staffId
+
+ );
+
+ if(!staff)return;
+
+ const confirmed=confirm(
+
+  `Permanently delete ${staff.name} (${staff.staffId})?\n\nThis cannot be undone.`
+
+ );
+
+ if(!confirmed)return;
+
+ staffAccounts=staffAccounts.filter(
+
+  s=>s.staffId!==staffId
+
+ );
+
+ saveStaffAccounts();
+
+ ownerStaffList();
+
+}
+  function ownerEditStaff(staffId){
+
+ const staff=staffAccounts.find(
+
+  s=>s.staffId===staffId
+
+ );
+
+ if(!staff)return;
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerStaffList()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EDIT STAFF</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ✏️ EDIT STAFF
+
+   </span>
+
+   <h1>${staff.name}</h1>
+
+   <div class="info-row">
+
+    <span>Name</span>
+
+    <input
+
+     id="editStaffName"
+
+     value="${staff.name}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Staff ID</span>
+
+    <strong>${staff.staffId}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>New PIN</span>
+
+    <input
+
+     id="editStaffPin"
+
+     type="password"
+
+     inputmode="numeric"
+
+     maxlength="4"
+
+     placeholder="Leave blank to keep current PIN">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Role</span>
+
+    <select id="editStaffRole">
+
+     <option
+
+      value="manager"
+
+      ${staff.role==="manager"?"selected":""}>
+
+      Manager
+
+     </option>
+
+     <option
+
+      value="cashier"
+
+      ${staff.role==="cashier"?"selected":""}>
+
+      Cashier
+
+     </option>
+
+     <option
+
+      value="kitchen"
+
+      ${staff.role==="kitchen"?"selected":""}>
+
+      Kitchen
+
+     </option>
+
+    </select>
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px;width:100%"
+
+    onclick="saveStaffEdit('${staff.staffId}')">
+
+    SAVE CHANGES
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveStaffEdit(staffId){
+
+ const staff=staffAccounts.find(
+
+  s=>s.staffId===staffId
+
+ );
+
+ if(!staff)return;
+
+ const name=document
+
+  .getElementById("editStaffName")
+
+  .value.trim();
+
+ const pin=document
+
+  .getElementById("editStaffPin")
+
+  .value.trim();
+
+ const staffRole=document
+
+  .getElementById("editStaffRole")
+
+  .value;
+
+ if(!name){
+
+  alert("Name cannot be empty.");
+
+  return;
+
+ }
+
+ if(pin && !/^\d{4}$/.test(pin)){
+
+  alert("PIN must contain exactly 4 numbers.");
+
+  return;
+
+ }
+
+ staff.name=name;
+
+ staff.role=staffRole;
+
+ if(pin){
+
+  staff.pin=pin;
+
+ }
+
+ saveStaffAccounts();
+
+ alert("Staff account updated successfully.");
+
+ ownerStaffList();
 
 }
   function ownerAddStaff(){
@@ -1137,6 +1443,7 @@ function header(label){
  ownerStaffList();
 
 }
+  
   function ownerReports(){
 
  clearInterval(timerInterval);
