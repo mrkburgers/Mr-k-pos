@@ -518,7 +518,63 @@ Owner: owner01
  </div>`;
 
 }
+let staffAccounts=safeLoad("mrkStaffAccounts",[
 
+ {
+
+  name:"Manager",
+
+  staffId:"manager01",
+
+  pin:"9012",
+
+  role:"manager",
+
+  active:true
+
+ },
+
+ {
+
+  name:"Cashier",
+
+  staffId:"cashier01",
+
+  pin:"1234",
+
+  role:"cashier",
+
+  active:true
+
+ },
+
+ {
+
+  name:"Kitchen",
+
+  staffId:"kitchen01",
+
+  pin:"5678",
+
+  role:"kitchen",
+
+  active:true
+
+ }
+
+]);
+
+function saveStaffAccounts(){
+
+ localStorage.setItem(
+
+  "mrkStaffAccounts",
+
+  JSON.stringify(staffAccounts)
+
+ );
+
+}
 function login(){
 
  const u=document.getElementById("user").value.trim();
@@ -752,7 +808,7 @@ function header(label){
 
     <div
 
-     class="card"
+     class="card" onclick="ownerAddStaff()"
 
      style="cursor:pointer">
 
@@ -880,6 +936,206 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerAddStaff(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerStaffManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ADD STAFF</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ ADD STAFF
+
+   </span>
+
+   <h1>Create Staff Account</h1>
+
+   <div class="info-row">
+
+    <span>Name</span>
+
+    <input
+
+     id="newStaffName"
+
+     type="text"
+
+     placeholder="Staff name">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Staff ID</span>
+
+    <input
+
+     id="newStaffId"
+
+     type="text"
+
+     placeholder="Staff ID">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>PIN</span>
+
+    <input
+
+     id="newStaffPin"
+
+     type="password"
+
+     inputmode="numeric"
+
+     placeholder="PIN">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Role</span>
+
+    <select id="newStaffRole">
+
+     <option value="">Select role</option>
+
+     <option value="manager">Manager</option>
+
+     <option value="cashier">Cashier</option>
+
+     <option value="kitchen">Kitchen</option>
+
+    </select>
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    onclick="createStaffAccount()"
+
+    style="margin-top:20px">
+
+    CREATE STAFF
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function createStaffAccount(){
+
+ const name=document
+
+  .getElementById("newStaffName")
+
+  .value.trim();
+
+ const staffId=document
+
+  .getElementById("newStaffId")
+
+  .value.trim();
+
+ const pin=document
+
+  .getElementById("newStaffPin")
+
+  .value.trim();
+
+ const staffRole=document
+
+  .getElementById("newStaffRole")
+
+  .value;
+
+ if(!name || !staffId || !pin || !staffRole){
+
+  alert("Please complete all fields.");
+
+  return;
+
+ }
+
+ if(!/^\d{4}$/.test(pin)){
+
+  alert("PIN must contain exactly 4 numbers.");
+
+  return;
+
+ }
+
+ if(staffId.toLowerCase()==="owner01"){
+
+  alert("This Staff ID is reserved.");
+
+  return;
+
+ }
+
+ const alreadyExists=staffAccounts.some(
+
+  s=>s.staffId.toLowerCase()===staffId.toLowerCase()
+
+ );
+
+ if(alreadyExists){
+
+  alert("This Staff ID already exists.");
+
+  return;
+
+ }
+
+ staffAccounts.push({
+
+  name:name,
+
+  staffId:staffId,
+
+  pin:pin,
+
+  role:staffRole,
+
+  active:true
+
+ });
+
+ saveStaffAccounts();
+
+ alert("Staff account created successfully.");
+
+ ownerStaffList();
 
 }
   function ownerReports(){
