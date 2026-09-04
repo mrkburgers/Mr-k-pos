@@ -794,7 +794,7 @@ function header(label){
 
     </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerPosSettings()" style="cursor:pointer">
 
      <div class="category-icon">⚙️</div>
 
@@ -807,6 +807,1911 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerPosSettings(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — POS SETTINGS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ⚙️ POS SETTINGS
+
+   </span>
+
+   <h1>POS Settings</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerMenuManagement()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🍔</div>
+
+     <h3>MENU MANAGEMENT</h3>
+
+     <p class="muted">
+
+      Items, ingredients, recipes and prices
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerMenuManagement(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerPosSettings()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — MENU MANAGEMENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🍔 MENU MANAGEMENT
+
+   </span>
+
+   <h1>Menu Management</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerMenuItems()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🍔</div>
+
+     <h3>MENU ITEMS</h3>
+
+     <p class="muted">
+
+      Add, edit, deactivate or remove items
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerIngredients()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🥬</div>
+
+     <h3>INGREDIENTS</h3>
+
+     <p class="muted">
+
+      Create and manage ingredients
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerMenuCategories()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📂</div>
+
+     <h3>CATEGORIES</h3>
+
+     <p class="muted">
+
+      Manage menu categories
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerIngredients(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerMenuManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — INGREDIENTS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🥬 INGREDIENT MANAGEMENT
+
+   </span>
+
+   <h1>Ingredients</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerIngredientList()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>INGREDIENT LIST</h3>
+
+     <p class="muted">
+
+      View and manage ingredients
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerAddIngredient()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD INGREDIENT</h3>
+
+     <p class="muted">
+
+      Create a new ingredient
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  let menuIngredients=safeLoad("mrkMenuIngredients",[
+
+ {
+
+  id:"beef120",
+
+  name:"120g Beef Patty",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"chicken120",
+
+  name:"120g Chicken Breast",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"bun",
+
+  name:"Bun",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"mushroom",
+
+  name:"Mushroom",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"beefTenderloin100",
+
+  name:"100g Sautéed Beef Tenderloin",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"bacon",
+
+  name:"Bacon",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"smokedTurkey",
+
+  name:"Smoked Turkey",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"cheddar",
+
+  name:"Cheddar Cheese",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"mozzarella",
+
+  name:"Mozzarella Cheese",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"emmental",
+
+  name:"Emmental Cheese",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"gratedCheese",
+
+  name:"Grated Cheese",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"potatoes",
+
+  name:"Potatoes",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"plantain",
+
+  name:"Plantain Tostones",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"fajitaChicken100",
+
+  name:"100g Fajita Chicken",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"coleslaw",
+
+  name:"Coleslaw",
+
+  tracked:true,
+
+  active:true
+
+ },
+
+ {
+
+  id:"rocketLettuce",
+
+  name:"Rocket Lettuce",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"tomato",
+
+  name:"Tomato",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"onions",
+
+  name:"Onions",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"pickledCucumbers",
+
+  name:"Pickled Cucumbers",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"freshCucumber",
+
+  name:"Fresh Cucumber",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"burgerSauce",
+
+  name:"Burger Sauce",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"mrkBurgerSauce",
+
+  name:"Mr K Sauce — Recipe",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"honeyBbqRecipe",
+
+  name:"Honey BBQ — Recipe",
+
+  tracked:false,
+
+  active:true
+
+ },
+
+ {
+
+  id:"chimichurriRecipe",
+
+  name:"Chimichurri — Recipe",
+
+  tracked:false,
+
+  active:true
+
+ }
+
+]);
+
+function saveMenuIngredients(){
+
+ localStorage.setItem(
+
+  "mrkMenuIngredients",
+
+  JSON.stringify(menuIngredients)
+
+ );
+
+}
+  function ownerAddIngredient(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerIngredients()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ADD INGREDIENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ NEW INGREDIENT
+
+   </span>
+
+   <h1>Add Ingredient</h1>
+
+   <div class="form">
+
+    <label>Ingredient Name</label>
+
+    <input
+
+     id="newIngredientName"
+
+     placeholder="Example: Jalapeños">
+
+    <label>Inventory Tracking</label>
+
+    <select id="newIngredientTracked">
+
+     <option value="true">
+
+      Tracked in Inventory
+
+     </option>
+
+     <option value="false">
+
+      Not Tracked
+
+     </option>
+
+    </select>
+
+    <div class="system-note">
+
+     Every ingredient equals 1 unit / 1 serving.
+
+    </div>
+
+    <button
+
+     class="primary"
+
+     onclick="saveNewIngredient()">
+
+     ADD INGREDIENT
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveNewIngredient(){
+
+ const name=document
+
+  .getElementById("newIngredientName")
+
+  .value
+
+  .trim();
+
+ const tracked=
+
+  document.getElementById("newIngredientTracked").value==="true";
+
+ if(!name){
+
+  alert("Please enter an ingredient name.");
+
+  return;
+
+ }
+
+ const duplicate=menuIngredients.some(
+
+  ingredient=>
+
+   ingredient.name.toLowerCase()===name.toLowerCase()
+
+ );
+
+ if(duplicate){
+
+  alert("This ingredient already exists.");
+
+  return;
+
+ }
+
+ const id=
+
+  "ingredient_"+
+
+  Date.now()+"_"+
+
+  Math.random().toString(36).slice(2,8);
+
+ menuIngredients.push({
+
+  id:id,
+
+  name:name,
+
+  tracked:tracked,
+
+  active:true
+
+ });
+
+ saveMenuIngredients();
+
+ alert("Ingredient added successfully.");
+
+ ownerIngredientList();
+
+}
+  function ownerIngredientList(){
+
+ clearInterval(timerInterval);
+
+ const rows=menuIngredients.map(ingredient=>`
+
+  <div class="card">
+
+ <h3>${esc(ingredient.name)}</h3>
+
+ <p class="muted">
+
+  ${
+
+   ingredient.tracked
+
+    ?"Inventory: Tracked"
+
+    :"Inventory: Not Tracked"
+
+  }
+
+ </p>
+
+ <p class="muted">
+
+  Status: ${
+
+   ingredient.active
+
+    ?"Active"
+
+    :"Inactive"
+
+  }
+
+ </p>
+
+ <button
+
+  class="primary"
+
+  onclick="ownerEditIngredient('${ingredient.id}')">
+
+  EDIT
+
+ </button>
+
+ <button
+
+  class="back"
+
+  onclick="toggleIngredientActive('${ingredient.id}')">
+
+  ${
+
+   ingredient.active
+
+    ?"DEACTIVATE"
+
+    :"ACTIVATE"
+
+  }
+
+ </button>
+<button
+
+ class="back"
+
+ onclick="deleteMenuIngredient('${ingredient.id}')">
+
+ DELETE
+
+</button>
+</div>
+
+   </p>
+
+  </div>
+
+ `).join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerIngredients()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — INGREDIENT LIST</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 INGREDIENT LIST
+
+   </span>
+
+   <h1>Ingredients</h1>
+
+   <div class="grid">
+
+    ${rows || `
+
+     <div class="card">
+
+      <p class="muted">
+
+       No ingredients found.
+
+      </p>
+
+     </div>
+
+    `}
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function toggleIngredientActive(id){
+
+ const ingredient=menuIngredients.find(
+
+  item=>item.id===id
+
+ );
+
+ if(!ingredient){
+
+  alert("Ingredient not found.");
+
+  return;
+
+ }
+
+ ingredient.active=!ingredient.active;
+
+ saveMenuIngredients();
+
+ ownerIngredientList();
+
+}
+  function toggleIngredientActive(id){
+
+ const ingredient=menuIngredients.find(
+
+  item=>item.id===id
+
+ );
+
+ if(!ingredient){
+
+  alert("Ingredient not found.");
+
+  return;
+
+ }
+
+ ingredient.active=!ingredient.active;
+
+ saveMenuIngredients();
+
+ ownerIngredientList();
+
+}
+  function saveEditedIngredient(id){
+
+ const ingredient=menuIngredients.find(
+
+  item=>item.id===id
+
+ );
+
+ if(!ingredient){
+
+  alert("Ingredient not found.");
+
+  return;
+
+ }
+
+ const name=document
+
+  .getElementById("editIngredientName")
+
+  .value
+
+  .trim();
+
+ const tracked=
+
+  document.getElementById("editIngredientTracked").value==="true";
+
+ if(!name){
+
+  alert("Please enter an ingredient name.");
+
+  return;
+
+ }
+
+ const duplicate=menuIngredients.some(
+
+  item=>
+
+   item.id!==id &&
+
+   item.name.toLowerCase()===name.toLowerCase()
+
+ );
+
+ if(duplicate){
+
+  alert("Another ingredient already uses this name.");
+
+  return;
+
+ }
+
+ ingredient.name=name;
+
+ ingredient.tracked=tracked;
+
+ saveMenuIngredients();
+
+ alert("Ingredient updated successfully.");
+
+ ownerIngredientList();
+
+}
+  function deleteMenuIngredient(id){
+
+ const ingredient=menuIngredients.find(
+
+  item=>item.id===id
+
+ );
+
+ if(!ingredient){
+
+  alert("Ingredient not found.");
+
+  return;
+
+ }
+
+ const confirmed=confirm(
+
+  `Delete "${ingredient.name}" permanently?`
+
+ );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ menuIngredients=menuIngredients.filter(
+
+  item=>item.id!==id
+
+ );
+
+ saveMenuIngredients();
+
+ ownerIngredientList();
+
+}
+  function ownerMenuItems(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerMenuManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — MENU ITEMS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🍔 MENU ITEMS
+
+   </span>
+
+   <h1>Menu Items</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerMenuItemList()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>MENU ITEM LIST</h3>
+
+     <p class="muted">
+
+      View and manage menu items
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerAddMenuItem()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD MENU ITEM</h3>
+
+     <p class="muted">
+
+      Create a new menu item
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  let ownerMenuData=safeLoad("mrkOwnerMenuData",[]);
+
+function saveOwnerMenuData(){
+
+ localStorage.setItem(
+
+  "mrkOwnerMenuData",
+
+  JSON.stringify(ownerMenuData)
+
+ );
+
+}
+  function ownerAddMenuItem(){
+
+ clearInterval(timerInterval);
+
+ const ingredientOptions=menuIngredients
+
+  .filter(ingredient=>ingredient.active)
+
+  .map(ingredient=>`
+
+   <option value="${ingredient.id}">
+
+    ${esc(ingredient.name)}
+
+   </option>
+
+  `)
+
+  .join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerMenuItems()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ADD MENU ITEM</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ NEW MENU ITEM
+
+   </span>
+
+   <h1>Add Menu Item</h1>
+
+   <div class="form">
+
+    <label>Item Name</label>
+
+    <input
+
+     id="newMenuItemName"
+
+     placeholder="Example: Spicy Bacon Burger">
+
+    <label>Category</label>
+
+    <select id="newMenuItemCategory">
+
+     <option value="burgers">Burgers</option>
+
+     <option value="sides">Sides</option>
+
+     <option value="salads">Salads</option>
+
+     <option value="softDrinks">Soft Drinks</option>
+
+     <option value="sauces">Sauces</option>
+
+     <option value="extraToppings">Extra Toppings</option>
+
+    </select>
+
+    <label>Price (CFA)</label>
+
+    <input
+
+     id="newMenuItemPrice"
+
+     type="number"
+
+     min="0"
+
+     step="500"
+
+     placeholder="Example: 5000">
+
+    <label>Recipe Ingredients</label>
+
+    <select
+
+     id="newMenuItemIngredients"
+
+     multiple
+
+     size="10">
+
+     ${ingredientOptions}
+
+    </select>
+
+    <p class="muted">
+
+     Select all ingredients used in this item.
+
+    </p>
+    <label>Removable Ingredients</label>
+
+<select
+
+ id="newMenuItemRemovableIngredients"
+
+ multiple
+
+ size="10">
+
+ ${ingredientOptions}
+
+</select>
+
+<p class="muted">
+
+ Select only ingredients the Cashier may remove.
+
+</p>
+    <button
+
+     class="primary"
+
+     onclick="saveNewMenuItem()">
+
+     CREATE MENU ITEM
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveNewMenuItem(){
+
+ const name=document
+
+  .getElementById("newMenuItemName")
+
+  .value
+
+  .trim();
+
+ const category=
+
+  document.getElementById("newMenuItemCategory").value;
+
+ const price=parseInt(
+
+  document.getElementById("newMenuItemPrice").value,
+
+  10
+
+ );
+
+ const ingredientSelect=
+
+  document.getElementById("newMenuItemIngredients");
+
+ const ingredientIds=[
+
+  ...ingredientSelect.selectedOptions
+
+ ].map(option=>option.value);
+const removableSelect=
+
+ document.getElementById(
+
+  "newMenuItemRemovableIngredients"
+
+ );
+
+const removableIngredientIds=[
+
+ ...removableSelect.selectedOptions
+
+]
+
+.map(option=>option.value)
+
+.filter(id=>ingredientIds.includes(id));
+ if(!name){
+
+  alert("Please enter an item name.");
+
+  return;
+
+ }
+
+ if(Number.isNaN(price) || price<0){
+
+  alert("Please enter a valid price.");
+
+  return;
+
+ }
+
+ const duplicate=ownerMenuData.some(
+
+  item=>
+
+   item.name.toLowerCase()===name.toLowerCase()
+
+ );
+
+ if(duplicate){
+
+  alert("A menu item with this name already exists.");
+
+  return;
+
+ }
+
+ const id=
+
+  "menuitem_"+
+
+  Date.now()+"_"+
+
+  Math.random().toString(36).slice(2,8);
+
+ ownerMenuData.push({
+
+  id:id,
+
+  name:name,
+
+  category:category,
+
+  price:price,
+
+  ingredientIds:ingredientIds,
+
+  removableIngredientIds:[],
+
+  allowedExtraIds:[],
+
+  active:true,
+
+  createdAt:Date.now()
+
+ });
+
+ saveOwnerMenuData();
+
+ alert("Menu item created successfully.");
+
+ ownerMenuItemList();
+
+}
+  function ownerMenuItemList(){
+
+ clearInterval(timerInterval);
+
+ const categoryNames={
+
+  burgers:"Burgers",
+
+  sides:"Sides",
+
+  salads:"Salads",
+
+  softDrinks:"Soft Drinks",
+
+  sauces:"Sauces",
+
+  extraToppings:"Extra Toppings"
+
+ };
+
+ const rows=ownerMenuData.map(item=>{
+
+  const ingredientNames=(item.ingredientIds || [])
+
+   .map(id=>{
+
+    const ingredient=menuIngredients.find(
+
+     ingredient=>ingredient.id===id
+
+    );
+
+    return ingredient
+
+     ? ingredient.name
+
+     : "Unknown Ingredient";
+
+   })
+
+   .join(", ");
+
+  return `
+
+   <div class="card">
+
+    <h3>${esc(item.name)}</h3>
+
+    <p class="muted">
+
+     Category:
+
+     ${esc(categoryNames[item.category] || item.category)}
+
+    </p>
+
+    <p class="muted">
+
+     Price:
+
+     ${Number(item.price || 0).toLocaleString()} CFA
+
+    </p>
+
+    <p class="muted">
+
+     Recipe:
+
+     ${ingredientNames
+
+       ? esc(ingredientNames)
+
+       : "No ingredients"}
+
+    </p>
+
+    <button
+
+ class="primary"
+
+ onclick="ownerEditMenuItem('${item.id}')">
+
+ EDIT
+
+</button>
+
+<button
+
+ class="back"
+
+ onclick="toggleMenuItemActive('${item.id}')">
+
+ ${
+
+  item.active
+
+   ?"DEACTIVATE"
+
+   :"ACTIVATE"
+
+ }
+
+</button>
+
+   </div>
+
+  `;
+
+ }).join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerMenuItems()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — MENU ITEM LIST</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 MENU ITEM LIST
+
+   </span>
+
+   <h1>Menu Items</h1>
+
+   <div class="grid">
+
+    ${rows || `
+
+     <div class="card">
+
+      <p class="muted">
+
+       No menu items created yet.
+
+      </p>
+
+     </div>
+
+    `}
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function toggleMenuItemActive(id){
+
+ const item=ownerMenuData.find(
+
+  menuItem=>menuItem.id===id
+
+ );
+
+ if(!item){
+
+  alert("Menu item not found.");
+
+  return;
+
+ }
+
+ item.active=!item.active;
+
+ saveOwnerMenuData();
+
+ ownerMenuItemList();
+
+}
+  function ownerEditMenuItem(id){
+
+ clearInterval(timerInterval);
+
+ const item=ownerMenuData.find(
+
+  menuItem=>menuItem.id===id
+
+ );
+
+ if(!item){
+
+  alert("Menu item not found.");
+
+  ownerMenuItemList();
+
+  return;
+
+ }
+
+ const ingredientOptions=menuIngredients
+
+  .filter(ingredient=>
+
+   ingredient.active ||
+
+   (item.ingredientIds || []).includes(ingredient.id)
+
+  )
+
+  .map(ingredient=>`
+
+   <option
+
+    value="${ingredient.id}"
+
+    ${(item.ingredientIds || []).includes(ingredient.id)
+
+     ?"selected"
+
+     :""}>
+
+    ${esc(ingredient.name)}
+
+   </option>
+
+  `)
+
+  .join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerMenuItemList()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EDIT MENU ITEM</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ✏️ EDIT MENU ITEM
+
+   </span>
+
+   <h1>Edit Menu Item</h1>
+
+   <div class="form">
+
+    <label>Item Name</label>
+
+    <input
+
+     id="editMenuItemName"
+
+     value="${esc(item.name)}">
+
+    <label>Category</label>
+
+    <select id="editMenuItemCategory">
+
+     <option value="burgers"
+
+      ${item.category==="burgers"?"selected":""}>
+
+      Burgers
+
+     </option>
+
+     <option value="sides"
+
+      ${item.category==="sides"?"selected":""}>
+
+      Sides
+
+     </option>
+
+     <option value="salads"
+
+      ${item.category==="salads"?"selected":""}>
+
+      Salads
+
+     </option>
+
+     <option value="softDrinks"
+
+      ${item.category==="softDrinks"?"selected":""}>
+
+      Soft Drinks
+
+     </option>
+
+     <option value="sauces"
+
+      ${item.category==="sauces"?"selected":""}>
+
+      Sauces
+
+     </option>
+
+     <option value="extraToppings"
+
+      ${item.category==="extraToppings"?"selected":""}>
+
+      Extra Toppings
+
+     </option>
+
+    </select>
+
+    <label>Price (CFA)</label>
+
+    <input
+
+     id="editMenuItemPrice"
+
+     type="number"
+
+     min="0"
+
+     step="500"
+
+     value="${Number(item.price || 0)}">
+
+    <label>Recipe Ingredients</label>
+
+    <select
+
+     id="editMenuItemIngredients"
+
+     multiple
+
+     size="10">
+
+     ${ingredientOptions}
+
+    </select>
+
+    <p class="muted">
+
+     Select all ingredients used in this item.
+
+    </p>
+    <label>Removable Ingredients</label>
+
+<select
+
+ id="editMenuItemRemovableIngredients"
+
+ multiple
+
+ size="10">
+
+ ${menuIngredients
+
+   .filter(ingredient=>
+
+    ingredient.active ||
+
+    (item.ingredientIds || []).includes(ingredient.id)
+
+   )
+
+   .map(ingredient=>`
+
+    <option
+
+     value="${ingredient.id}"
+
+     ${(item.removableIngredientIds || []).includes(ingredient.id)
+
+      ?"selected"
+
+      :""}>
+
+     ${esc(ingredient.name)}
+
+    </option>
+
+   `)
+
+   .join("")}
+
+</select>
+
+<p class="muted">
+
+ Select only ingredients the Cashier may remove.
+
+</p>
+    <button
+
+     class="primary"
+
+     onclick="saveEditedMenuItem('${item.id}')">
+
+     SAVE CHANGES
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveEditedMenuItem(id){
+
+ const item=ownerMenuData.find(
+
+  menuItem=>menuItem.id===id
+
+ );
+
+ if(!item){
+
+  alert("Menu item not found.");
+
+  return;
+
+ }
+
+ const name=document
+
+  .getElementById("editMenuItemName")
+
+  .value
+
+  .trim();
+
+ const category=
+
+  document.getElementById("editMenuItemCategory").value;
+
+ const price=parseInt(
+
+  document.getElementById("editMenuItemPrice").value,
+
+  10
+
+ );
+
+ const ingredientSelect=
+
+  document.getElementById("editMenuItemIngredients");
+
+ const ingredientIds=[
+
+  ...ingredientSelect.selectedOptions
+
+ ].map(option=>option.value);
+const removableSelect=
+
+ document.getElementById(
+
+  "editMenuItemRemovableIngredients"
+
+ );
+
+const removableIngredientIds=[
+
+ ...removableSelect.selectedOptions
+
+]
+
+.map(option=>option.value)
+
+.filter(id=>ingredientIds.includes(id));
+ if(!name){
+
+  alert("Please enter an item name.");
+
+  return;
+
+ }
+
+ if(Number.isNaN(price) || price<0){
+
+  alert("Please enter a valid price.");
+
+  return;
+
+ }
+
+ const duplicate=ownerMenuData.some(
+
+  menuItem=>
+
+   menuItem.id!==id &&
+
+   menuItem.name.toLowerCase()===name.toLowerCase()
+
+ );
+
+ if(duplicate){
+
+  alert("Another menu item already uses this name.");
+
+  return;
+
+ }
+
+ item.name=name;
+
+ item.category=category;
+
+ item.price=price;
+
+ item.ingredientIds=ingredientIds;
+ item.removableIngredientIds=
+
+ removableIngredientIds;
+ saveOwnerMenuData();
+
+ alert("Menu item updated successfully.");
+
+ ownerMenuItemList();
 
 }
   function ownerStaffManagement(){
