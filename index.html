@@ -613,17 +613,23 @@ function login(){
 
   .value.trim();
 
- if(u==="owner01"&&p==="1991"){
+ if(
 
-  loggedIn=true;
+ u.toLowerCase()===ownerAccount.staffId.toLowerCase() &&
 
-  role="owner";
+ p===ownerAccount.pin
 
-  ownerHome();
+){
 
-  return;
+ loggedIn=true;
 
- }
+ role="owner";
+
+ ownerHome();
+
+ return;
+
+}
 
  const staff=staffAccounts.find(
 
