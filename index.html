@@ -1065,7 +1065,17 @@ function header(label){
     type="text"
 
     placeholder="Example: Desserts">
+   <label>Category Icon</label>
 
+<input
+
+ id="newCategoryIcon"
+
+ type="text"
+
+ maxlength="4"
+
+ placeholder="Example: 🍰">
    <button
 
     onclick="saveNewCategory()">
@@ -1090,7 +1100,15 @@ function header(label){
    .value
 
    .trim();
+ const icon=
 
+  document
+
+   .getElementById("newCategoryIcon")
+
+   .value
+
+   .trim() || "🍽️";
  if(!name){
 
   alert("Enter a category name.");
@@ -1131,13 +1149,15 @@ function header(label){
 
  menuCategoryData.push({
 
-  id:id,
+ id:id,
 
-  name:name,
+ name:name,
 
-  active:true
+ icon:icon,
 
- });
+ active:true
+
+});
 
  saveMenuCategories();
 
