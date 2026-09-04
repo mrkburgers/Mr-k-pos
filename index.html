@@ -663,7 +663,7 @@ function header(label){
 
 </div>
 
-    <div class="card">
+    <div class="card" onclick="ownerStaffManagement()" style="cursor:pointer">
 
      <div class="category-icon">👥</div>
 
@@ -676,6 +676,202 @@ function header(label){
      <div class="category-icon">⚙️</div>
 
      <h3>POS SETTINGS</h3>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerStaffManagement(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — STAFF MANAGEMENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👥 STAFF MANAGEMENT
+
+   </span>
+
+   <h1>Staff</h1>
+
+   <p class="muted">
+
+    Manage staff accounts and access.
+
+   </p>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="ownerStaffList()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">👥</div>
+
+     <h3>STAFF LIST</h3>
+
+     <p class="muted">
+
+      View and manage staff
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD STAFF</h3>
+
+     <p class="muted">
+
+      Create a staff account
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerStaffList(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerStaffManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — STAFF LIST</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👥 STAFF LIST
+
+   </span>
+
+   <h1>Staff Accounts</h1>
+
+   <div class="card">
+
+    <h3>MANAGER</h3>
+
+    <div class="info-row">
+
+     <span>Staff ID</span>
+
+     <strong>manager01</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Status</span>
+
+     <strong>ACTIVE</strong>
+
+    </div>
+
+   </div>
+
+   <div class="card">
+
+    <h3>CASHIER</h3>
+
+    <div class="info-row">
+
+     <span>Staff ID</span>
+
+     <strong>cashier01</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Status</span>
+
+     <strong>ACTIVE</strong>
+
+    </div>
+
+   </div>
+
+   <div class="card">
+
+    <h3>KITCHEN</h3>
+
+    <div class="info-row">
+
+     <span>Staff ID</span>
+
+     <strong>kitchen01</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Status</span>
+
+     <strong>ACTIVE</strong>
 
     </div>
 
