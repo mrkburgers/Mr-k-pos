@@ -11142,21 +11142,25 @@ const d=burgerDetails[name] || {};
  );
   const removableIngredientNames=
 
- (ownerItem?.removableIngredientIds || [])
+ ownerItem
 
- .map(id=>
+ ?(ownerItem.removableIngredientIds || [])
 
-  menuIngredients.find(
+   .map(id=>
 
-   ingredient=>ingredient.id===id
+    menuIngredients.find(
 
-  )
+     ingredient=>ingredient.id===id
 
- )
+    )
 
- .filter(Boolean)
+   )
 
- .map(ingredient=>ingredient.name);
+   .filter(Boolean)
+
+   .map(ingredient=>ingredient.name)
+
+ :(d.ingredients || []);
   const ingredients=
 
  ownerIngredientNames.length
