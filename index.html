@@ -11077,6 +11077,44 @@ function toggleIngredient(ingredient,isChecked){
 
 function extraInventoryId(e){
 
+ const ownerExtra=
+
+  ownerMenuData.find(
+
+   item=>
+
+    item.name===e &&
+
+    item.active!==false
+
+  );
+
+ const ownerIngredientId=
+
+  ownerExtra?.ingredientIds?.find(
+
+   ingredientId=>
+
+    menuIngredients.some(
+
+     ingredient=>
+
+      ingredient.id===ingredientId &&
+
+      ingredient.tracked===true &&
+
+      ingredient.active!==false
+
+    )
+
+  );
+
+ if(ownerIngredientId){
+
+  return ownerIngredientId;
+
+ }
+
  const map={
 
   "Extra beef patty":"beef120",
