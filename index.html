@@ -10608,7 +10608,21 @@ function openCategory(categoryId){
 
  currentCategory=categoryId;
 
- let items=
+ const legacyItems=
+
+ categoryId==="burgers"?burgers:
+
+ categoryId==="sides"?sides:
+
+ categoryId==="salads"?salads:
+
+ categoryId==="softDrinks"?drinks:
+
+ categoryId==="sauces"?sauces:
+
+ [];
+
+const ownerItems=
 
  ownerMenuData
 
@@ -10623,6 +10637,18 @@ function openCategory(categoryId){
   )
 
   .map(item=>item.name);
+
+let items=[
+
+ ...legacyItems.filter(
+
+  name=>!ownerItems.includes(name)
+
+ ),
+
+ ...ownerItems
+
+];
 
  document.getElementById("root").innerHTML=`
 
