@@ -2628,23 +2628,51 @@ const extraOptions=ownerMenuData
 
     <label>Recipe Ingredients</label>
 
-    <select
+<div id="newMenuItemIngredients">
 
-     id="newMenuItemIngredients"
+ ${menuIngredients
 
-     multiple
+  .filter(ingredient=>ingredient.active)
 
-     size="10">
+  .map(ingredient=>`
 
-     ${ingredientOptions}
+   <div class="ingredient-row">
 
-    </select>
+    <label style="flex:1">
 
-    <p class="muted">
+     ${esc(ingredient.name)}
 
-     Select all ingredients used in this item.
+    </label>
 
-    </p>
+    <input
+
+     type="number"
+
+     min="0"
+
+     step="1"
+
+     value="0"
+
+     data-ingredient-id="${ingredient.id}"
+
+     style="width:90px"
+
+     class="recipe-qty">
+
+   </div>
+
+  `)
+
+  .join("")}
+
+</div>
+
+<p class="muted">
+
+ Enter the quantity used in one menu item.
+
+</p>
     <label>Removable Ingredients</label>
 
 <select
@@ -2722,15 +2750,37 @@ const extraOptions=ownerMenuData
 
  );
 
- const ingredientSelect=
+ const ingredientQuantities={};
 
-  document.getElementById("newMenuItemIngredients");
+document
 
- const ingredientIds=[
+ .querySelectorAll(
 
-  ...ingredientSelect.selectedOptions
+  "#newMenuItemIngredients .recipe-qty"
 
- ].map(option=>option.value);
+ )
+
+ .forEach(input=>{
+
+  const qty=
+
+   parseInt(input.value,10) || 0;
+
+  if(qty>0){
+
+   ingredientQuantities[
+
+    input.dataset.ingredientId
+
+   ]=qty;
+
+  }
+
+ });
+
+const ingredientIds=
+
+ Object.keys(ingredientQuantities);
 const removableSelect=
 
  document.getElementById(
@@ -2812,7 +2862,7 @@ const allowedExtraIds=[
   price:price,
 
   ingredientIds:ingredientIds,
-
+  ingredientQuantities:ingredientQuantities,
   removableIngredientIds:removableIngredientIds,
 
   allowedExtraIds:allowedExtraIds,
@@ -3353,23 +3403,75 @@ const categoryOptions=menuCategoryData
 
     <label>Recipe Ingredients</label>
 
-    <select
+<div id="editMenuItemIngredients">
 
-     id="editMenuItemIngredients"
+ ${menuIngredients
 
-     multiple
+  .filter(ingredient=>
 
-     size="10">
+   ingredient.active ||
 
-     ${ingredientOptions}
+   (item.ingredientIds || []).includes(ingredient.id)
 
-    </select>
+  )
 
-    <p class="muted">
+  .map(ingredient=>`
 
-     Select all ingredients used in this item.
+   <div class="ingredient-row">
 
-    </p>
+    <label style="flex:1">
+
+     ${esc(ingredient.name)}
+
+    </label>
+
+    <input
+
+     type="number"
+
+     min="0"
+
+     step="1"
+
+     value="${
+
+      Number(
+
+       item.ingredientQuantities?.[ingredient.id] ??
+
+       (
+
+        (item.ingredientIds || []).includes(ingredient.id)
+
+        ?1
+
+        :0
+
+       )
+
+      )
+
+     }"
+
+     data-ingredient-id="${ingredient.id}"
+
+     style="width:90px"
+
+     class="recipe-qty">
+
+   </div>
+
+  `)
+
+  .join("")}
+
+</div>
+
+<p class="muted">
+
+ Enter the quantity used in one menu item.
+
+</p>
     <label>Removable Ingredients</label>
 
 <select
@@ -3489,15 +3591,37 @@ const categoryOptions=menuCategoryData
 
  );
 
- const ingredientSelect=
+ const ingredientQuantities={};
 
-  document.getElementById("editMenuItemIngredients");
+document
 
- const ingredientIds=[
+ .querySelectorAll(
 
-  ...ingredientSelect.selectedOptions
+  "#editMenuItemIngredients .recipe-qty"
 
- ].map(option=>option.value);
+ )
+
+ .forEach(input=>{
+
+  const qty=
+
+   parseInt(input.value,10) || 0;
+
+  if(qty>0){
+
+   ingredientQuantities[
+
+    input.dataset.ingredientId
+
+   ]=qty;
+
+  }
+
+ });
+
+const ingredientIds=
+
+ Object.keys(ingredientQuantities);
 const removableSelect=
 
  document.getElementById(
@@ -3569,6 +3693,7 @@ const allowedExtraIds=[
  item.price=price;
 
  item.ingredientIds=ingredientIds;
+item.ingredientQuantities=ingredientQuantities;
  item.removableIngredientIds=
 
  removableIngredientIds;
@@ -8317,12 +8442,74 @@ function getOrderInventoryNeeds(order){
   const productQty=
 
    Number(item.qty||1);
+const ownerItem=
 
+ ownerMenuData.find(
+
+  menuItem=>menuItem.name===item.name
+
+ );
+
+if(ownerItem){
+
+ const removed=
+
+  new Set(item.removed||[]);
+
+ (ownerItem.ingredientIds||[])
+
+  .forEach(ingredientId=>{
+
+   const ingredient=
+
+    menuIngredients.find(
+
+     menuIngredient=>
+
+      menuIngredient.id===ingredientId
+
+    );
+
+   if(
+
+    !ingredient ||
+
+    ingredient.tracked!==true ||
+
+    ingredient.active===false ||
+
+    removed.has(ingredient.name)
+
+   ){
+
+    return;
+
+   }
+
+   const recipeQty=
+
+    Number(
+
+     ownerItem.ingredientQuantities?.[ingredientId] ?? 1
+
+    );
+
+   add(
+
+    ingredientId,
+
+    recipeQty*productQty
+
+   );
+
+  });
+
+}
   const burger=
 
    burgerDetails[item.name];
 
-  if(burger){
+  if(burger && !ownerItem){
 
    const removed=
 
