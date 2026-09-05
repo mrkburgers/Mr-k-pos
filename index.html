@@ -11108,12 +11108,24 @@ function extraInventoryId(e){
     )
 
   );
+const matchingIngredient=
 
- if(ownerIngredientId){
+ menuIngredients.find(
 
-  return ownerIngredientId;
+  ingredient=>
 
- }
+   ingredient.name===e &&
+
+   ingredient.tracked===true &&
+
+   ingredient.active!==false
+
+ );
+ if(ownerIngredientId || matchingIngredient){
+
+ return ownerIngredientId || matchingIngredient.id;
+
+}
 
  const map={
 
