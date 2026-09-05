@@ -10537,7 +10537,15 @@ function menuCategories(){
      SAVE & HOLD
 
     </button>
+   <button
 
+ class="danger"
+
+ onclick="cancelCurrentOrder()">
+
+ CANCEL ORDER
+
+</button>
    </div>
 
   </div>
@@ -11526,7 +11534,49 @@ function removeCartItem(i){
  viewCart();
 
 }
+function cancelCurrentOrder(){
 
+ if(!confirm("Cancel this order?")){
+
+   return;
+
+ }
+
+ if(currentDraftId){
+
+   draftOrders=
+
+    draftOrders.filter(
+
+     d=>d.id!==currentDraftId
+
+    );
+
+   saveOrders();
+
+ }
+
+ currentDraftId=null;
+
+ cart=[];
+
+ customer={
+
+   name:"",
+
+   phone:"",
+
+   address:"",
+
+   table:""
+
+ };
+
+ orderType="";
+
+ home();
+
+}
 /* SAVE & HOLD */
 
 function saveAndHoldOrder(){
@@ -11668,7 +11718,17 @@ function showDraftOrders(){
        items
 
       </div>
+     <button
 
+ class="danger"
+
+ style="margin-top:12px"
+
+ onclick="event.stopPropagation();deleteDraftOrder(${d.id})">
+
+ DELETE ORDER
+
+</button>
      </div>
      <div class="muted">
 
@@ -11738,7 +11798,27 @@ function resumeDraft(id){
  menuCategories();
 
 }
+function deleteDraftOrder(id){
 
+ if(!confirm("Delete this order in progress?")){
+
+   return;
+
+ }
+
+ draftOrders=
+
+  draftOrders.filter(
+
+   d=>d.id!==id
+
+  );
+
+ saveOrders();
+
+ showDraftOrders();
+
+}
 /* CHECKOUT */
 
 function checkoutOrder(){
