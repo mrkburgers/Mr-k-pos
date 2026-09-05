@@ -8411,10 +8411,50 @@ const ownerIngredientId=
    )
 
  );
+const extraIngredientNames={
 
+ "Extra beef patty":"120g Beef Patty",
+
+ "Extra chicken steak":"120g Chicken Breast",
+
+ "Extra cheddar cheese":"Cheddar Cheese",
+
+ "Extra mozzarella cheese":"Mozzarella Cheese",
+
+ "Extra Swiss cheese":"Emmental Cheese",
+
+ "Extra mushroom":"Mushroom",
+
+ "Extra bacon":"Bacon",
+
+ "Extra grated cheese":"Grated Cheese"
+
+};
+
+const matchingIngredient=
+
+ menuIngredients.find(
+
+  ingredient=>
+
+   ingredient.active!==false &&
+
+   ingredient.tracked===true &&
+
+   (
+
+    ingredient.name===extra.name ||
+
+    ingredient.name===extraIngredientNames[extra.name]
+
+   )
+
+ );
 const id=
 
  ownerIngredientId ||
+
+ matchingIngredient?.id ||
 
  extraMap[extra.name];
 
