@@ -8190,20 +8190,33 @@ function getOrderInventoryNeeds(order){
 
      const map=
 
-      inventoryIngredientMap[ingredient];
+ inventoryIngredientMap[ingredient];
 
-     if(map){
+const trackedIngredient=
 
-      add(
+ menuIngredients.find(
 
-       map.id,
+  menuIngredient=>
 
-       map.qty*productQty
+   menuIngredient.id===map?.id &&
 
-      );
+   menuIngredient.tracked===true &&
 
-     }
+   menuIngredient.active!==false
 
+ );
+
+if(map && trackedIngredient){
+
+ add(
+
+  map.id,
+
+  map.qty*productQty
+
+ );
+
+}
     }
 
    );
