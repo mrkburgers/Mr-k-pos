@@ -11755,19 +11755,85 @@ function qtyHtml(){
 
 function changeQty(n){
 
- currentQty=Math.max(
+ const nextQty=Math.max(
 
-   1,
+  1,
 
-   currentQty+n
+  currentQty+n
 
  );
 
- const el=document.getElementById("qty");
+ if(n>0 && currentCustomizeItem){
+
+  const extras=
+
+   Object.entries(currentExtraQty)
+
+   .filter(([name,qty])=>qty>0)
+
+   .map(([name,qty])=>({
+
+    name,
+
+    qty
+
+   }));
+
+  const testOrder={
+
+   cart:[
+
+    ...cart,
+
+    {
+
+     name:currentCustomizeItem,
+
+     qty:nextQty,
+
+     extras,
+
+     removed:[
+
+      ...currentRemovedIngredients
+
+     ]
+
+    }
+
+   ]
+
+  };
+
+  const missing=
+
+   checkOrderInventory(testOrder);
+
+  if(missing.length){
+
+   alert(
+
+    "OUT OF STOCK\n\n"+
+
+    missing.join("\n")
+
+   );
+
+   return;
+
+  }
+
+ }
+
+ currentQty=nextQty;
+
+ const el=
+
+  document.getElementById("qty");
 
  if(el){
 
-   el.textContent=currentQty;
+  el.textContent=currentQty;
 
  }
 
