@@ -3127,7 +3127,15 @@ ${
    }
 
   </button>
+<button
 
+ class="back"
+
+ onclick="deleteOwnerMenuItem('${item.id}')">
+
+ DELETE
+
+</button>
  `
 
 }
@@ -3191,6 +3199,51 @@ ${
   </div>
 
  </div>`;
+
+}
+  function deleteOwnerMenuItem(id){
+
+ const item=
+
+  ownerMenuData.find(
+
+   menuItem=>menuItem.id===id
+
+  );
+
+ if(!item){
+
+  alert("Menu item not found.");
+
+  return;
+
+ }
+
+ const confirmed=
+
+  confirm(
+
+   `Delete "${item.name}" permanently?`
+
+  );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ ownerMenuData=
+
+  ownerMenuData.filter(
+
+   menuItem=>menuItem.id!==id
+
+  );
+
+ saveOwnerMenuData();
+
+ ownerMenuItemList();
 
 }
   function toggleMenuItemActive(id){
