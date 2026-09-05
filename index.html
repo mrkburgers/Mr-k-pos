@@ -2008,7 +2008,9 @@ function saveMenuIngredients(){
  });
 
  saveMenuIngredients();
+syncTrackedIngredientsToInventory();
 
+saveInventory();
  alert("Ingredient added successfully.");
 
  ownerIngredientList();
@@ -2296,7 +2298,9 @@ function saveMenuIngredients(){
  ingredient.active=!ingredient.active;
 
  saveMenuIngredients();
+syncTrackedIngredientsToInventory();
 
+saveInventory();
  ownerIngredientList();
 
 }
@@ -2359,7 +2363,9 @@ function saveMenuIngredients(){
  ingredient.tracked=tracked;
 
  saveMenuIngredients();
+syncTrackedIngredientsToInventory();
 
+saveInventory();
  alert("Ingredient updated successfully.");
 
  ownerIngredientList();
@@ -7897,7 +7903,7 @@ function managerInventory(){
  managerInventory();
 
 }
-const inventoryItems=[
+let inventoryItems=[
 
  {id:"beef120",name:"120g Beef Patty",category:"INGREDIENTS"},
 
@@ -7948,7 +7954,63 @@ const inventoryItems=[
  {id:"honeyMustard",name:"Honey Mustard",category:"EXTRA SAUCES"}
 
 ];
+function syncTrackedIngredientsToInventory(){
 
+ const trackedIngredients=
+
+  menuIngredients.filter(
+
+   ingredient=>
+
+    ingredient.active!==false &&
+
+    ingredient.tracked===true
+
+  );
+
+ const nonIngredientItems=
+
+  inventoryItems.filter(
+
+   item=>item.category!=="INGREDIENTS"
+
+  );
+
+ const ingredientItems=
+
+  trackedIngredients.map(ingredient=>({
+
+   id:ingredient.id,
+
+   name:ingredient.name,
+
+   category:"INGREDIENTS"
+
+  }));
+
+ inventoryItems=[
+
+  ...ingredientItems,
+
+  ...nonIngredientItems
+
+ ];
+
+ ingredientItems.forEach(item=>{
+
+  if(
+
+   typeof inventoryStock[item.id]!=="number"
+
+  ){
+
+   inventoryStock[item.id]=0;
+
+  }
+
+ });
+
+}
 const lowStockThresholds={
 
  beef120:30,
@@ -8076,7 +8138,7 @@ inventoryItems.forEach(item=>{
  }
 
 });
-
+syncTrackedIngredientsToInventory();
 function saveInventory(){
 
  localStorage.setItem(
