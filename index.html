@@ -8380,21 +8380,59 @@ if(productNeeds){
 
    };
 
-   const id=
+   const ownerExtra=
 
-    extraMap[extra.name];
+ ownerMenuData.find(
 
-   if(id){
+  item=>
 
-    add(
+   item.name===extra.name &&
 
-     id,
+   item.active!==false
 
-     Number(extra.qty||0)*
+ );
 
-     productQty
+const ownerIngredientId=
 
-    );
+ ownerExtra?.ingredientIds?.find(
+
+  ingredientId=>
+
+   menuIngredients.some(
+
+    ingredient=>
+
+     ingredient.id===ingredientId &&
+
+     ingredient.tracked===true &&
+
+     ingredient.active!==false
+
+   )
+
+ );
+
+const id=
+
+ ownerIngredientId ||
+
+ extraMap[extra.name];
+
+   const trackedIngredient=
+
+ menuIngredients.find(
+
+  ingredient=>
+
+   ingredient.id===id &&
+
+   ingredient.tracked===true &&
+
+   ingredient.active!==false
+
+ );
+
+if(id && trackedIngredient){
 
    }
 
