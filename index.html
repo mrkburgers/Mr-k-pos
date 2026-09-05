@@ -10754,13 +10754,19 @@ const ownerItem=
  );
  if(
 
- ownerItem &&
+ burgerDetails[name] ||
 
  (
 
-  (ownerItem.removableIngredientIds||[]).length ||
+  ownerItem &&
 
-  (ownerItem.allowedExtraIds||[]).length
+  (
+
+   (ownerItem.removableIngredientIds||[]).length ||
+
+   (ownerItem.allowedExtraIds||[]).length
+
+  )
 
  )
 
