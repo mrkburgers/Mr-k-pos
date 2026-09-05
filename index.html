@@ -2836,7 +2836,121 @@ const allowedExtraIds=[
 
  
 
- const rows=ownerMenuData.map(item=>{
+ const legacyMenuItems=[
+
+ ...burgers.map(name=>({
+
+  id:"legacy_"+name,
+
+  name,
+
+  category:"burgers",
+
+  price:menuPrices[name]||0,
+
+  ingredientIds:[],
+
+  active:true,
+
+  legacy:true
+
+ })),
+
+ ...sides.map(name=>({
+
+  id:"legacy_"+name,
+
+  name,
+
+  category:"sides",
+
+  price:menuPrices[name]||0,
+
+  ingredientIds:[],
+
+  active:true,
+
+  legacy:true
+
+ })),
+
+ ...salads.map(name=>({
+
+  id:"legacy_"+name,
+
+  name,
+
+  category:"salads",
+
+  price:menuPrices[name]||0,
+
+  ingredientIds:[],
+
+  active:true,
+
+  legacy:true
+
+ })),
+
+ ...drinks.map(name=>({
+
+  id:"legacy_"+name,
+
+  name,
+
+  category:"softDrinks",
+
+  price:menuPrices[name]||0,
+
+  ingredientIds:[],
+
+  active:true,
+
+  legacy:true
+
+ })),
+
+ ...sauces.map(name=>({
+
+  id:"legacy_"+name,
+
+  name,
+
+  category:"sauces",
+
+  price:menuPrices[name]||0,
+
+  ingredientIds:[],
+
+  active:true,
+
+  legacy:true
+
+ }))
+
+];
+
+const ownerNames=
+
+ new Set(
+
+  ownerMenuData.map(item=>item.name)
+
+ );
+
+const allMenuItems=[
+
+ ...legacyMenuItems.filter(
+
+  item=>!ownerNames.has(item.name)
+
+ ),
+
+ ...ownerMenuData
+
+];
+
+const rows=allMenuItems.map(item=>{
 
   const ingredientNames=(item.ingredientIds || [])
 
@@ -2904,33 +3018,69 @@ const allowedExtraIds=[
 
     </p>
 
-    <button
+    ${
 
- class="primary"
+ item.legacy
 
- onclick="ownerEditMenuItem('${item.id}')">
+ ?`
 
- EDIT
+  <button
 
-</button>
+   class="primary"
 
-<button
+   disabled>
 
- class="back"
+   LEGACY ITEM
 
- onclick="toggleMenuItemActive('${item.id}')">
+  </button>
 
- ${
+ `
 
-  item.active
+ :`
 
-   ?"DEACTIVATE"
+  <button
 
-   :"ACTIVATE"
+   class="primary"
 
- }
+   onclick="ownerEditMenuItem('${item.id}')">
 
-</button>
+   EDIT
+
+  </button>
+
+ `
+
+}
+
+${
+
+ item.legacy
+
+ ?""
+
+ :`
+
+  <button
+
+   class="back"
+
+   onclick="toggleMenuItemActive('${item.id}')">
+
+   ${
+
+    item.active
+
+     ?"DEACTIVATE"
+
+     :"ACTIVATE"
+
+   }
+
+  </button>
+
+ `
+
+}
 
    </div>
 
