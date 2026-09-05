@@ -176,177 +176,6 @@ let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
 
 let timerInterval=null;
 
-const burgers=[
-
- "Mr K Classic","Mushroom & Swiss","Honky Tonk","Philly Cheesesteak",
-
- "Only The Brave","Bohemian","Chicken Chimichurri"
-
-];
-
-const sides=[
-
- "French Fries","Plantain Tostones","Onion Rings","Cheese Fries",
-
- "Fajita Cheese Fries","Dirty Fries"
-
-];
-
-const salads=["Mr K Coleslaw","Cheeseburger Salad"];
-
-const drinks=["Small Water","Big Water","Coca Cola","Sprite","Fanta"];
-
-const sauces=["Mr K Sauce","Chimichurri","Ketchup","Mayonnaise","Honey Mustard","Honey BBQ"];
-const menuPrices={
-
- "Mr K Classic":3000,
-
- "Mushroom & Swiss":5500,
-
- "Honky Tonk":5000,
-
- "Philly Cheesesteak":5500,
-
- "Only The Brave":9000,
-
- "Bohemian":5000,
-
- "Chicken Chimichurri":5500,
-
- "French Fries":1000,
-
- "Plantain Tostones":1000,
-
- "Onion Rings":1000,
-
- "Cheese Fries":3500,
-
- "Fajita Cheese Fries":4500,
-
- "Dirty Fries":4500,
-
- "Mr K Coleslaw":1000,
-
- "Cheeseburger Salad":3500,
-
- "Small Water":500,
-
- "Big Water":1000,
-
- "Coca Cola":1000,
-
- "Sprite":1000,
-
- "Fanta":1000,
-
- "Mr K Sauce":500,
-
- "Chimichurri":500,
-
- "Ketchup":0,
-
- "Mayonnaise":0,
-
- "Honey Mustard":500,
-
- "Honey BBQ":500,
-
- "Extra beef patty":2000,
-
- "Extra chicken steak":2500,
-
- "Extra cheddar cheese":1000,
-
- "Extra mozzarella cheese":1000,
-
- "Extra Swiss cheese":1000,
-
- "Extra mushroom":1000,
-
- "Extra onion rings":1000,
-
- "Extra bacon":1500,
-
- "Extra grated cheese":1500
-
-};
-const burgerDetails={
-
- "Mr K Classic":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g","Burger bun","Rocket lettuce","Tomato","Onions","Pickled cucumbers","Mr K sauce"]
-
- },
-
- "Mushroom & Swiss":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g","Burger bun","Mushrooms","Swiss cheese","Rocket lettuce","Sauce"]
-
- },
-
- "Honky Tonk":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g","Burger bun","Cheddar cheese","Rocket lettuce","Onion rings","Pickled cucumbers","Honey BBQ"]
-
- },
-
- "Philly Cheesesteak":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Sautéed beef tenderloin 100g","Rocket lettuce","Sauce"]
-
- },
-
- "Only The Brave":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g ×3","Burger bun","Cheddar cheese ×3","Bacon","Rocket lettuce","Sauce"]
-
- },
-
- "Bohemian":{
-
-   meat:"beef",
-
-   ingredients:["Beef steak 120g","Burger bun","Mozzarella cheese","Smoked turkey","Fresh cucumber","Rocket lettuce","Sauce"]
-
- },
-
- "Chicken Chimichurri":{
-
-   meat:"chicken",
-
-   ingredients:["Chicken steak 120g","Burger bun","Mozzarella cheese","Cheddar cheese","Chimichurri","Rocket lettuce","Sauce"]
-
- }
-
-};
-
-const beefExtras=[
-
- "Extra beef patty","Extra cheddar cheese","Extra mozzarella cheese",
-
- "Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
-
-];
-
-const chickenExtras=[
-
- "Extra chicken steak","Extra cheddar cheese","Extra mozzarella cheese",
-
- "Extra Swiss cheese","Extra mushroom","Extra onion rings","Extra bacon"
-
-];
-
-const loadedFries=["Cheese Fries","Fajita Cheese Fries","Dirty Fries"];
 
 function safeLoad(key,fallback){
 
@@ -2886,115 +2715,7 @@ const allowedExtraIds=[
 
  
 
- const legacyMenuItems=[
-
- ...burgers.map(name=>({
-
-  id:"legacy_"+name,
-
-  name,
-
-  category:"burgers",
-
-  price:menuPrices[name]||0,
-
-  ingredientIds:[],
-
-  active:true,
-
-  legacy:true
-
- })),
-
- ...sides.map(name=>({
-
-  id:"legacy_"+name,
-
-  name,
-
-  category:"sides",
-
-  price:menuPrices[name]||0,
-
-  ingredientIds:[],
-
-  active:true,
-
-  legacy:true
-
- })),
-
- ...salads.map(name=>({
-
-  id:"legacy_"+name,
-
-  name,
-
-  category:"salads",
-
-  price:menuPrices[name]||0,
-
-  ingredientIds:[],
-
-  active:true,
-
-  legacy:true
-
- })),
-
- ...drinks.map(name=>({
-
-  id:"legacy_"+name,
-
-  name,
-
-  category:"softDrinks",
-
-  price:menuPrices[name]||0,
-
-  ingredientIds:[],
-
-  active:true,
-
-  legacy:true
-
- })),
-
- ...sauces.map(name=>({
-
-  id:"legacy_"+name,
-
-  name,
-
-  category:"sauces",
-
-  price:menuPrices[name]||0,
-
-  ingredientIds:[],
-
-  active:true,
-
-  legacy:true
-
- }))
-
-];
-
-const ownerNames=
-
- new Set(
-
-  ownerMenuData.map(item=>item.name)
-
- );
-
-const allMenuItems=[
-
- ...legacyMenuItems.filter(
-
-  item=>!ownerNames.has(item.name)
-
- ),
+ const allMenuItems=[
 
  ...ownerMenuData
 
@@ -8390,61 +8111,7 @@ const lowStockThresholds={
  honeyMustard:5
 
 };
-const inventoryIngredientMap={
 
- "Beef steak 120g":
-
- {id:"beef120",qty:1},
-
- "Beef steak 120g ×3":
-
- {id:"beef120",qty:3},
-
- "Chicken steak 120g":
-
- {id:"chicken120",qty:1},
-
- "Burger bun":
-
- {id:"bun",qty:1},
-
- "Mushrooms":
-
- {id:"mushroom",qty:1},
-
- "Sautéed beef tenderloin 100g":
-
- {id:"beefTenderloin100",qty:1},
-
- "Bacon":
-
- {id:"bacon",qty:1},
-
- "Smoked turkey":
-
- {id:"smokedTurkey",qty:1},
-
- "Cheddar cheese":
-
- {id:"cheddar",qty:1},
-
- "Cheddar cheese ×3":
-
- {id:"cheddar",qty:3},
-
- "Mozzarella cheese":
-
- {id:"mozzarella",qty:1},
-
- "Swiss cheese":
-
- {id:"emmental",qty:1},
-
- "Chimichurri":
-
- {id:"chimichurri",qty:1}
-
-};
 let inventoryStock=safeLoad(
 
  "mrkInventoryStock",
@@ -8558,336 +8225,80 @@ if(ownerItem){
   });
 
 }
-  const burger=
+  
+ 
+(item.extras||[]).forEach(extra=>{
 
-   burgerDetails[item.name];
+ const ownerExtra=
 
-  if(burger && !ownerItem){
+  ownerMenuData.find(
 
-   const removed=
+   menuItem=>
 
-    new Set(item.removed||[]);
+    menuItem.name===extra.name &&
 
-   burger.ingredients.forEach(
-
-    ingredient=>{
-
-     if(removed.has(ingredient)){
-
-      return;
-
-     }
-
-     const map=
-
- inventoryIngredientMap[ingredient];
-
-const trackedIngredient=
-
- menuIngredients.find(
-
-  menuIngredient=>
-
-   menuIngredient.id===map?.id &&
-
-   menuIngredient.tracked===true &&
-
-   menuIngredient.active!==false
-
- );
-
-if(map && trackedIngredient){
-
- add(
-
-  map.id,
-
-  map.qty*productQty
-
- );
-
-}
-    }
-
-   );
-
-  }
- const productInventoryMap={
-
- "French Fries":{
-
-  potatoes:1
-
- },
-
- "Plantain Tostones":{
-
-  plantain:1
-
- },
-
- "Cheese Fries":{
-
-  potatoes:2,
-
-  gratedCheese:1
-
- },
-
- "Fajita Cheese Fries":{
-
-  potatoes:2,
-
-  fajitaChicken100:1,
-
-  gratedCheese:1
-
- },
-
- "Dirty Fries":{
-
-  potatoes:2,
-
-  beef120:1,
-
-  gratedCheese:1
-
- },
-
- "Mr K Coleslaw":{
-
-  coleslaw:1
-
- },
-
- "Cheeseburger Salad":{
-
-  beef120:1,
-
-  cheddar:1
-
- },
-
- "Small Water":{
-
-  smallWater:1
-
- },
-
- "Big Water":{
-
-  bigWater:1
-
- },
-
- "Coca Cola":{
-
-  cocaCola:1
-
- },
-
- "Sprite":{
-
-  sprite:1
-
- },
-
- "Fanta":{
-
-  fanta:1
-
- },
-
- "Mr K Sauce":{
-
-  mrkSauce:1
-
- },
-
- "Chimichurri":{
-
-  chimichurri:1
-
- },
-
- "Honey Mustard":{
-
-  honeyMustard:1
-
- },
-
- "Honey BBQ":{
-
-  honeyBbq:1
-
- }
-
-};
-
-const productNeeds=
-
- productInventoryMap[item.name];
-
-if(productNeeds){
-
- Object.entries(productNeeds)
-
- .forEach(([id,qty])=>{
-
-  add(
-
-   id,
-
-   qty*productQty
+    menuItem.active!==false
 
   );
 
- });
+ if(!ownerExtra){
 
-}
-  (item.extras||[]).forEach(extra=>{
+  return;
 
-   const extraMap={
+ }
 
-    "Extra beef patty":
+ (ownerExtra.ingredientIds||[])
 
-     "beef120",
+  .forEach(ingredientId=>{
 
-    "Extra chicken steak":
+   const ingredient=
 
-     "chicken120",
+    menuIngredients.find(
 
-    "Extra cheddar cheese":
+     menuIngredient=>
 
-     "cheddar",
+      menuIngredient.id===ingredientId
 
-    "Extra mozzarella cheese":
+    );
 
-     "mozzarella",
+   if(
 
-    "Extra Swiss cheese":
+    !ingredient ||
 
-     "emmental",
+    ingredient.tracked!==true ||
 
-    "Extra mushroom":
+    ingredient.active===false
 
-     "mushroom",
+   ){
 
-    "Extra bacon":
+    return;
 
-     "bacon",
+   }
 
-    "Extra grated cheese":
+   const recipeQty=
 
-     "gratedCheese"
+    Number(
 
-   };
+     ownerExtra.ingredientQuantities?.[ingredientId] ?? 1
 
-   const ownerExtra=
+    );
 
- ownerMenuData.find(
+   add(
 
-  item=>
+    ingredientId,
 
-   item.name===extra.name &&
+    recipeQty *
 
-   item.active!==false
+    Number(extra.qty||0) *
 
- );
+    productQty
 
-const ownerIngredientId=
-
- ownerExtra?.ingredientIds?.find(
-
-  ingredientId=>
-
-   menuIngredients.some(
-
-    ingredient=>
-
-     ingredient.id===ingredientId &&
-
-     ingredient.tracked===true &&
-
-     ingredient.active!==false
-
-   )
-
- );
-const extraIngredientNames={
-
- "Extra beef patty":"120g Beef Patty",
-
- "Extra chicken steak":"120g Chicken Breast",
-
- "Extra cheddar cheese":"Cheddar Cheese",
-
- "Extra mozzarella cheese":"Mozzarella Cheese",
-
- "Extra Swiss cheese":"Emmental Cheese",
-
- "Extra mushroom":"Mushroom",
-
- "Extra bacon":"Bacon",
-
- "Extra grated cheese":"Grated Cheese"
-
-};
-
-const matchingIngredient=
-
- menuIngredients.find(
-
-  ingredient=>
-
-   ingredient.active!==false &&
-
-   ingredient.tracked===true &&
-
-   (
-
-    ingredient.name===extra.name ||
-
-    ingredient.name===extraIngredientNames[extra.name]
-
-   )
-
- );
-const id=
-
- ownerIngredientId ||
-
- matchingIngredient?.id ||
-
- extraMap[extra.name];
-
-   const trackedIngredient=
-
- menuIngredients.find(
-
-  ingredient=>
-
-   ingredient.id===id &&
-
-   ingredient.tracked===true &&
-
-   ingredient.active!==false
-
- );
-
-if(id && trackedIngredient){
-
- add(
-
-  id,
-
-  Number(extra.qty||0) * productQty
-
- );
-
-}
+   );
 
   });
+
+});
+  
 
  });
 
@@ -11262,19 +10673,7 @@ function openCategory(categoryId){
 
  currentCategory=categoryId;
 
- const legacyItems=
-
- categoryId==="burgers"?burgers:
-
- categoryId==="sides"?sides:
-
- categoryId==="salads"?salads:
-
- categoryId==="softDrinks"?drinks:
-
- categoryId==="sauces"?sauces:
-
- [];
+ 
 
 const ownerItems=
 
@@ -11294,11 +10693,7 @@ const ownerItems=
 
 let items=[
 
- ...legacyItems.filter(
-
-  name=>!ownerItems.includes(name)
-
- ),
+ let items=[
 
  ...ownerItems
 
@@ -11357,7 +10752,7 @@ let items=[
 
  ${Number(
 
- ownerMenuData.find(item=>item.name===i)?.price ?? menuPrices[i] ?? 0
+ ownerMenuData.find(item=>item.name===i)?.price ?? 0
 
 ).toLocaleString()} CFA
 
@@ -11408,7 +10803,7 @@ const ownerItem=
  );
  if(
 
- burgerDetails[name] ||
+
 
  (
 
@@ -11578,27 +10973,7 @@ const matchingIngredient=
 
 }
 
- const map={
-
-  "Extra beef patty":"beef120",
-
-  "Extra chicken steak":"chicken120",
-
-  "Extra cheddar cheese":"cheddar",
-
-  "Extra mozzarella cheese":"mozzarella",
-
-  "Extra Swiss cheese":"emmental",
-
-  "Extra mushroom":"mushroom",
-
-  "Extra bacon":"bacon",
-
-  "Extra grated cheese":"gratedCheese"
-
- };
-
- return map[e]||null;
+ 
 
 }
 
@@ -11821,7 +11196,7 @@ function burgerCustomize(name){
 
  );
 
-const d=burgerDetails[name] || {};
+
   const ownerIngredients=
 
  (ownerItem?.ingredientIds || [])
@@ -11864,14 +11239,14 @@ const d=burgerDetails[name] || {};
 
    .map(ingredient=>ingredient.name)
 
- :(d.ingredients || []);
+ :[];
   const ingredients=
 
  ownerIngredientNames.length
 
  ?ownerIngredientNames
 
- :(d.ingredients || []);
+ :[];
 currentCustomizeItem=name;
  const ownerExtras=
 
@@ -11917,35 +11292,7 @@ const extras=
 
  ?ownerExtras
 
- :[
-
-   ...(
-
-    d.meat==="chicken"
-
-    ?chickenExtras
-
-    :beefExtras
-
-   ),
-
-   ...extraToppingNames.filter(
-
-    name=>
-
-     !(
-
-      d.meat==="chicken"
-
-      ?chickenExtras
-
-      :beefExtras
-
-     ).includes(name)
-
-   )
-
-  ];
+ :[];
 
  resetExtras(extras);
 
@@ -12013,63 +11360,7 @@ const extras=
 
 }
 
-function loadedCustomize(name){
-currentCustomizeItem=name;
- resetExtras(["Extra grated cheese"]);
 
- currentRemovedIngredients=[];
-
- document.getElementById("root").innerHTML=`
-
- <div class="app">
-
-  <button
-
-   class="back"
-
-   onclick="openCategory('sides')">
-
-   ← BACK
-
-  </button>
-
-  <div class="logo">
-
-   MR K BURGERS
-
-   <span>CUSTOMIZE</span>
-
-  </div>
-
-  <div class="panel">
-
-   <h2>${name}</h2>
-
-   <h3>Extras</h3>
-
-   ${extraRows(["Extra grated cheese"])}
-
-   <h3>PRODUCT QUANTITY</h3>
-
-   ${qtyHtml()}
-
-   <button
-
-    class="primary"
-
-    style="margin-top:20px;width:100%"
-
-    onclick='addCustomizedItem(${JSON.stringify(name)})'>
-
-    ADD TO ORDER
-
-   </button>
-
-  </div>
-
- </div>`;
-
-}
 
 function simpleItem(name){
 
@@ -12314,11 +11605,7 @@ let total=
 
  Number(
 
-  ownerItem?.price ??
-
-  menuPrices[item.name] ??
-
-  0
+  ownerItem?.price ?? 0
 
  );
 
@@ -12330,13 +11617,9 @@ let total=
 
  ownerMenuData.find(
 
-  menuItem=>menuItem.name===extra.name
+ menuItem=>menuItem.name===extra.name
 
- )?.price ??
-
- menuPrices[extra.name] ??
-
- 0
+)?.price ?? 0
 
 )*
 
