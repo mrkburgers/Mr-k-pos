@@ -10610,17 +10610,19 @@ function openCategory(categoryId){
 
  let items=
 
-  categoryId==="burgers"?burgers:
+ ownerMenuData
 
-  categoryId==="sides"?sides:
+  .filter(
 
-  categoryId==="salads"?salads:
+   item=>
 
-  categoryId==="softDrinks"?drinks:
+    item.category===categoryId &&
 
-  categoryId==="sauces"?sauces:
+    item.active!==false
 
-  [];
+  )
+
+  .map(item=>item.name);
 
  document.getElementById("root").innerHTML=`
 
@@ -10673,7 +10675,11 @@ function openCategory(categoryId){
    <h3>${i}</h3>
    <div class="muted" style="margin-top:6px">
 
- ${Number(menuPrices[i]||0).toLocaleString()} CFA
+ ${Number(
+
+ ownerMenuData.find(item=>item.name===i)?.price || 0
+
+).toLocaleString()} CFA
 
 </div>
    ${
@@ -10713,18 +10719,32 @@ if(!isProductAvailable(name)){
 
 }
  currentQty=1;
+const ownerItem=
 
- if(burgerDetails[name]){
+ ownerMenuData.find(
+
+  item=>item.name===name
+
+ );
+ if(
+
+ ownerItem &&
+
+ (
+
+  (ownerItem.removableIngredientIds||[]).length ||
+
+  (ownerItem.allowedExtraIds||[]).length
+
+ )
+
+){
 
    return burgerCustomize(name);
 
  }
 
- if(loadedFries.includes(name)){
-
-   return loadedCustomize(name);
-
- }
+ 
 
  simpleItem(name);
 
@@ -10762,9 +10782,15 @@ function ingredientId(i){
 
 }
 
-function ingredientRows(ingredients){
+function ingredientRows(ingredients,removableIngredients=ingredients){
 
- return ingredients.map((ingredient,index)=>`
+ return ingredients.map((ingredient,index)=>{
+
+ const removable=
+
+  removableIngredients.includes(ingredient);
+
+ return `
 
  <div class="ingredient-row">
 
@@ -10775,7 +10801,7 @@ function ingredientRows(ingredients){
    id="${ingredientId(index)}"
 
    checked
-
+   ${removable?"":"disabled"}
    onchange='toggleIngredient(${JSON.stringify(ingredient)},this.checked)'>
 
   <label for="${ingredientId(index)}">
@@ -10784,7 +10810,9 @@ function ingredientRows(ingredients){
 
   </label>
 
- </div>`).join("");
+ </div>`;
+
+}).join("");
 
 }
 
@@ -11049,15 +11077,99 @@ function changeExtraQty(e,n){
 }
 function burgerCustomize(name){
 
- const d=burgerDetails[name];
+ const ownerItem=
+
+ ownerMenuData.find(
+
+  item=>item.name===name
+
+ );
+
+const d=burgerDetails[name] || {};
+  const ownerIngredients=
+
+ (ownerItem?.ingredientIds || [])
+
+ .map(id=>
+
+  menuIngredients.find(
+
+   ingredient=>ingredient.id===id
+
+  )
+
+ )
+
+ .filter(Boolean);
+  const ownerIngredientNames=
+
+ ownerIngredients.map(
+
+  ingredient=>ingredient.name
+
+ );
+  const removableIngredientNames=
+
+ (ownerItem?.removableIngredientIds || [])
+
+ .map(id=>
+
+  menuIngredients.find(
+
+   ingredient=>ingredient.id===id
+
+  )
+
+ )
+
+ .filter(Boolean)
+
+ .map(ingredient=>ingredient.name);
+  const ingredients=
+
+ ownerIngredientNames.length
+
+ ?ownerIngredientNames
+
+ :(d.ingredients || []);
 currentCustomizeItem=name;
- const extras=
+ const ownerExtras=
 
- d.meat==="chicken"
+ (ownerItem?.allowedExtraIds || [])
 
- ?chickenExtras
+ .map(id=>
 
- :beefExtras;
+  ownerMenuData.find(
+
+   item=>
+
+    item.id===id &&
+
+    item.active!==false
+
+  )
+
+ )
+
+ .filter(Boolean)
+
+ .map(item=>item.name);
+
+const extras=
+
+ ownerItem
+
+ ?ownerExtras
+
+ :(
+
+   d.meat==="chicken"
+
+   ?chickenExtras
+
+   :beefExtras
+
+  );
 
  resetExtras(extras);
 
@@ -11071,7 +11183,7 @@ currentCustomizeItem=name;
 
    class="back"
 
-   onclick="openCategory('burgers')">
+   onclick="openCategory('${currentCategory}')">
 
    ← BACK
 
@@ -11097,7 +11209,7 @@ currentCustomizeItem=name;
 
    </p>
 
-   ${ingredientRows(d.ingredients)}
+   ${ingredientRows(ingredients,removableIngredientNames)}
 
    <h3>Extras</h3>
 
@@ -11348,15 +11460,43 @@ function removedHtml(i){
 }
 function itemUnitPrice(item){
 
- let total=
+ const ownerItem=
 
- Number(menuPrices[item.name]||0);
+ ownerMenuData.find(
+
+  menuItem=>menuItem.name===item.name
+
+ );
+
+let total=
+
+ Number(
+
+  ownerItem?.price ??
+
+  menuPrices[item.name] ??
+
+  0
+
+ );
 
  (item.extras||[]).forEach(extra=>{
 
   total+=
 
-   Number(menuPrices[extra.name]||0)*
+   Number(
+
+ ownerMenuData.find(
+
+  menuItem=>menuItem.name===extra.name
+
+ )?.price ??
+
+ menuPrices[extra.name] ??
+
+ 0
+
+)*
 
    Number(extra.qty||0);
 
