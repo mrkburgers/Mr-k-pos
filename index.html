@@ -2151,6 +2151,109 @@ function saveMenuIngredients(){
  </div>`;
 
 }
+  function ownerEditIngredient(id){
+
+ const ingredient=menuIngredients.find(
+
+  item=>item.id===id
+
+ );
+
+ if(!ingredient){
+
+  alert("Ingredient not found.");
+
+  return;
+
+ }
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerIngredientList()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EDIT INGREDIENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ✏️ EDIT INGREDIENT
+
+   </span>
+
+   <h1>Edit Ingredient</h1>
+
+   <div class="form">
+
+    <label>Ingredient Name</label>
+
+    <input
+
+     id="editIngredientName"
+
+     value="${esc(ingredient.name)}">
+
+    <label>Inventory Tracking</label>
+
+    <select id="editIngredientTracked">
+
+     <option
+
+      value="true"
+
+      ${ingredient.tracked?"selected":""}>
+
+      Tracked in Inventory
+
+     </option>
+
+     <option
+
+      value="false"
+
+      ${!ingredient.tracked?"selected":""}>
+
+      Not Tracked
+
+     </option>
+
+    </select>
+
+    <button
+
+     class="primary"
+
+     onclick="saveEditedIngredient('${ingredient.id}')">
+
+     SAVE CHANGES
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
   function toggleIngredientActive(id){
 
  const ingredient=menuIngredients.find(
