@@ -11191,21 +11191,57 @@ currentCustomizeItem=name;
 
  .map(item=>item.name);
 
+const extraToppingNames=
+
+ ownerMenuData
+
+  .filter(
+
+   item=>
+
+    item.category==="extraToppings" &&
+
+    item.active!==false
+
+  )
+
+  .map(item=>item.name);
+
 const extras=
 
  ownerItem
 
  ?ownerExtras
 
- :(
+ :[
 
-   d.meat==="chicken"
+   ...(
 
-   ?chickenExtras
+    d.meat==="chicken"
 
-   :beefExtras
+    ?chickenExtras
 
-  );
+    :beefExtras
+
+   ),
+
+   ...extraToppingNames.filter(
+
+    name=>
+
+     !(
+
+      d.meat==="chicken"
+
+      ?chickenExtras
+
+      :beefExtras
+
+     ).includes(name)
+
+   )
+
+  ];
 
  resetExtras(extras);
 
