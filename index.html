@@ -10703,7 +10703,7 @@ let items=[
 
  ${Number(
 
- ownerMenuData.find(item=>item.name===i)?.price || 0
+ ownerMenuData.find(item=>item.name===i)?.price ?? menuPrices[i] ?? 0
 
 ).toLocaleString()} CFA
 
