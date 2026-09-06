@@ -7766,7 +7766,15 @@ function managerInventory(){
    </p>
 
    <div class="grid">
+   <div class="card" onclick="managerDeliveryHistory()" style="cursor:pointer">
 
+ <div class="category-icon">🚚</div>
+
+ <h3>DELIVERY HISTORY</h3>
+
+ <p class="muted">View supplier deliveries</p>
+
+</div>
     <div class="card" onclick="managerCurrentStock()" style="cursor:pointer">
 
      <div class="category-icon">📋</div>
@@ -7929,7 +7937,15 @@ function managerInventory(){
      <p class="muted">Record waste or corrections</p>
 
     </div>
+    <div class="card" onclick="managerDeliveryHistory()" style="cursor:pointer">
 
+ <div class="category-icon">🚚</div>
+
+ <h3>DELIVERY HISTORY</h3>
+
+ <p class="muted">View supplier deliveries</p>
+
+</div>
     <div class="card" onclick="managerStockHistory()" style="cursor:pointer">
 
      <div class="category-icon">📜</div>
@@ -9550,6 +9566,181 @@ createdAt:Date.now()
  managerWasteAdjustment();
 
 } 
+function managerDeliveryHistory(){
+
+ clearInterval(timerInterval);
+
+ const deliveries=
+
+  [...inventoryDeliveries]
+
+  .sort(
+
+   (a,b)=>
+
+    Number(b.createdAt||0)-
+
+    Number(a.createdAt||0)
+
+  );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="inventoryHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>
+
+    ${role==="owner"?"OWNER":"MANAGER"} — DELIVERY HISTORY
+
+   </span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🚚 DELIVERY HISTORY
+
+   </span>
+
+   <h1>Supplier Deliveries</h1>
+
+   <p class="muted">
+
+    View received supplier deliveries.
+
+   </p>
+
+   ${
+
+    deliveries.length
+
+    ?deliveries.map(delivery=>`
+
+     <div class="order-card">
+
+      <div class="order-top">
+
+       <div>
+
+        <h3>
+
+         ${esc(delivery.supplier||"Unknown Supplier")}
+
+        </h3>
+
+        ${
+
+         delivery.reference
+
+         ?`<div class="muted">
+
+            Reference: ${esc(delivery.reference)}
+
+           </div>`
+
+         :""
+
+        }
+
+       </div>
+
+       <div style="text-align:right">
+
+        <strong>
+
+         ${formatDateTime(delivery.createdAt)}
+
+        </strong>
+
+       </div>
+
+      </div>
+
+      <div class="summary">
+
+       ${
+
+        (delivery.items||[])
+
+        .map(item=>`
+
+         <div class="kitchen-item">
+
+          ${Number(item.qty||0)} × ${esc(item.itemName||"Inventory Item")}
+
+         </div>
+
+        `)
+
+        .join("")
+
+       }
+
+      </div>
+
+      ${
+
+       delivery.note
+
+       ?`<div class="muted" style="margin-top:8px">
+
+          Note: ${esc(delivery.note)}
+
+         </div>`
+
+       :""
+
+      }
+
+      <div class="muted" style="margin-top:8px">
+
+       Received by:
+
+       ${esc(
+
+        delivery.actorName||
+
+        delivery.actorRole||
+
+        "Unknown"
+
+       )}
+
+      </div>
+
+     </div>
+
+    `).join("")
+
+    :`<p class="muted">
+
+       No supplier deliveries recorded yet.
+
+      </p>`
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
 function managerStockHistory(selectedDate){
 
  clearInterval(timerInterval);
