@@ -8096,6 +8096,7 @@ inventoryItems.forEach(item=>{
 
 });
 syncTrackedIngredientsToInventory();
+ 
 function saveInventory(){
 
  localStorage.setItem(
@@ -8316,7 +8317,9 @@ function deductOrderInventory(order){
  Object.entries(deductions)
 
  .forEach(([id,qty])=>{
+ const previousStock=
 
+ Number(inventoryStock[id]||0);
   inventoryStock[id]=
 
    Math.max(
@@ -8326,7 +8329,9 @@ function deductOrderInventory(order){
     Number(inventoryStock[id]||0)-qty
 
    );
+const newStock=
 
+ Number(inventoryStock[id]||0);
   const item=
 
    inventoryItems.find(
@@ -8352,7 +8357,9 @@ function deductOrderInventory(order){
     item?item.name:id,
 
    qty:-qty,
+  previousStock:previousStock,
 
+newStock:newStock,
    orderNumber:
 
     order.number,
@@ -8596,7 +8603,17 @@ function managerStockIn(){
     step="1"
 
     placeholder="Enter servings / units">
+   <label>DELIVERY NOTE</label>
 
+<input
+
+ id="stockInNote"
+
+ class="input"
+
+ type="text"
+
+ placeholder="Example: Supplier delivery">
    <button
 
     class="primary"
@@ -8626,7 +8643,9 @@ function managerAddStock(){
   document.getElementById("stockInQty").value
 
  );
+const note=
 
+ document.getElementById("stockInNote").value.trim();
  if(!itemId){
 
   return alert(
@@ -8670,11 +8689,15 @@ function managerAddStock(){
   );
 
  }
+const previousStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryStock[itemId]=
 
  Number(inventoryStock[itemId]||0)+qty;
+const newStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryMovements.push({
 
   id:Date.now(),
@@ -8686,7 +8709,10 @@ function managerAddStock(){
   itemName:item.name,
 
   qty:qty,
+   previousStock:previousStock,
 
+newStock:newStock,
+  note:note,
 actorRole:role==="owner"?"OWNER":"MANAGER",
 actorName:currentStaffName,
 
@@ -8889,11 +8915,15 @@ function managerRemoveStock(){
   );
 
  }
+const previousStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryStock[itemId]=
 
  current-qty;
+const newStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryMovements.push({
 
   id:Date.now(),
@@ -8905,7 +8935,9 @@ function managerRemoveStock(){
   itemName:item.name,
 
   qty:-qty,
+previousStock:previousStock,
 
+newStock:newStock,
 actorRole:role==="owner"?"OWNER":"MANAGER",
 actorName:currentStaffName,
 
@@ -9174,11 +9206,15 @@ function managerRecordWaste(){
   );
 
  }
+const previousStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryStock[itemId]=
 
  current-qty;
+const newStock=
 
+ Number(inventoryStock[itemId]||0);
  inventoryMovements.push({
 
   id:Date.now(),
@@ -9190,7 +9226,9 @@ function managerRecordWaste(){
   itemName:item.name,
 
   qty:-qty,
+previousStock:previousStock,
 
+newStock:newStock,
   reason:reason,
 
 actorRole:role==="owner"?"OWNER":"MANAGER",
@@ -9354,7 +9392,34 @@ const today=
        </div>
 
       </div>
+      ${
 
+ m.previousStock!==undefined &&
+
+ m.newStock!==undefined
+
+ ?`<div class="muted" style="margin-top:8px">
+
+    Stock: ${Number(m.previousStock)} → ${Number(m.newStock)}
+
+   </div>`
+
+ :""
+
+}
+${
+
+ m.note
+
+ ?`<div class="muted" style="margin-top:8px">
+
+    Note: ${esc(m.note)}
+
+   </div>`
+
+ :""
+
+}
       ${
 
        m.reason
