@@ -8640,7 +8640,7 @@ function managerStockIn(){
 
    supplier=>`
 
-    <option value="${esc(supplier.name)}">
+    <option value="${supplier.id}">
 
      ${esc(supplier.name)}
 
@@ -8928,9 +8928,27 @@ function renderCurrentDelivery(){
 }
 function managerAddStock(){
 
- const supplier=
+ const supplierId=
 
- document.getElementById("stockInSupplier").value.trim();
+ document.getElementById("stockInSupplier").value;
+
+const selectedSupplier=
+
+ suppliers.find(
+
+  supplier=>
+
+   String(supplier.id)===String(supplierId)
+
+ );
+
+const supplier=
+
+ selectedSupplier
+
+ ?selectedSupplier.name
+
+ :"";
 
  const reference=
 
@@ -8939,7 +8957,7 @@ function managerAddStock(){
  const note=
 
  document.getElementById("stockInNote").value.trim();
-if(!supplier){
+if(!supplierId || !selectedSupplier){
 
  return alert(
 
@@ -9047,7 +9065,7 @@ if(!supplier){
    previousStock:previousStock,
 
    newStock:newStock,
-
+   supplierId:supplierId,
    supplier:supplier,
 
    reference:reference,
@@ -9077,7 +9095,7 @@ if(!supplier){
  inventoryDeliveries.push({
 
   id:deliveryId,
-
+ supplierId:supplierId,
   supplier:supplier,
 
   reference:reference,
@@ -10037,15 +10055,23 @@ function ownerToggleSupplier(id){
 
  const used=
 
-  inventoryDeliveries.some(
+ inventoryDeliveries.some(
 
-   delivery=>
+  delivery=>
 
-    String(delivery.supplier||"").toLowerCase()===
+   (
 
-    String(supplier.name||"").toLowerCase()
+    delivery.supplierId!==undefined &&
 
-  );
+    String(delivery.supplierId)===String(supplier.id)
+
+   ) ||
+
+   String(delivery.supplier||"").toLowerCase()===
+
+   String(supplier.name||"").toLowerCase()
+
+ );
 
  if(used){
 
@@ -10259,7 +10285,7 @@ function managerDeliveryHistory(){
  </div>`;
 
 }
-function managerStockHistory(selectedDate){
+function managerStockHistory(selectedDate,selectedSupplierId){
 
  clearInterval(timerInterval);
 
@@ -10272,8 +10298,14 @@ const today=
  `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
  const dateValue=
 
-  selectedDate||today;
+  selectedDate===undefined
 
+ ?today
+
+ :selectedDate;
+const supplierValue=
+
+ selectedSupplierId||"";
  const movements=
 
   [...inventoryMovements]
@@ -10288,7 +10320,41 @@ const today=
 
     `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
-   return movementDate===dateValue;
+   const matchesDate=
+
+ !dateValue || movementDate===dateValue;
+
+const matchesSupplier=
+
+ !supplierValue ||
+
+ (
+
+  m.supplierId!==undefined &&
+
+  String(m.supplierId)===String(supplierValue)
+
+ ) ||
+
+ (
+
+  m.supplierId===undefined &&
+
+  suppliers.some(
+
+   supplier=>
+
+    String(supplier.id)===String(supplierValue) &&
+
+    String(m.supplier||"").toLowerCase()===
+
+    String(supplier.name||"").toLowerCase()
+
+  )
+
+ );
+
+return matchesDate && matchesSupplier;
 
   })
 
@@ -10350,8 +10416,53 @@ const today=
 
     value="${dateValue}"
 
-    onchange="managerStockHistory(this.value)">
+    onchange="managerStockHistory(this.value,document.getElementById('stockHistorySupplier').value)">
+    <button
 
+ class="back"
+
+ style="margin:10px 0 20px 0"
+
+ onclick="managerStockHistory('',document.getElementById('stockHistorySupplier').value)">
+
+ ALL DATES
+
+</button>
+   <label>SUPPLIER</label>
+
+<select
+
+ id="stockHistorySupplier"
+
+ class="input"
+
+ onchange="managerStockHistory(document.querySelector('input[type=date]').value,this.value)">
+
+ <option value="">All suppliers</option>
+
+ ${
+
+  suppliers
+
+  .map(supplier=>`
+
+   <option
+
+    value="${supplier.id}"
+
+    ${String(supplier.id)===String(supplierValue)?"selected":""}>
+
+    ${esc(supplier.name)}
+
+   </option>
+
+  `)
+
+  .join("")
+
+ }
+
+</select>
    <div style="margin-top:20px">
 
    ${
@@ -10505,7 +10616,7 @@ ${
 
     :`<p class="muted" style="margin-top:20px">
 
-       No stock movements for this date.
+       No stock movements match the selected filters.
 
       </p>`
 
