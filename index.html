@@ -7986,14 +7986,6 @@ let inventoryItems=[
 
  
 
- {id:"chimichurri",name:"Chimichurri",category:"EXTRA SAUCES"},
-
- {id:"mrkSauce",name:"Mr K Sauce",category:"EXTRA SAUCES"},
-
- {id:"honeyBbq",name:"Honey BBQ",category:"EXTRA SAUCES"},
-
- {id:"honeyMustard",name:"Honey Mustard",category:"EXTRA SAUCES"}
-
 ];
 function syncTrackedIngredientsToInventory(){
 
@@ -8084,23 +8076,7 @@ const lowStockThresholds={
 
  coleslaw:5,
 
- smallWater:24,
-
- bigWater:24,
-
- cocaCola:24,
-
- sprite:24,
-
- fanta:24,
-
- chimichurri:5,
-
- mrkSauce:5,
-
- honeyBbq:5,
-
- honeyMustard:5
+ 
 
 };
 
@@ -8408,13 +8384,9 @@ function managerCurrentStock(){
 
  const categories=[
 
-  "INGREDIENTS",
+ "INGREDIENTS"
 
-  "SOFT DRINKS",
-
-  "EXTRA SAUCES"
-
- ];
+];
 
  document.getElementById("root").innerHTML=`
 
@@ -9598,19 +9570,29 @@ function managerProductAvailability(){
 
  clearInterval(timerInterval);
 
- const categories=[
+ const categories=
 
-  {name:"BURGERS",items:burgers},
+ menuCategoryData
 
-  {name:"SIDES",items:sides},
+ .filter(category=>category.active!==false)
 
-  {name:"SALADS",items:salads},
+ .map(category=>({
 
-  {name:"SOFT DRINKS",items:drinks},
+  name:category.name,
 
-  {name:"EXTRA SAUCES",items:sauces}
+  items:ownerMenuData
 
- ];
+   .filter(item=>
+
+    item.active!==false &&
+
+    item.category===category.id
+
+   )
+
+   .map(item=>item.name)
+
+ }));
 
  document.getElementById("root").innerHTML=`
 
