@@ -7984,15 +7984,7 @@ let inventoryItems=[
 
  {id:"coleslaw",name:"Coleslaw",category:"INGREDIENTS"},
 
- {id:"smallWater",name:"Small Water",category:"SOFT DRINKS"},
-
- {id:"bigWater",name:"Big Water",category:"SOFT DRINKS"},
-
- {id:"cocaCola",name:"Coca-Cola",category:"SOFT DRINKS"},
-
- {id:"sprite",name:"Sprite",category:"SOFT DRINKS"},
-
- {id:"fanta",name:"Fanta",category:"SOFT DRINKS"},
+ 
 
  {id:"chimichurri",name:"Chimichurri",category:"EXTRA SAUCES"},
 
@@ -11013,21 +11005,27 @@ function extraRows(extras){
 
    getOrderInventoryNeeds({
 
-    cart:[{
+    cart:[
 
-     name:currentCustomizeItem,
+     ...cart,
 
-     qty:Number(currentQty||1),
+     {
 
-     extras:testExtras,
+      name:currentCustomizeItem,
 
-     removed:[
+      qty:Number(currentQty||1),
 
-      ...currentRemovedIngredients
+      extras:testExtras,
 
-     ]
+      removed:[
 
-    }]
+       ...currentRemovedIngredients
+
+      ]
+
+     }
+
+    ]
 
    });
 
@@ -11135,21 +11133,27 @@ function changeExtraQty(e,n){
 
    checkOrderInventory({
 
-    cart:[{
+    cart:[
 
-     name:currentCustomizeItem,
+     ...cart,
 
-     qty:Number(currentQty||1),
+     {
 
-     extras:testExtras,
+      name:currentCustomizeItem,
 
-     removed:[
+      qty:Number(currentQty||1),
 
-      ...currentRemovedIngredients
+      extras:testExtras,
 
-     ]
+      removed:[
 
-    }]
+       ...currentRemovedIngredients
+
+      ]
+
+     }
+
+    ]
 
    });
 
@@ -11185,8 +11189,7 @@ function changeExtraQty(e,n){
 
  }
 
-}
-function burgerCustomize(name){
+}function burgerCustomize(name){
 
  const ownerItem=
 
@@ -11364,7 +11367,11 @@ const extras=
 
 function simpleItem(name){
 
- currentRemovedIngredients=[];
+ currentCustomizeItem=name;
+
+currentExtraQty={};
+
+currentRemovedIngredients=[];
 
  document.getElementById("root").innerHTML=`
 
@@ -11536,17 +11543,49 @@ function addCustomizedItem(name){
 
  }));
 
- cart.push({
+ const newItem={
 
-   name,
+  name,
 
-   qty:currentQty,
+  qty:currentQty,
 
-   extras,
+  extras,
 
-   removed:[...currentRemovedIngredients]
+  removed:[...currentRemovedIngredients]
 
- });
+ };
+
+ const testOrder={
+
+  cart:[
+
+   ...cart,
+
+   newItem
+
+  ]
+
+ };
+
+ const missing=
+
+  checkOrderInventory(testOrder);
+
+ if(missing.length){
+
+  alert(
+
+   "OUT OF STOCK\n\n"+
+
+   missing.join("\n")
+
+  );
+
+  return;
+
+ }
+
+ cart.push(newItem);
 
  currentRemovedIngredients=[];
 
@@ -11556,17 +11595,49 @@ function addCustomizedItem(name){
 
 function addSimpleItem(name){
 
- cart.push({
+ const newItem={
 
-   name,
+  name,
 
-   qty:currentQty,
+  qty:currentQty,
 
-   extras:[],
+  extras:[],
 
-   removed:[]
+  removed:[]
 
- });
+ };
+
+ const testOrder={
+
+  cart:[
+
+   ...cart,
+
+   newItem
+
+  ]
+
+ };
+
+ const missing=
+
+  checkOrderInventory(testOrder);
+
+ if(missing.length){
+
+  alert(
+
+   "OUT OF STOCK\n\n"+
+
+   missing.join("\n")
+
+  );
+
+  return;
+
+ }
+
+ cart.push(newItem);
 
  menuCategories();
 
