@@ -9656,7 +9656,17 @@ function ownerSuppliers(){
     type="text"
 
     placeholder="Enter supplier name">
+   <label>PHONE NUMBER</label>
 
+<input
+
+ id="supplierPhone"
+
+ class="input"
+
+ type="tel"
+
+ placeholder="Enter supplier phone number">
    <button
 
     class="primary"
@@ -9688,7 +9698,11 @@ function ownerSuppliers(){
           ${esc(supplier.name)}
 
          </h3>
+         <div class="muted">
 
+ 📞 ${esc(supplier.phone||"No phone number")}
+
+</div>
          <div class="muted">
 
           ${
@@ -9737,7 +9751,9 @@ function ownerSuppliers(){
  const name=
 
   document.getElementById("supplierName").value.trim();
+const phone=
 
+ document.getElementById("supplierPhone").value.trim();
  if(!name){
 
   return alert(
@@ -9775,7 +9791,7 @@ function ownerSuppliers(){
   id:Date.now(),
 
   name:name,
-
+ phone:phone,
   active:true,
 
   createdAt:Date.now()
