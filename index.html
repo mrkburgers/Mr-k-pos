@@ -7955,7 +7955,19 @@ function managerInventory(){
      <p class="muted">View inventory movements</p>
 
     </div>
+    <div class="card clickable" onclick="ownerSuppliers()">
 
+ <div class="category-icon">🏢</div>
+
+ <h3>SUPPLIERS</h3>
+
+ <p class="muted">
+
+  Create and manage suppliers
+
+ </p>
+
+</div>
     <div class="card clickable" onclick="managerLowStock()">
 
      <div class="category-icon">⚠️</div>
@@ -8506,6 +8518,25 @@ function managerCurrentStock(){
  </div>`;
 
 } 
+  let suppliers=safeLoad(
+
+ "mrkSuppliers",
+
+ []
+
+);
+
+function saveSuppliers(){
+
+ localStorage.setItem(
+
+  "mrkSuppliers",
+
+  JSON.stringify(suppliers)
+
+ );
+
+}
   let inventoryDeliveries=safeLoad(
 
  "mrkInventoryDeliveries",
@@ -9566,6 +9597,196 @@ createdAt:Date.now()
  managerWasteAdjustment();
 
 } 
+function ownerSuppliers(){
+
+ clearInterval(timerInterval);
+
+ if(role!=="owner"){
+
+  return ownerInventory();
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerInventory()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SUPPLIERS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🏢 SUPPLIERS
+
+   </span>
+
+   <h1>Supplier Management</h1>
+
+   <p class="muted">
+
+    Create and manage approved suppliers.
+
+   </p>
+
+   <label>SUPPLIER NAME</label>
+
+   <input
+
+    id="supplierName"
+
+    class="input"
+
+    type="text"
+
+    placeholder="Enter supplier name">
+
+   <button
+
+    class="primary"
+
+    style="margin-top:16px"
+
+    onclick="ownerAddSupplier()">
+
+    ADD SUPPLIER
+
+   </button>
+
+   <div style="margin-top:24px">
+
+    ${
+
+     suppliers.length
+
+     ?suppliers.map(supplier=>`
+
+      <div class="order-card">
+
+       <div class="order-top">
+
+        <div>
+
+         <h3>
+
+          ${esc(supplier.name)}
+
+         </h3>
+
+         <div class="muted">
+
+          ${
+
+           supplier.active===false
+
+           ?"Inactive"
+
+           :"Active"
+
+          }
+
+         </div>
+
+        </div>
+
+       </div>
+
+      </div>
+
+     `).join("")
+
+     :`<p class="muted">
+
+        No suppliers created yet.
+
+       </p>`
+
+    }
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerAddSupplier(){
+
+ if(role!=="owner"){
+
+  return;
+
+ }
+
+ const name=
+
+  document.getElementById("supplierName").value.trim();
+
+ if(!name){
+
+  return alert(
+
+   "Please enter a supplier name."
+
+  );
+
+ }
+
+ const duplicate=
+
+  suppliers.find(
+
+   supplier=>
+
+    supplier.name.toLowerCase()===
+
+    name.toLowerCase()
+
+  );
+
+ if(duplicate){
+
+  return alert(
+
+   "This supplier already exists."
+
+  );
+
+ }
+
+ suppliers.push({
+
+  id:Date.now(),
+
+  name:name,
+
+  active:true,
+
+  createdAt:Date.now()
+
+ });
+
+ saveSuppliers();
+
+ ownerSuppliers();
+
+}
 function managerDeliveryHistory(){
 
  clearInterval(timerInterval);
