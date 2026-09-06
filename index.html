@@ -5152,11 +5152,11 @@ const salesGraphSvg=`
 
  </option>
 
- ${Object.keys(menuPrices).map(name=>`
+ ${ownerMenuData.filter(item=>item.active!==false).map(item=>`
 
-  <option value="${name}">
+  <option value="${item.name}">
 
-   ${name}
+   ${item.name}
 
   </option>
 
