@@ -9706,7 +9706,32 @@ const today=
 
 }
 ${
+${
 
+ m.supplier
+
+ ?`<div class="muted" style="margin-top:8px">
+
+    Supplier: ${esc(m.supplier)}
+
+   </div>`
+
+ :""
+
+}
+  ${
+
+ m.reference
+
+ ?`<div class="muted" style="margin-top:8px">
+
+    Reference: ${esc(m.reference)}
+
+   </div>`
+
+ :""
+
+}
  m.note
 
  ?`<div class="muted" style="margin-top:8px">
