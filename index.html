@@ -1754,7 +1754,17 @@ function saveMenuIngredients(){
      </option>
 
     </select>
+    <label>Low Stock Level</label>
 
+    <input
+
+     id="newIngredientLowStock"
+
+     type="number"
+
+     min="0"
+
+     value="0">
     <div class="system-note">
 
      Every ingredient equals 1 unit / 1 serving.
@@ -1791,7 +1801,11 @@ function saveMenuIngredients(){
  const tracked=
 
   document.getElementById("newIngredientTracked").value==="true";
+ const lowStockLevel=Number(
 
+  document.getElementById("newIngredientLowStock").value||0
+
+ );
  if(!name){
 
   alert("Please enter an ingredient name.");
@@ -1831,7 +1845,7 @@ function saveMenuIngredients(){
   name:name,
 
   tracked:tracked,
-
+lowStockLevel:lowStockLevel,
   active:true
 
  });
@@ -2067,7 +2081,17 @@ saveInventory();
      </option>
 
     </select>
+        <label>Low Stock Level</label>
 
+    <input
+
+     id="editIngredientLowStock"
+
+     type="number"
+
+     min="0"
+
+     value="${Number(ingredient.lowStockLevel||0)}">
     <button
 
      class="primary"
@@ -2160,7 +2184,11 @@ saveInventory();
  const tracked=
 
   document.getElementById("editIngredientTracked").value==="true";
+ const lowStockLevel=Number(
 
+  document.getElementById("editIngredientLowStock").value||0
+
+ );
  if(!name){
 
   alert("Please enter an ingredient name.");
@@ -2190,7 +2218,7 @@ saveInventory();
  ingredient.name=name;
 
  ingredient.tracked=tracked;
-
+ingredient.lowStockLevel=lowStockLevel;
  saveMenuIngredients();
 syncTrackedIngredientsToInventory();
 
@@ -8044,41 +8072,7 @@ function syncTrackedIngredientsToInventory(){
  });
 
 }
-const lowStockThresholds={
 
- beef120:30,
-
- chicken120:15,
-
- bun:20,
-
- mushroom:15,
-
- beefTenderloin100:10,
-
- bacon:10,
-
- smokedTurkey:5,
-
- cheddar:20,
-
- mozzarella:15,
-
- emmental:15,
-
- gratedCheese:15,
-
- potatoes:40,
-
- plantain:15,
-
- fajitaChicken100:5,
-
- coleslaw:5,
-
- 
-
-};
 
 let inventoryStock=safeLoad(
 
@@ -9445,7 +9439,15 @@ function managerLowStock(){
 
    threshold:
 
-    Number(lowStockThresholds[item.id]||0)
+ Number(
+
+  menuIngredients.find(
+
+   ingredient=>ingredient.id===item.id
+
+  )?.lowStockLevel||0
+
+ )
 
   }))
 
