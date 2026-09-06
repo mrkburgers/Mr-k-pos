@@ -8614,15 +8614,47 @@ function managerStockIn(){
    <h1>Record Delivery</h1>
   <label>SUPPLIER</label>
 
-<input
+<select
 
  id="stockInSupplier"
 
- class="input"
+ class="input">
 
- type="text"
+ <option value="">
 
- placeholder="Enter supplier name">
+  Select supplier
+
+ </option>
+
+ ${
+
+  suppliers
+
+  .filter(
+
+   supplier=>supplier.active!==false
+
+  )
+
+  .map(
+
+   supplier=>`
+
+    <option value="${esc(supplier.name)}">
+
+     ${esc(supplier.name)}
+
+    </option>
+
+   `
+
+  )
+
+  .join("")
+
+ }
+
+</select>
  <label>DELIVERY / INVOICE REFERENCE</label>
 
 <input
@@ -8907,7 +8939,15 @@ function managerAddStock(){
  const note=
 
  document.getElementById("stockInNote").value.trim();
+if(!supplier){
 
+ return alert(
+
+  "Please select a supplier."
+
+ );
+
+}
  if(!supplier){
 
   return alert(
@@ -9678,7 +9718,15 @@ function ownerSuppliers(){
     ADD SUPPLIER
 
    </button>
+<button
 
+ class="secondary"
+
+ onclick="ownerDeleteSupplier(${supplier.id})">
+
+ DELETE
+
+</button>
    <div style="margin-top:24px">
 
     ${
@@ -9716,7 +9764,32 @@ function ownerSuppliers(){
           }
 
          </div>
+       <button
 
+ class="secondary"
+
+ onclick="ownerEditSupplier(${supplier.id})">
+
+ EDIT
+
+</button>
+<button
+
+ class="secondary"
+
+ onclick="ownerToggleSupplier(${supplier.id})">
+
+ ${
+
+  supplier.active===false
+
+  ?"ACTIVATE"
+
+  :"DEACTIVATE"
+
+ }
+
+</button>
         </div>
 
        </div>
@@ -9797,6 +9870,213 @@ const phone=
   createdAt:Date.now()
 
  });
+
+ saveSuppliers();
+
+ ownerSuppliers();
+
+}
+  function ownerEditSupplier(id){
+
+ if(role!=="owner"){
+
+  return;
+
+ }
+
+ const supplier=
+
+  suppliers.find(
+
+   supplier=>supplier.id===id
+
+  );
+
+ if(!supplier){
+
+  return;
+
+ }
+
+ const newName=
+
+  prompt(
+
+   "Supplier name:",
+
+   supplier.name
+
+  );
+
+ if(newName===null){
+
+  return;
+
+ }
+
+ const name=newName.trim();
+const duplicate=
+
+ suppliers.find(
+
+  other=>
+
+   other.id!==id &&
+
+   other.name.toLowerCase()===
+
+   name.toLowerCase()
+
+ );
+
+if(duplicate){
+
+ return alert(
+
+  "Another supplier already uses this name."
+
+ );
+
+}
+ if(!name){
+
+  return alert(
+
+   "Supplier name cannot be empty."
+
+  );
+
+ }
+
+ const newPhone=
+
+  prompt(
+
+   "Phone number:",
+
+   supplier.phone||""
+
+  );
+
+ if(newPhone===null){
+
+  return;
+
+ }
+
+ supplier.name=name;
+
+ supplier.phone=newPhone.trim();
+
+ supplier.updatedAt=Date.now();
+
+ saveSuppliers();
+
+ ownerSuppliers();
+
+}
+function ownerToggleSupplier(id){
+
+ if(role!=="owner"){
+
+  return;
+
+ }
+
+ const supplier=
+
+  suppliers.find(
+
+   supplier=>supplier.id===id
+
+  );
+
+ if(!supplier){
+
+  return;
+
+ }
+
+ supplier.active=
+
+  supplier.active===false
+
+  ?true
+
+  :false;
+
+ supplier.updatedAt=Date.now();
+
+ saveSuppliers();
+
+ ownerSuppliers();
+
+}
+  function ownerDeleteSupplier(id){
+
+ if(role!=="owner"){
+
+  return;
+
+ }
+
+ const supplier=
+
+  suppliers.find(
+
+   supplier=>supplier.id===id
+
+  );
+
+ if(!supplier){
+
+  return;
+
+ }
+
+ const used=
+
+  inventoryDeliveries.some(
+
+   delivery=>
+
+    String(delivery.supplier||"").toLowerCase()===
+
+    String(supplier.name||"").toLowerCase()
+
+  );
+
+ if(used){
+
+  return alert(
+
+   "This supplier has delivery history and cannot be deleted. Deactivate it instead."
+
+  );
+
+ }
+
+ const confirmed=
+
+  confirm(
+
+   `Delete supplier "${supplier.name}"?`
+
+  );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ suppliers=
+
+  suppliers.filter(
+
+   supplierItem=>supplierItem.id!==id
+
+  );
 
  saveSuppliers();
 
