@@ -8490,6 +8490,26 @@ function managerCurrentStock(){
  </div>`;
 
 } 
+  let inventoryDeliveries=safeLoad(
+
+ "mrkInventoryDeliveries",
+
+ []
+
+);
+
+function saveInventoryDeliveries(){
+
+ localStorage.setItem(
+
+  "mrkInventoryDeliveries",
+
+  JSON.stringify(inventoryDeliveries)
+
+ );
+
+}
+let currentDeliveryItems=[];
 let inventoryMovements=safeLoad(
 
  "mrkInventoryMovements",
@@ -8545,7 +8565,28 @@ function managerStockIn(){
    </span>
 
    <h1>Record Delivery</h1>
+  <label>SUPPLIER</label>
 
+<input
+
+ id="stockInSupplier"
+
+ class="input"
+
+ type="text"
+
+ placeholder="Enter supplier name">
+ <label>DELIVERY / INVOICE REFERENCE</label>
+
+<input
+
+ id="stockInReference"
+
+ class="input"
+
+ type="text"
+
+ placeholder="Example: INV-001">
    <p class="muted">
 
     Add received servings / units to the main inventory.
@@ -8603,7 +8644,7 @@ function managerStockIn(){
     step="1"
 
     placeholder="Enter servings / units">
-   <label>DELIVERY NOTE</label>
+   <label>DELIVERY NOTE / COMMENTS</label>
 
 <input
 
@@ -8618,19 +8659,29 @@ function managerStockIn(){
 
     class="primary"
 
-    onclick="managerAddStock()">
+    onclick="addItemToDelivery()">
 
-    ADD TO INVENTORY
+    ADD ITEM TO DELIVERY
 
    </button>
+<div id="currentDeliveryList"></div>
+<button
 
+ class="primary"
+
+ style="margin-top:20px"
+
+ onclick="managerAddStock()">
+
+ RECEIVE DELIVERY
+
+</button>
   </div>
 
  </div>`;
-
+renderCurrentDelivery();
 }
-
-function managerAddStock(){
+  function addItemToDelivery(){
 
  const itemId=
 
@@ -8643,9 +8694,7 @@ function managerAddStock(){
   document.getElementById("stockInQty").value
 
  );
-const note=
 
- document.getElementById("stockInNote").value.trim();
  if(!itemId){
 
   return alert(
@@ -8689,35 +8738,280 @@ const note=
   );
 
  }
-const previousStock=
 
- Number(inventoryStock[itemId]||0);
- inventoryStock[itemId]=
+ currentDeliveryItems.push({
 
- Number(inventoryStock[itemId]||0)+qty;
-const newStock=
-
- Number(inventoryStock[itemId]||0);
- inventoryMovements.push({
-
-  id:Date.now(),
-
-  type:"STOCK IN",
-
-  itemId:itemId,
+  itemId:item.id,
 
   itemName:item.name,
 
-  qty:qty,
+  qty:qty
+
+ });
+document.getElementById("stockInItem").value="";
+
+document.getElementById("stockInQty").value="";
+renderCurrentDelivery();
+}
+function renderCurrentDelivery(){
+
+ const container=
+
+ document.getElementById("currentDeliveryList");
+
+ if(!container){
+
+  return;
+
+ }
+
+ if(!currentDeliveryItems.length){
+
+  container.innerHTML=`
+
+   <p class="muted" style="margin-top:16px">
+
+    No items added to this delivery yet.
+
+   </p>
+
+  `;
+
+  return;
+
+ }
+
+ container.innerHTML=`
+
+  <div style="margin-top:20px">
+
+   <h3>Current Delivery</h3>
+
+   ${
+
+    currentDeliveryItems
+
+    .map((item,index)=>`
+
+     <div class="order-card">
+
+      <div class="order-top">
+
+       <div>
+
+        <strong>${esc(item.itemName)}</strong>
+
+        <div class="muted">
+
+         Quantity: ${Number(item.qty)}
+
+        </div>
+
+       </div>
+
+       <button
+
+        class="danger"
+
+        onclick="removeDeliveryItem(${index})">
+
+        REMOVE
+
+       </button>
+
+      </div>
+
+     </div>
+
+    `)
+
+    .join("")
+
+   }
+
+  </div>
+
+ `;
+
+}
+  function removeDeliveryItem(index){
+
+ currentDeliveryItems.splice(
+
+  index,
+
+  1
+
+ );
+
+ renderCurrentDelivery();
+
+}
+function managerAddStock(){
+
+ const supplier=
+
+ document.getElementById("stockInSupplier").value.trim();
+
+ const reference=
+
+ document.getElementById("stockInReference").value.trim();
+
+ const note=
+
+ document.getElementById("stockInNote").value.trim();
+
+ if(!supplier){
+
+  return alert(
+
+   "Please enter the supplier name."
+
+  );
+
+ }
+
+ if(!currentDeliveryItems.length){
+
+  return alert(
+
+   "Please add at least one item to the delivery."
+
+  );
+
+ }
+
+ const deliveryId=
+
+  Date.now();
+
+ const deliveryItems=[];
+
+ currentDeliveryItems.forEach(deliveryItem=>{
+
+  const item=
+
+   inventoryItems.find(
+
+    i=>i.id===deliveryItem.itemId
+
+   );
+
+  if(!item){
+
+   return;
+
+  }
+
+  const qty=
+
+   Number(deliveryItem.qty||0);
+
+  const previousStock=
+
+   Number(
+
+    inventoryStock[item.id]||0
+
+   );
+
+  inventoryStock[item.id]=
+
+   previousStock+qty;
+
+  const newStock=
+
+   Number(
+
+    inventoryStock[item.id]||0
+
+   );
+
+  deliveryItems.push({
+
+   itemId:item.id,
+
+   itemName:item.name,
+
+   qty:qty,
+
    previousStock:previousStock,
 
-newStock:newStock,
-  note:note,
-actorRole:role==="owner"?"OWNER":"MANAGER",
-actorName:currentStaffName,
+   newStock:newStock
 
-actorStaffId:currentStaffId,
-createdAt:Date.now()
+  });
+
+  inventoryMovements.push({
+
+   id:
+
+    Date.now()+
+
+    Math.random(),
+
+   type:"STOCK IN",
+
+   itemId:item.id,
+
+   itemName:item.name,
+
+   qty:qty,
+
+   previousStock:previousStock,
+
+   newStock:newStock,
+
+   supplier:supplier,
+
+   reference:reference,
+
+   note:note,
+
+   deliveryId:deliveryId,
+
+   actorRole:
+
+    role==="owner"
+
+    ?"OWNER"
+
+    :"MANAGER",
+
+   actorName:currentStaffName,
+
+   actorStaffId:currentStaffId,
+
+   createdAt:Date.now()
+
+  });
+
+ });
+
+ inventoryDeliveries.push({
+
+  id:deliveryId,
+
+  supplier:supplier,
+
+  reference:reference,
+
+  note:note,
+
+  items:deliveryItems,
+
+  actorRole:
+
+   role==="owner"
+
+   ?"OWNER"
+
+   :"MANAGER",
+
+  actorName:currentStaffName,
+
+  actorStaffId:currentStaffId,
+
+  createdAt:Date.now()
 
  });
 
@@ -8725,15 +9019,19 @@ createdAt:Date.now()
 
  saveInventoryMovements();
 
+ saveInventoryDeliveries();
+
+ currentDeliveryItems=[];
+
  alert(
 
-  `${item.name}: +${qty} units added.`
+  "Delivery received successfully."
 
  );
 
  managerStockIn();
 
-} 
+}
 function managerStockOut(){
 
  clearInterval(timerInterval);
