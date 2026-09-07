@@ -1382,6 +1382,7 @@ if(!shift.orders) shift.orders = [];
   });
   
 function shiftCashIn(amount, reason=""){
+
   if(!canManageShift(role)){
 
     alert("Only a manager or owner can add cash.");
@@ -1389,6 +1390,7 @@ function shiftCashIn(amount, reason=""){
     return false;
 
   }
+
   const shift = getActiveShift();
 
   if(!shift){
@@ -1399,9 +1401,9 @@ function shiftCashIn(amount, reason=""){
 
   }
 
-  shift.cashIn = Number(shift.cashIn || 0) + amount;
+  amount = Number(amount);
 
-if(!shift.movements) shift.movements = [];
+  if(!Number.isFinite(amount) || amount <= 0){
 
     alert("Enter a valid amount.");
 
@@ -1409,8 +1411,10 @@ if(!shift.movements) shift.movements = [];
 
   }
 
-  shift.cashIn += amount;
+  shift.cashIn = Number(shift.cashIn || 0) + amount;
+
   if(!shift.movements) shift.movements = [];
+
   shift.movements.push({
 
     type: "in",
