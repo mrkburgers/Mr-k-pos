@@ -1380,6 +1380,9 @@ if(!shift.orders) shift.orders = [];
     time: new Date().toISOString()
 
   });
+  saveActiveShift(shift);
+
+}
   
 function shiftCashIn(amount, reason=""){
 
