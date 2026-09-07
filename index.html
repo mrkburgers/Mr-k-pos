@@ -622,7 +622,13 @@ function header(label){
      <h3>STAFF MANAGEMENT</h3>
 
     </div>
+ <div class="card" onclick="shiftManagementPageRender()">
 
+  <div class="category-icon">🕒</div>
+
+  <h3>SHIFT MANAGEMENT</h3>
+
+</div>
     <div class="card" onclick="ownerPosSettings()" style="cursor:pointer">
 
      <div class="category-icon">⚙️</div>
@@ -1226,6 +1232,674 @@ category.icon=icon;
  saveMenuCategories();
 
  ownerCategoryList();
+
+}
+  // =========================
+
+// SHIFT MANAGEMENT
+
+// =========================
+
+const SHIFT_ACTIVE_KEY = "mrkActiveShift";
+
+const SHIFT_HISTORY_KEY = "mrkShiftHistory";
+
+function getActiveShift(){
+
+  try{
+
+    return JSON.parse(localStorage.getItem(SHIFT_ACTIVE_KEY)) || null;
+
+  }catch(e){
+
+    return null;
+
+  }
+
+}
+
+function saveActiveShift(shift){
+
+  localStorage.setItem(SHIFT_ACTIVE_KEY, JSON.stringify(shift));
+
+}
+
+function getShiftHistory(){
+
+  try{
+
+    return JSON.parse(localStorage.getItem(SHIFT_HISTORY_KEY)) || [];
+
+  }catch(e){
+
+    return [];
+
+  }
+
+}
+
+function saveShiftHistory(history){
+
+  localStorage.setItem(SHIFT_HISTORY_KEY, JSON.stringify(history));
+
+}
+
+function openShift(openingCash, openedBy="", role="cashier"){
+
+  if(getActiveShift()){
+
+    alert("A shift is already open.");
+
+    return false;
+
+  }
+
+  openingCash = Number(openingCash);
+
+  if(isNaN(openingCash) || openingCash < 0){
+
+    alert("Enter a valid opening cash amount.");
+
+    return false;
+
+  }
+
+  const shift = {
+
+    id: Date.now(),
+
+    openedAt: new Date().toISOString(),
+
+    closedAt: null,
+
+    openedBy: openedBy,
+
+    role: role,
+
+    openingCash: openingCash,
+
+    sales: 0,
+
+    salesCount: 0,
+
+    cashIn: 0,
+
+    cashOut: 0,
+
+    movements: [],
+
+    orders: [],
+
+    closingCashExpected: null,
+
+    closingCashActual: null,
+
+    difference: null,
+
+    status: "open"
+
+  };
+
+  saveActiveShift(shift);
+
+  return true;
+
+}
+
+function addShiftSale(amount, orderId=null){
+
+  const shift = getActiveShift();
+
+  if(!shift) return;
+
+  amount = Number(amount);
+
+  if(isNaN(amount)) return;
+
+  shift.sales += amount;
+
+  shift.salesCount += 1;
+
+  shift.orders.push({
+
+    orderId: orderId,
+
+    amount: amount,
+
+    time: new Date().toISOString()
+
+  });
+
+  saveActiveShift(shift);
+
+}
+
+function shiftCashIn(amount, reason=""){
+
+  const shift = getActiveShift();
+
+  if(!shift){
+
+    alert("No shift is currently open.");
+
+    return false;
+
+  }
+
+  amount = Number(amount);
+
+  if(isNaN(amount) || amount <= 0){
+
+    alert("Enter a valid amount.");
+
+    return false;
+
+  }
+
+  shift.cashIn += amount;
+
+  shift.movements.push({
+
+    type: "in",
+
+    amount: amount,
+
+    reason: reason,
+
+    time: new Date().toISOString()
+
+  });
+
+  saveActiveShift(shift);
+
+  return true;
+
+}
+
+function shiftCashOut(amount, reason=""){
+
+  const shift = getActiveShift();
+
+  if(!shift){
+
+    alert("No shift is currently open.");
+
+    return false;
+
+  }
+
+  amount = Number(amount);
+
+  if(isNaN(amount) || amount <= 0){
+
+    alert("Enter a valid amount.");
+
+    return false;
+
+  }
+
+  shift.cashOut += amount;
+
+  shift.movements.push({
+
+    type: "out",
+
+    amount: amount,
+
+    reason: reason,
+
+    time: new Date().toISOString()
+
+  });
+
+  saveActiveShift(shift);
+
+  return true;
+
+}
+
+function calculateExpectedCash(shift){
+
+  if(!shift) return 0;
+
+  return (
+
+    Number(shift.openingCash || 0) +
+
+    Number(shift.sales || 0) +
+
+    Number(shift.cashIn || 0) -
+
+    Number(shift.cashOut || 0)
+
+  );
+
+}
+
+function closeShift(actualCash){
+
+  const shift = getActiveShift();
+
+  if(!shift){
+
+    alert("No shift is currently open.");
+
+    return false;
+
+  }
+
+  actualCash = Number(actualCash);
+
+  if(isNaN(actualCash) || actualCash < 0){
+
+    alert("Enter a valid closing cash amount.");
+
+    return false;
+
+  }
+
+  const expectedCash = calculateExpectedCash(shift);
+
+  shift.closingCashExpected = expectedCash;
+
+  shift.closingCashActual = actualCash;
+
+  shift.difference = actualCash - expectedCash;
+
+  shift.closedAt = new Date().toISOString();
+
+  shift.status = "closed";
+
+  const history = getShiftHistory();
+
+  history.unshift(shift);
+
+  saveShiftHistory(history);
+
+  localStorage.removeItem(SHIFT_ACTIVE_KEY);
+
+  return shift;
+
+}
+  function getShiftSummary(){
+
+  const shift = getActiveShift();
+
+  if(!shift) return null;
+
+  return {
+
+    openingCash: Number(shift.openingCash || 0),
+
+    sales: Number(shift.sales || 0),
+
+    salesCount: Number(shift.salesCount || 0),
+
+    cashIn: Number(shift.cashIn || 0),
+
+    cashOut: Number(shift.cashOut || 0),
+
+    expectedCash: calculateExpectedCash(shift),
+
+    openedAt: shift.openedAt,
+
+    openedBy: shift.openedBy,
+
+    status: shift.status
+
+  };
+
+}
+
+function canManageShift(role){
+
+  role = String(role || "").toLowerCase();
+
+  return role === "owner" || role === "manager";
+
+}
+
+function canViewShiftHistory(role){
+
+  role = String(role || "").toLowerCase();
+
+  return role === "owner" || role === "manager";
+
+}
+  function formatShiftMoney(amount){
+
+  return Number(amount || 0).toLocaleString() + " CFA";
+
+}
+
+function formatShiftDate(date){
+
+  if(!date) return "—";
+
+  return new Date(date).toLocaleString();
+
+}
+
+function getShiftDifferenceLabel(difference){
+
+  difference = Number(difference || 0);
+
+  if(difference === 0) return "Balanced";
+
+  if(difference > 0){
+
+    return "Over +" + formatShiftMoney(difference);
+
+  }
+
+  return "Short " + formatShiftMoney(Math.abs(difference));
+
+}
+  function renderShiftManagement(){
+
+  const shift = getActiveShift();
+
+  const history = getShiftHistory();
+
+  if(!shift){
+
+    return `
+
+      <div class="card">
+
+        <h2>🕒 Shift Management</h2>
+
+        <p>No shift is currently open.</p>
+
+        <label>Opening Cash</label>
+
+        <input
+
+          id="shiftOpeningCash"
+
+          type="number"
+
+          min="0"
+
+          placeholder="Opening cash"
+
+        >
+
+        <button onclick="handleOpenShift()">
+
+          Open Shift
+
+        </button>
+
+      </div>
+
+    `;
+
+  }
+
+  const summary = getShiftSummary();
+
+  return `
+
+    <div class="card">
+
+      <h2>🕒 Current Shift</h2>
+
+      <p><b>Opened:</b> ${formatShiftDate(summary.openedAt)}</p>
+
+      <p><b>Opening Cash:</b> ${formatShiftMoney(summary.openingCash)}</p>
+
+      <p><b>Sales:</b> ${formatShiftMoney(summary.sales)}</p>
+
+      <p><b>Orders:</b> ${summary.salesCount}</p>
+
+      <p><b>Cash In:</b> ${formatShiftMoney(summary.cashIn)}</p>
+
+      <p><b>Cash Out:</b> ${formatShiftMoney(summary.cashOut)}</p>
+
+      <p><b>Expected Cash:</b> ${formatShiftMoney(summary.expectedCash)}</p>
+
+    </div>
+
+  `;
+
+}
+  function handleOpenShift(){
+
+  const input = document.getElementById("shiftOpeningCash");
+
+  if(!input) return;
+
+  const openingCash = Number(input.value);
+
+  if(isNaN(openingCash) || openingCash < 0){
+
+    alert("Enter a valid opening cash amount.");
+
+    return;
+
+  }
+
+  const success = openShift(openingCash);
+
+  if(success){
+
+    alert("Shift opened successfully.");
+
+    render();
+
+  }
+
+}
+
+function handleShiftCashIn(){
+
+  const amount = prompt("Cash In amount:");
+
+  if(amount === null) return;
+
+  const reason = prompt("Reason:");
+
+  if(reason === null) return;
+
+  if(shiftCashIn(amount, reason)){
+
+    render();
+
+  }
+
+}
+
+function handleShiftCashOut(){
+
+  const amount = prompt("Cash Out amount:");
+
+  if(amount === null) return;
+
+  const reason = prompt("Reason:");
+
+  if(reason === null) return;
+
+  if(shiftCashOut(amount, reason)){
+
+    render();
+
+  }
+
+}
+
+function handleCloseShift(){
+
+  const shift = getActiveShift();
+
+  if(!shift){
+
+    alert("No shift is currently open.");
+
+    return;
+
+  }
+
+  const actualCash = prompt("Enter actual cash in drawer:");
+
+  if(actualCash === null) return;
+
+  const closed = closeShift(actualCash);
+
+  if(!closed) return;
+
+  alert(
+
+    "Shift closed.\n\n" +
+
+    "Expected: " + formatShiftMoney(closed.closingCashExpected) + "\n" +
+
+    "Actual: " + formatShiftMoney(closed.closingCashActual) + "\n" +
+
+    "Difference: " + getShiftDifferenceLabel(closed.difference)
+
+  );
+
+  render();
+
+}
+  function renderShiftActions(){
+
+  const shift = getActiveShift();
+
+  if(!shift) return "";
+
+  return `
+
+    <div class="card">
+
+      <h3>💵 Cash Management</h3>
+
+      <button onclick="handleShiftCashIn()">
+
+        + Cash In
+
+      </button>
+
+      <button onclick="handleShiftCashOut()">
+
+        − Cash Out
+
+      </button>
+
+      <hr>
+
+      <button onclick="handleCloseShift()">
+
+        Close Shift
+
+      </button>
+
+    </div>
+
+  `;
+
+}
+
+function renderShiftHistory(){
+
+  const history = getShiftHistory();
+
+  if(!history.length){
+
+    return `
+
+      <div class="card">
+
+        <h3>📋 Shift History</h3>
+
+        <p>No closed shifts yet.</p>
+
+      </div>
+
+    `;
+
+  }
+
+  return `
+
+    <div class="card">
+
+      <h3>📋 Shift History</h3>
+
+      ${history.map(shift => `
+
+        <div class="card">
+
+          <p><b>Date:</b> ${formatShiftDate(shift.closedAt)}</p>
+
+          <p><b>Sales:</b> ${formatShiftMoney(shift.sales)}</p>
+
+          <p><b>Orders:</b> ${shift.salesCount || 0}</p>
+
+          <p><b>Expected:</b> ${formatShiftMoney(shift.closingCashExpected)}</p>
+
+          <p><b>Actual:</b> ${formatShiftMoney(shift.closingCashActual)}</p>
+
+          <p><b>Difference:</b> ${getShiftDifferenceLabel(shift.difference)}</p>
+
+        </div>
+
+      `).join("")}
+
+    </div>
+
+  `;
+
+}
+  function shiftManagementPage(){
+
+  return `
+
+    <div style="padding:20px;">
+
+      ${renderShiftManagement()}
+
+      ${renderShiftActions()}
+
+      ${renderShiftHistory()}
+
+    </div>
+
+  `;
+
+}
+  function shiftManagementPageRender(){
+
+  clearInterval(timerInterval);
+
+  document.getElementById("root").innerHTML = `
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="ownerHome()">
+
+        ← BACK
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>OWNER - SHIFT MANAGEMENT</span>
+
+      </div>
+
+      ${shiftManagementPage()}
+
+    </div>
+
+  `;
 
 }
   function ownerIngredients(){
