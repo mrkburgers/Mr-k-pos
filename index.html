@@ -2034,7 +2034,46 @@ if(!canViewShiftHistory(role)) return "";
           <p><b>Actual:</b> ${formatShiftMoney(shift.closingCashActual)}</p>
 
           <p><b>Difference:</b> ${getShiftDifferenceLabel(shift.difference)}</p>
+                    ${(shift.actualCashEdits || []).length ? `
 
+            <p><b>Actual Cash Corrections:</b></p>
+
+            ${(shift.actualCashEdits || []).map(edit => `
+
+              <p style="margin-left:15px;">
+
+                ${formatShiftMoney(edit.oldAmount)}
+
+                →
+
+                ${formatShiftMoney(edit.newAmount)}
+
+                <br>
+
+                <small>
+
+                  ${edit.editedBy || "Unknown"}
+
+                  (${String(edit.editedRole || "").toUpperCase()})
+
+                  — ${formatShiftDate(edit.editedAt)}
+
+                </small>
+
+              </p>
+
+            `).join("")}
+
+          ` : ""}
+                   <button
+
+            class="secondary"
+
+            onclick="editShiftActualCash(${shift.id})">
+
+            EDIT ACTUAL CASH
+
+          </button>
         </div>
 
       `).join("")}
@@ -2042,7 +2081,93 @@ if(!canViewShiftHistory(role)) return "";
     </div>
 
   `;
+function editShiftActualCash(shiftId){
 
+  if(!canManageShift(role)){
+
+    alert("Only a manager or owner can edit actual cash.");
+
+    return;
+
+  }
+
+  const history=getShiftHistory();
+
+  const shift=history.find(
+
+    item=>Number(item.id)===Number(shiftId)
+
+  );
+
+  if(!shift){
+
+    alert("Shift not found.");
+
+    return;
+
+  }
+
+  const oldAmount=Number(shift.closingCashActual || 0);
+
+  const input=prompt(
+
+    "Enter corrected actual cash amount:",
+
+    String(oldAmount)
+
+  );
+
+  if(input===null)return;
+
+  const newAmount=Number(input);
+
+  if(!Number.isFinite(newAmount) || newAmount<0){
+
+    alert("Enter a valid cash amount.");
+
+    return;
+
+  }
+
+  if(newAmount===oldAmount)return;
+
+  if(!Array.isArray(shift.actualCashEdits)){
+
+    shift.actualCashEdits=[];
+
+  }
+
+  shift.actualCashEdits.push({
+
+    oldAmount:oldAmount,
+
+    newAmount:newAmount,
+
+    editedBy:currentStaffName,
+
+    editedRole:role,
+
+    editedAt:new Date().toISOString()
+
+  });
+
+  shift.closingCashActual=newAmount;
+
+  shift.difference=
+
+    newAmount-Number(shift.closingCashExpected || 0);
+
+  saveShiftHistory(history);
+
+  const selectedDate=
+
+    document.getElementById("shiftHistoryDate")?.value || "";
+
+  alert("Actual cash updated successfully.");
+
+  shiftHistoryPageRender(selectedDate);
+
+}
 }
   function shiftHistoryPageRender(selectedDate=""){
 
