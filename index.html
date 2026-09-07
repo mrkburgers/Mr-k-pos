@@ -1918,9 +1918,33 @@ if(!canManageShift(role)){
 
 }
 
-function renderShiftHistory(){
+function renderShiftHistory(selectedDate=""){
+
 if(!canViewShiftHistory(role)) return "";
-  const history = getShiftHistory();
+
+  let history = getShiftHistory();
+
+  if(selectedDate){
+
+    history = history.filter(shift => {
+
+      if(!shift.openedAt) return false;
+
+      const date = new Date(shift.openedAt);
+
+      const shiftDate =
+
+        date.getFullYear() + "-" +
+
+        String(date.getMonth() + 1).padStart(2,"0") + "-" +
+
+        String(date.getDate()).padStart(2,"0");
+
+      return shiftDate === selectedDate;
+
+    });
+
+  }
 
   if(!history.length){
 
@@ -1997,6 +2021,73 @@ if(!canViewShiftHistory(role)) return "";
   `;
 
 }
+  function shiftHistoryPageRender(selectedDate=""){
+
+  if(!canViewShiftHistory(role)){
+
+    shiftManagementPageRender();
+
+    return;
+
+  }
+
+  clearInterval(timerInterval);
+
+  document.getElementById("root").innerHTML = `
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="shiftManagementPageRender()">
+
+        ← BACK
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>${role.toUpperCase()} - SHIFT HISTORY</span>
+
+      </div>
+
+      <div style="padding:20px;">
+
+        <div class="card">
+
+  <h2>📋 Shift History</h2>
+
+  <p class="muted">View closed shifts by date</p>
+
+  <label>Filter by Date</label>
+
+  <input
+
+    id="shiftHistoryDate"
+
+    type="date"
+
+value="${selectedDate}"
+
+onchange="shiftHistoryPageRender(this.value)"
+
+  >
+
+</div>
+
+${renderShiftHistory(selectedDate)}
+
+      </div>
+
+    </div>
+
+  `;
+
+}
   function shiftManagementPage(){
 
   return `
@@ -2007,7 +2098,23 @@ if(!canViewShiftHistory(role)) return "";
 
       ${renderShiftActions()}
 
-      ${canViewShiftHistory(role) ? renderShiftHistory() : ""}
+      ${canViewShiftHistory(role) ? `
+
+  <div class="card clickable"
+
+       onclick="shiftHistoryPageRender()"
+
+       style="margin-top:20px;">
+
+    <div class="category-icon">📋</div>
+
+    <h3>SHIFT HISTORY</h3>
+
+    <p class="muted">View closed shifts by date</p>
+
+  </div>
+
+` : ""}
 
     </div>
 
@@ -2026,7 +2133,7 @@ if(!canViewShiftHistory(role)) return "";
 
         class="back"
 
-        onclick="role==='cashier' ? home() : (role==='manager' ? managerHome() : ownerHome())"
+        onclick="role==='cashier' ? home() : (role==='manager' ? managerHome() : ownerHome())">
 
         ← BACK
 
