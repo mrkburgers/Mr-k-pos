@@ -11963,13 +11963,7 @@ const todayOrders=completedOrders.filter(o=>{
      <strong>${todayOrders.length}</strong>
 
     </div>
-<div class="card clickable" onclick="shiftManagementPageRender()">
 
-  <div class="category-icon">🕒</div>
-
-  <h3>SHIFT MANAGEMENT</h3>
-
-</div>
    </div>
 
   </div>
@@ -12391,7 +12385,13 @@ function completedOrderDetail(index){
 /* NEW ORDER */
 
 function newOrder(){
+ if(!getActiveShift()){
 
+  alert("No shift is currently open. Please ask a manager or owner to open a shift.");
+
+  return;
+
+ }
  orderType="";
 
  currentDraftId=null;
