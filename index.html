@@ -15904,7 +15904,17 @@ function kitchenCard(o){
    }
 
   </div>
+     <button
 
+    class="back"
+
+    style="margin-top:12px"
+
+    onclick="printKitchenOrder(${Number(o.number)})">
+
+    🖨️ PRINT ORDER
+
+   </button>
   <div class="actions">
 
    ${
@@ -15980,7 +15990,123 @@ function kitchenCard(o){
  </div>`;
 
 }
+function printKitchenOrder(number){
 
+ const o=
+
+  activeOrders.find(
+
+   x=>Number(x.number)===Number(number)
+
+  );
+
+ if(!o){
+
+  alert("Order not found.");
+
+  return kitchenHome();
+
+ }
+
+ const items=orderCart(o);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <div class="panel">
+
+   <div style="text-align:center">
+
+    <h1>MR K BURGERS</h1>
+
+    <div class="muted">KITCHEN ORDER</div>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Order</span>
+
+    <strong>#${padOrder(o.number)}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Order Type</span>
+
+    <strong>${esc(o.type || "")}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Time</span>
+
+    <strong>${new Date(Number(o.startedAt || Date.now())).toLocaleTimeString()}</strong>
+
+   </div>
+
+   <hr>
+
+   <h3>ITEMS</h3>
+
+   ${items.map(item=>`
+
+    <div style="margin-bottom:14px">
+
+     <strong>
+
+      ${Number(item.qty || 1)} × ${esc(item.name || "")}
+
+     </strong>
+
+     ${removedHtml(item)}
+
+     ${(item.extras || []).map(extra=>`
+
+      <div class="muted">
+
+       + ${Number(extra.qty || 1)} × ${esc(extra.name || "")}
+
+      </div>
+
+     `).join("")}
+
+    </div>
+
+   `).join("")}
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px"
+
+    onclick="window.print()">
+
+    🖨️ PRINT ORDER
+
+   </button>
+
+   <button
+
+    class="back"
+
+    style="margin-top:10px"
+
+    onclick="kitchenHome()">
+
+    DONE
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
 function setPreparing(number){
 
  const o=
