@@ -213,7 +213,121 @@ let draftOrders=safeLoad("mrkDraftOrders",[]);
 let completedOrders=safeLoad("mrkCompletedOrders",[]);
 
 let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
+let expenses=safeLoad("mrkExpenses",[]);
 
+let expenseCategories=safeLoad("mrkExpenseCategories",[
+
+ {
+
+  id:"purchases",
+
+  name:"Purchases",
+
+  active:true
+
+ },
+
+ {
+
+  id:"gas",
+
+  name:"Gas",
+
+  active:true
+
+ },
+
+ {
+
+  id:"electricity",
+
+  name:"Electricity",
+
+  active:true
+
+ },
+
+ {
+
+  id:"packaging",
+
+  name:"Packaging",
+
+  active:true
+
+ },
+
+ {
+
+  id:"maintenance",
+
+  name:"Maintenance",
+
+  active:true
+
+ },
+
+ {
+
+  id:"rent",
+
+  name:"Rent",
+
+  active:true
+
+ },
+
+ {
+
+  id:"cleaning",
+
+  name:"Cleaning",
+
+  active:true
+
+ },
+
+ {
+
+  id:"transport",
+
+  name:"Transport",
+
+  active:true
+
+ },
+
+ {
+
+  id:"internetPhone",
+
+  name:"Internet / Phone",
+
+  active:true
+
+ },
+
+ {
+
+  id:"marketing",
+
+  name:"Marketing",
+
+  active:true
+
+ },
+
+ {
+
+  id:"miscellaneous",
+
+  name:"Miscellaneous",
+
+  active:true
+
+ }
+
+]);
 let timerInterval=null;
 
 
@@ -234,7 +348,29 @@ function safeLoad(key,fallback){
  }
 
 }
+function saveExpenses(){
 
+ localStorage.setItem(
+
+  "mrkExpenses",
+
+  JSON.stringify(expenses)
+
+ );
+
+}
+
+function saveExpenseCategories(){
+
+ localStorage.setItem(
+
+  "mrkExpenseCategories",
+
+  JSON.stringify(expenseCategories)
+
+ );
+
+}
 function esc(v){
 
  return String(v||"")
@@ -646,7 +782,13 @@ function header(label){
      <h3>ORDERS</h3>
 
     </div>
+     <div class="card" onclick="ownerExpenses()" style="cursor:pointer">
 
+      <div class="category-icon">🧾</div>
+
+      <h3>EXPENSES</h3>
+
+     </div>
     <div class="card" onclick="ownerReports()" style="cursor:pointer">
 
  <div class="category-icon">📈</div>
@@ -682,6 +824,1606 @@ function header(label){
   </div>
 
  </div>`;
+
+}
+  function ownerExpenses(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EXPENSES</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🧾 EXPENSE TRACKING
+
+   </span>
+
+   <h1>Expenses</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="addExpensePage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD EXPENSE</h3>
+
+     <p class="muted">
+
+      Record a cash expense
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseHistoryPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>EXPENSE HISTORY</h3>
+
+     <p class="muted">
+
+      View recorded expenses
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseReportsPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📊</div>
+
+     <h3>EXPENSE REPORTS</h3>
+
+     <p class="muted">
+
+      Daily, weekly and monthly expenses
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseCategoriesPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">⚙️</div>
+
+     <h3>EXPENSE CATEGORIES</h3>
+
+     <p class="muted">
+
+      Manage expense categories
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerExpenses(){
+ if(role!=="owner" && role!=="manager"){
+
+  alert("You do not have permission to access expenses.");
+
+  render();
+
+  return;
+
+ }
+ clearInterval(timerInterval);
+
+ const isManager=
+
+  role==="manager";
+
+ const backAction=
+
+  isManager
+
+   ?"managerHome()"
+
+   :"ownerHome()";
+
+ const roleLabel=
+
+  isManager
+
+   ?"MANAGER"
+
+   :"OWNER";
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="${backAction}">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${roleLabel} — EXPENSES</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🧾 EXPENSE TRACKING
+
+   </span>
+
+   <h1>Expenses</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="addExpensePage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD EXPENSE</h3>
+
+     <p class="muted">
+
+      Record a cash expense
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseHistoryPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>EXPENSE HISTORY</h3>
+
+     <p class="muted">
+
+      View recorded expenses
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseReportsPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📊</div>
+
+     <h3>EXPENSE REPORTS</h3>
+
+     <p class="muted">
+
+      Daily, weekly and monthly expenses
+
+     </p>
+
+    </div>
+
+    ${
+
+     !isManager
+
+     ?`
+
+      <div
+
+       class="card"
+
+       onclick="expenseCategoriesPage()"
+
+       style="cursor:pointer">
+
+       <div class="category-icon">⚙️</div>
+
+       <h3>EXPENSE CATEGORIES</h3>
+
+       <p class="muted">
+
+        Manage expense categories
+
+       </p>
+
+      </div>
+
+     `
+
+     :""
+
+    }
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function addExpensePage(){ 
+ if(role!=="owner" && role!=="manager"){
+
+  alert("You do not have permission to add expenses.");
+
+  render();
+
+  return;
+
+ }
+ const roleLabel=
+
+  role==="manager"
+
+   ?"MANAGER"
+
+   :"OWNER";
+ const activeCategories=
+
+  expenseCategories.filter(
+
+   category=>category.active
+
+  );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerExpenses()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${roleLabel} — ADD EXPENSE</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ NEW EXPENSE
+
+   </span>
+
+   <h1>Add Expense</h1>
+
+   <div class="form">
+
+    <label>Category</label>
+
+    <select id="expenseCategory">
+
+     <option value="">
+
+      Select Category
+
+     </option>
+
+     ${activeCategories.map(category=>`
+
+      <option value="${category.id}">
+
+       ${esc(category.name)}
+
+      </option>
+
+     `).join("")}
+
+    </select>
+
+    <label>Amount</label>
+
+    <input
+
+     id="expenseAmount"
+
+     type="number"
+
+     min="1"
+
+     placeholder="Amount in CFA">
+
+    <label>Description / Note</label>
+
+    <input
+
+     id="expenseNote"
+
+     type="text"
+
+     placeholder="Example: Generator fuel">
+
+    <label>Supplier / Reference</label>
+
+    <input
+
+     id="expenseReference"
+
+     type="text"
+
+     placeholder="Optional">
+
+    <div class="system-note">
+
+     💵 Payment Method: CASH
+
+    </div>
+
+    <button
+
+     class="primary"
+
+     onclick="saveNewExpense()">
+
+     SAVE EXPENSE
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveNewExpense(){
+ if(role!=="owner" && role!=="manager"){
+
+  alert("You do not have permission to add expenses.");
+
+  render();
+
+  return;
+
+ }
+ const categoryId=
+
+  document.getElementById("expenseCategory").value;
+
+ const amount=
+
+  Number(document.getElementById("expenseAmount").value);
+
+ const note=
+
+  document.getElementById("expenseNote").value.trim();
+
+ const reference=
+
+  document.getElementById("expenseReference").value.trim();
+
+ const category=
+
+  expenseCategories.find(
+
+   item=>item.id===categoryId
+
+  );
+
+ if(!category){
+
+  alert("Please select an expense category.");
+
+  return;
+
+ }
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Please enter a valid expense amount.");
+
+  return;
+
+ }
+
+ const expense={
+
+  id:
+
+   "expense_"+
+
+   Date.now()+"_"+
+
+   Math.random()
+
+    .toString(36)
+
+    .slice(2,8),
+
+  categoryId:category.id,
+
+  categoryName:category.name,
+
+  amount:amount,
+
+  note:note,
+
+  reference:reference,
+
+  paymentMethod:"CASH",
+
+  createdAt:Date.now(),
+
+  createdBy:currentStaffName,
+
+  createdByStaffId:currentStaffId,
+
+  createdByRole:role,
+
+  source:"MANUAL"
+
+ };
+
+ expenses.unshift(expense);
+
+ saveExpenses();
+
+ const shift=getActiveShift();
+
+ if(shift){
+
+  shiftCashOut(
+
+   amount,
+
+   "Expense: "+category.name+
+
+   (note ? " — "+note : "")
+
+  );
+
+ }
+
+ alert("Expense saved successfully.");
+
+ ownerExpenses();
+
+}
+  function expenseHistoryPage(selectedDate=""){ 
+ if(role!=="owner" && role!=="manager"){
+
+  alert("You do not have permission to view expenses.");
+
+  render();
+
+  return;
+
+ }
+ const roleLabel=
+
+  role==="manager"
+
+   ?"MANAGER"
+
+   :"OWNER";
+ if(!selectedDate){
+
+  const today=new Date();
+
+  selectedDate=
+
+   today.getFullYear()+"-"+
+
+   String(today.getMonth()+1).padStart(2,"0")+"-"+
+
+   String(today.getDate()).padStart(2,"0");
+
+ }
+
+ const filteredExpenses=
+
+  expenses.filter(expense=>{
+
+   const date=
+
+    new Date(Number(expense.createdAt));
+
+   const expenseDate=
+
+    date.getFullYear()+"-"+
+
+    String(date.getMonth()+1).padStart(2,"0")+"-"+
+
+    String(date.getDate()).padStart(2,"0");
+
+   return expenseDate===selectedDate;
+
+  });
+
+ const total=
+
+  filteredExpenses.reduce(
+
+   (sum,expense)=>
+
+    sum+Number(expense.amount || 0),
+
+   0
+
+  );
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerExpenses()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${roleLabel} — EXPENSE HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 EXPENSE HISTORY
+
+   </span>
+
+   <h1>Expense History</h1>
+
+   <label>Date</label>
+
+   <input
+
+    type="date"
+
+    value="${selectedDate}"
+
+    onchange="expenseHistoryPage(this.value)">
+
+   <div class="summary">
+
+    <div class="info-row">
+
+     <span>Total Expenses</span>
+
+     <strong>
+
+      ${total.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+   </div>
+
+   ${
+
+    filteredExpenses.length
+
+    ?filteredExpenses.map(expense=>`
+
+     <div class="card">
+
+      <div class="info-row">
+
+       <span>Category</span>
+
+       <strong>
+
+        ${esc(expense.categoryName || "Unknown")}
+
+       </strong>
+
+      </div>
+
+      <div class="info-row">
+
+       <span>Amount</span>
+
+       <strong>
+
+        ${Number(expense.amount || 0).toLocaleString()} CFA
+
+       </strong>
+
+      </div>
+
+      ${
+
+       expense.note
+
+       ?`
+
+        <div class="info-row">
+
+         <span>Note</span>
+
+         <strong>${esc(expense.note)}</strong>
+
+        </div>
+
+       `
+
+       :""
+
+      }
+
+      ${
+
+       expense.reference
+
+       ?`
+
+        <div class="info-row">
+
+         <span>Supplier / Reference</span>
+
+         <strong>${esc(expense.reference)}</strong>
+
+        </div>
+
+       `
+
+       :""
+
+      }
+
+      <div class="info-row">
+
+       <span>Payment</span>
+
+       <strong>CASH</strong>
+
+      </div>
+
+      <div class="info-row">
+
+       <span>Entered By</span>
+
+       <strong>
+
+        ${esc(expense.createdBy || "Unknown")}
+
+       </strong>
+
+      </div>
+
+      <div class="info-row">
+
+       <span>Time</span>
+
+       <strong>
+
+        ${new Date(Number(expense.createdAt)).toLocaleTimeString()}
+
+       </strong>
+
+      </div>
+
+     </div>
+
+    `).join("")
+
+    :`
+
+     <div class="system-note">
+
+      No expenses recorded for this date.
+
+     </div>
+
+    `
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+  function expenseReportsPage(){ 
+   if(role!=="owner" && role!=="manager"){
+
+  alert("You do not have permission to view expense reports.");
+
+  render();
+
+  return;
+
+ }
+ const roleLabel=
+
+  role==="manager"
+
+   ?"MANAGER"
+
+   :"OWNER";
+ const now=new Date();
+
+ const startOfToday=
+
+  new Date(
+
+   now.getFullYear(),
+
+   now.getMonth(),
+
+   now.getDate()
+
+  ).getTime();
+
+ const startOfWeekDate=new Date(now);
+
+ startOfWeekDate.setHours(0,0,0,0);
+
+ startOfWeekDate.setDate(
+
+  now.getDate()-((now.getDay()+6)%7)
+
+ );
+
+ const startOfWeek=
+
+  startOfWeekDate.getTime();
+
+ const startOfMonth=
+
+  new Date(
+
+   now.getFullYear(),
+
+   now.getMonth(),
+
+   1
+
+  ).getTime();
+
+ const startOfYear=
+
+  new Date(
+
+   now.getFullYear(),
+
+   0,
+
+   1
+
+  ).getTime();
+
+ const totalSince=start=>
+
+  expenses
+
+   .filter(
+
+    expense=>
+
+     Number(expense.createdAt)>=start &&
+
+     Number(expense.createdAt)<=now.getTime()
+
+   )
+
+   .reduce(
+
+    (sum,expense)=>
+
+     sum+Number(expense.amount || 0),
+
+    0
+
+   );
+
+ const todayTotal=totalSince(startOfToday);
+
+ const weekTotal=totalSince(startOfWeek);
+
+ const monthTotal=totalSince(startOfMonth);
+
+ const yearTotal=totalSince(startOfYear);
+
+ const categoryTotals=
+
+  expenseCategories.map(category=>({
+
+   name:category.name,
+
+   total:expenses
+
+    .filter(
+
+     expense=>
+
+      expense.categoryId===category.id &&
+
+      Number(expense.createdAt)>=startOfMonth &&
+
+      Number(expense.createdAt)<=now.getTime()
+
+    )
+
+    .reduce(
+
+     (sum,expense)=>
+
+      sum+Number(expense.amount || 0),
+
+     0
+
+    )
+
+  }))
+
+  .filter(category=>category.total>0)
+
+  .sort((a,b)=>b.total-a.total);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerExpenses()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>${roleLabel} — EXPENSE REPORTS</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📊 EXPENSE REPORTS
+
+   </span>
+
+   <h1>Expense Reports</h1>
+
+   <div class="summary">
+
+    <div class="info-row">
+
+     <span>Today</span>
+
+     <strong>
+
+      ${todayTotal.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>This Week</span>
+
+     <strong>
+
+      ${weekTotal.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>This Month</span>
+
+     <strong>
+
+      ${monthTotal.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>This Year</span>
+
+     <strong>
+
+      ${yearTotal.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+   </div>
+
+   <h2 style="margin-top:25px">
+
+    This Month by Category
+
+   </h2>
+
+   ${
+
+    categoryTotals.length
+
+    ?categoryTotals.map(category=>`
+
+     <div class="info-row">
+
+      <span>${esc(category.name)}</span>
+
+      <strong>
+
+       ${category.total.toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+    `).join("")
+
+    :`
+
+     <div class="system-note">
+
+      No expenses recorded this month.
+
+     </div>
+
+    `
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+  function expenseCategoriesPage(){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerExpenses()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EXPENSE CATEGORIES</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ⚙️ EXPENSE CATEGORIES
+
+   </span>
+
+   <h1>Expense Categories</h1>
+
+   <div class="grid">
+
+    <div
+
+     class="card"
+
+     onclick="addExpenseCategoryPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD CATEGORY</h3>
+
+     <p class="muted">
+
+      Create a new expense category
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="expenseCategoryListPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📂</div>
+
+     <h3>CATEGORY LIST</h3>
+
+     <p class="muted">
+
+      Edit, activate or deactivate categories
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function addExpenseCategoryPage(){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="expenseCategoriesPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — ADD EXPENSE CATEGORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ NEW EXPENSE CATEGORY
+
+   </span>
+
+   <h1>Add Expense Category</h1>
+
+   <div class="form">
+
+    <label>Category Name</label>
+
+    <input
+
+     id="newExpenseCategoryName"
+
+     type="text"
+
+     placeholder="Example: Security">
+
+    <button
+
+     class="primary"
+
+     onclick="saveNewExpenseCategory()">
+
+     CREATE CATEGORY
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+
+function saveNewExpenseCategory(){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ const name=
+
+  document
+
+   .getElementById("newExpenseCategoryName")
+
+   .value
+
+   .trim();
+
+ if(!name){
+
+  alert("Enter a category name.");
+
+  return;
+
+ }
+
+ const duplicate=
+
+  expenseCategories.some(
+
+   category=>
+
+    category.name.toLowerCase()===
+
+    name.toLowerCase()
+
+  );
+
+ if(duplicate){
+
+  alert("An expense category with this name already exists.");
+
+  return;
+
+ }
+
+ const id=
+
+  "expenseCategory_"+
+
+  Date.now()+"_"+
+
+  Math.random()
+
+   .toString(36)
+
+   .slice(2,8);
+
+ expenseCategories.push({
+
+  id:id,
+
+  name:name,
+
+  active:true
+
+ });
+
+ saveExpenseCategories();
+
+ alert("Expense category created successfully.");
+
+ expenseCategoriesPage();
+
+}
+  function expenseCategoryListPage(){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ const rows=
+
+  expenseCategories
+
+   .map(category=>`
+
+    <div class="card">
+
+     <h3>${esc(category.name)}</h3>
+
+     <p class="muted">
+
+      Status:
+
+      ${category.active ? "ACTIVE" : "INACTIVE"}
+
+     </p>
+
+     <button
+
+      class="primary"
+
+      onclick="editExpenseCategoryPage('${category.id}')">
+
+      EDIT
+
+     </button>
+
+     <button
+
+      class="secondary"
+
+      onclick="toggleExpenseCategoryActive('${category.id}')">
+
+      ${category.active ? "DEACTIVATE" : "ACTIVATE"}
+
+     </button>
+
+    </div>
+
+   `)
+
+   .join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="expenseCategoriesPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EXPENSE CATEGORY LIST</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📂 EXPENSE CATEGORIES
+
+   </span>
+
+   <h1>Category List</h1>
+
+   ${
+
+    rows ||
+
+    `
+
+     <div class="system-note">
+
+      No expense categories created.
+
+     </div>
+
+    `
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+  function editExpenseCategoryPage(categoryId){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ const category=
+
+  expenseCategories.find(
+
+   item=>item.id===categoryId
+
+  );
+
+ if(!category){
+
+  alert("Expense category not found.");
+
+  expenseCategoryListPage();
+
+  return;
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="expenseCategoryListPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — EDIT EXPENSE CATEGORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ✏️ EDIT EXPENSE CATEGORY
+
+   </span>
+
+   <h1>Edit Category</h1>
+
+   <div class="form">
+
+    <label>Category Name</label>
+
+    <input
+
+     id="editExpenseCategoryName"
+
+     type="text"
+
+     value="${esc(category.name)}">
+
+    <button
+
+     class="primary"
+
+     onclick="saveEditedExpenseCategory('${category.id}')">
+
+     SAVE CHANGES
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+
+function saveEditedExpenseCategory(categoryId){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ const category=
+
+  expenseCategories.find(
+
+   item=>item.id===categoryId
+
+  );
+
+ if(!category){
+
+  alert("Expense category not found.");
+
+  expenseCategoryListPage();
+
+  return;
+
+ }
+
+ const name=
+
+  document
+
+   .getElementById("editExpenseCategoryName")
+
+   .value
+
+   .trim();
+
+ if(!name){
+
+  alert("Enter a category name.");
+
+  return;
+
+ }
+
+ const duplicate=
+
+  expenseCategories.some(
+
+   item=>
+
+    item.id!==categoryId &&
+
+    item.name.toLowerCase()===
+
+    name.toLowerCase()
+
+  );
+
+ if(duplicate){
+
+  alert("An expense category with this name already exists.");
+
+  return;
+
+ }
+
+ category.name=name;
+
+ saveExpenseCategories();
+
+ alert("Expense category updated successfully.");
+
+ expenseCategoryListPage();
+
+}
+  function toggleExpenseCategoryActive(categoryId){
+ if(role!=="owner"){
+
+  alert("Only the owner can manage expense categories.");
+
+  ownerExpenses();
+
+  return;
+
+ }
+ const category=
+
+  expenseCategories.find(
+
+   item=>item.id===categoryId
+
+  );
+
+ if(!category){
+
+  alert("Expense category not found.");
+
+  expenseCategoryListPage();
+
+  return;
+
+ }
+
+ category.active=
+
+  !category.active;
+
+ saveExpenseCategories();
+
+ expenseCategoryListPage();
 
 }
   function ownerPosSettings(){
@@ -8335,7 +10077,13 @@ const todayOrders=completedOrders.filter(o=>{
 
      <h3>INVENTORY</h3>
 
-     
+     <div class="card" onclick="ownerExpenses()" style="cursor:pointer">
+
+ <div class="category-icon">🧾</div>
+
+ <h3>EXPENSES</h3>
+
+</div>
 
     </div>
 
