@@ -8359,7 +8359,23 @@ const orders=completedOrders.filter(o=>{
   0
 
  );
+ const cashSales=orders
 
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const totalOrders=orders.length;
 
  const averageOrder=
@@ -8415,13 +8431,37 @@ const deliverySales=deliveryOrders.reduce(
 
    </span>
 
-   <h1>Sales</h1>
+      <h1>Sales</h1>
 
    <div class="info-row">
 
     <span>Total Sales</span>
 
     <strong>${totalSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💵 Cash</span>
+
+    <strong>${cashSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💳 Card</span>
+
+    <strong>${cardSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>📱 Mobile Money</span>
+
+    <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
    </div>
 
@@ -8535,6 +8575,23 @@ function managerSalesHistory(selectedDate){
   0
 
  );
+   const cashSales=orders
+
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const dineInOrders=orders.filter(o=>o.type==="DINE IN");
 
 const takeawayOrders=orders.filter(o=>o.type==="TAKEAWAY");
@@ -8614,11 +8671,35 @@ const deliverySales=deliveryOrders.reduce(
 
    </div>
 
-   <div class="info-row">
+      <div class="info-row">
 
     <span>Total Sales</span>
 
     <strong>${totalSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💵 Cash</span>
+
+    <strong>${cashSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💳 Card</span>
+
+    <strong>${cardSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>📱 Mobile Money</span>
+
+    <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
    </div>
   <h3 style="margin-top:20px">Breakdown</h3>
