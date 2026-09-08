@@ -6790,7 +6790,23 @@ const graphSvg=`
   0
 
  );
+  const cashSales=orders
 
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const totalOrders=orders.length;
 
  const averageOrder=
@@ -6851,13 +6867,37 @@ const graphSvg=`
 
    </span>
 
-   <h1>Sales</h1>
+      <h1>Sales</h1>
 
    <div class="info-row">
 
     <span>Total Sales</span>
 
     <strong>${totalSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💵 Cash</span>
+
+    <strong>${cashSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>💳 Card</span>
+
+    <strong>${cardSales.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>📱 Mobile Money</span>
+
+    <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
    </div>
 
@@ -7206,7 +7246,23 @@ const graphSvg=`
   0
 
  );
+ const cashSales=orders
 
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const totalOrders=orders.length;
 
  const averageOrder=
@@ -7249,7 +7305,7 @@ const graphSvg=`
 
  const dateSelector=content.querySelector(".info-row").outerHTML;
 
- content.innerHTML=`
+  content.innerHTML=`
 
   ${dateSelector}
 
@@ -7258,6 +7314,30 @@ const graphSvg=`
    <span>Total Sales</span>
 
    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💵 Cash</span>
+
+   <strong>${cashSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💳 Card</span>
+
+   <strong>${cardSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>📱 Mobile Money</span>
+
+   <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
   </div>
 
@@ -7331,6 +7411,23 @@ const graphSvg=`
   0
 
  );
+ const cashSales=orders
+
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
 
  const totalOrders=orders.length;
 
@@ -7396,11 +7493,35 @@ const graphSvg=`
 
   </div>
 
-  <div class="info-row">
+    <div class="info-row">
 
    <span>Total Sales</span>
 
    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💵 Cash</span>
+
+   <strong>${cashSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💳 Card</span>
+
+   <strong>${cardSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>📱 Mobile Money</span>
+
+   <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
   </div>
 
@@ -7500,7 +7621,23 @@ const graphSvg=`
   0
 
  );
+ const cashSales=orders
 
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const totalOrders=orders.length;
 
  const averageOrder=
@@ -7565,7 +7702,7 @@ const graphSvg=`
 
  }
 
- results.innerHTML=`
+  results.innerHTML=`
 
   <div class="info-row">
 
@@ -7580,6 +7717,30 @@ const graphSvg=`
    <span>Total Sales</span>
 
    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💵 Cash</span>
+
+   <strong>${cashSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💳 Card</span>
+
+   <strong>${cardSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>📱 Mobile Money</span>
+
+   <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
   </div>
 
@@ -7661,7 +7822,23 @@ const graphSvg=`
   0
 
  );
+ const cashSales=orders
 
+  .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const cardSales=orders
+
+  .filter(o=>o.paymentMethod==="CARD")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
+
+ const mobileMoneySales=orders
+
+  .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+  .reduce((sum,o)=>sum+orderTotal(o),0);
  const totalOrders=orders.length;
 
  const averageOrder=
@@ -7724,7 +7901,7 @@ const graphSvg=`
 
  }
 
- results.innerHTML=`
+  results.innerHTML=`
 
   <div class="info-row">
 
@@ -7739,6 +7916,30 @@ const graphSvg=`
    <span>Total Sales</span>
 
    <strong>${totalSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💵 Cash</span>
+
+   <strong>${cashSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>💳 Card</span>
+
+   <strong>${cardSales.toLocaleString()} CFA</strong>
+
+  </div>
+
+  <div class="info-row">
+
+   <span>📱 Mobile Money</span>
+
+   <strong>${mobileMoneySales.toLocaleString()} CFA</strong>
 
   </div>
 
@@ -15022,13 +15223,13 @@ function paymentMethodPage(number){
 
         <h3>Select Payment Method</h3>
 
-        <button
+                <button
 
           class="green"
 
-          style="width:100%;margin-top:10px;"
+          style="width:100%;margin-top:10px;color:white;font-weight:800;"
 
-          onclick="confirmOrderPayment(${Number(o.number)},'CASH')"
+          onclick="confirmOrderPayment(${Number(o.number)},'CASH')">
 
           💵 CASH
 
@@ -15038,9 +15239,9 @@ function paymentMethodPage(number){
 
           class="secondary"
 
-          style="width:100%;margin-top:10px;"
+          style="width:100%;margin-top:10px;color:white;font-weight:800;"
 
-          onclick="confirmOrderPayment(${Number(o.number)},'CARD')"
+          onclick="confirmOrderPayment(${Number(o.number)},'CARD')">
 
           💳 CARD
 
@@ -15050,9 +15251,9 @@ function paymentMethodPage(number){
 
           class="secondary"
 
-          style="width:100%;margin-top:10px;"
+          style="width:100%;margin-top:10px;color:white;font-weight:800;"
 
-          onclick="confirmOrderPayment(${Number(o.number)},'MOBILE MONEY')"
+          onclick="confirmOrderPayment(${Number(o.number)},'MOBILE MONEY')">
 
           📱 MOBILE MONEY
 
