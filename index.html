@@ -1368,7 +1368,7 @@ function openShift(openingCash, openedBy="", role="cashier"){
 
 }
 
-function addShiftSale(amount, orderId=null){
+function addShiftSale(amount, orderId=null, paymentMethod="CASH"){
 
   const shift = getActiveShift();
 
@@ -1383,15 +1383,31 @@ if(orderId !== null && (shift.orders || []).some(o => o.orderId === orderId)){
 if(!Number.isFinite(amount) || amount <= 0) return;
 
 shift.sales = Number(shift.sales || 0) + amount;
+if(shift.cashSales===undefined){
 
+  shift.cashSales=(shift.orders || [])
+
+    .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+    .reduce((sum,o)=>sum+Number(o.amount || 0),0);
+
+}
+
+if(paymentMethod==="CASH"){
+
+  shift.cashSales = Number(shift.cashSales || 0) + amount;
+
+}
 shift.salesCount = Number(shift.salesCount || 0) + 1;
 
 if(!shift.orders) shift.orders = [];
-  shift.orders.push({
+    shift.orders.push({
 
     orderId: orderId,
 
     amount: amount,
+
+    paymentMethod: paymentMethod,
 
     time: new Date().toISOString()
 
@@ -1505,11 +1521,23 @@ function calculateExpectedCash(shift){
 
   if(!shift) return 0;
 
+  const cashSales=
+
+    shift.cashSales!==undefined
+
+    ?Number(shift.cashSales || 0)
+
+    :(shift.orders || [])
+
+      .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+      .reduce((sum,o)=>sum+Number(o.amount || 0),0);
+
   return (
 
     Number(shift.openingCash || 0) +
 
-    Number(shift.sales || 0) +
+    cashSales +
 
     Number(shift.cashIn || 0) -
 
@@ -14489,11 +14517,13 @@ if(missingStock.length){
    total:cartTotal(),
    startedAt:Date.now(),
 
-   readyAt:null,
+       readyAt:null,
 
-   completedAt:null,
+    completedAt:null,
 
-   status:"NEW"
+    paymentMethod:null,
+
+    status:"NEW"
 
  };
 
@@ -14881,15 +14911,15 @@ function activeOrderDetail(number){
 
      </div>
 
-     <button
+          <button
 
       class="green"
 
       style="margin-top:18px;width:100%"
 
-      onclick="cashierCompleteOrder(${Number(o.number)})">
+      onclick="paymentMethodPage(${Number(o.number)})">
 
-      COMPLETED
+      COMPLETE & PAY
 
      </button>
 
@@ -14916,8 +14946,108 @@ function activeOrderDetail(number){
  startTimerRefresh();
 
 }
+function paymentMethodPage(number){
 
-function cashierCompleteOrder(number){
+  const o=activeOrders.find(
+
+    x=>Number(x.number)===Number(number)
+
+  );
+
+  if(!o){
+
+    return home();
+
+  }
+
+  if(o.status!=="READY"){
+
+    alert("Kitchen must mark the order READY first.");
+
+    return activeOrderDetail(number);
+
+  }
+
+  document.getElementById("root").innerHTML=`
+
+    <div class="app">
+
+      <button
+
+        class="back"
+
+        onclick="activeOrderDetail(${Number(o.number)})">
+
+        ← BACK
+
+      </button>
+
+      <div class="logo">
+
+        MR K BURGERS
+
+        <span>PAYMENT</span>
+
+      </div>
+
+      <div class="panel">
+
+        <h2>Order #${padOrder(o.number)}</h2>
+
+        <div class="info-row">
+
+          <span>Total</span>
+
+          <strong>${orderTotal(o).toLocaleString()} CFA</strong>
+
+        </div>
+
+        <h3>Select Payment Method</h3>
+
+        <button
+
+          class="green"
+
+          style="width:100%;margin-top:10px;"
+
+          onclick="cashierCompleteOrder(${Number(o.number)},'CASH')">
+
+          💵 CASH
+
+        </button>
+
+        <button
+
+          class="secondary"
+
+          style="width:100%;margin-top:10px;"
+
+          onclick="cashierCompleteOrder(${Number(o.number)},'CARD')">
+
+          💳 CARD
+
+        </button>
+
+        <button
+
+          class="secondary"
+
+          style="width:100%;margin-top:10px;"
+
+          onclick="cashierCompleteOrder(${Number(o.number)},'MOBILE MONEY')">
+
+          📱 MOBILE MONEY
+
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+function cashierCompleteOrder(number,paymentMethod){
 
  const ix=
 
@@ -14951,12 +15081,14 @@ function cashierCompleteOrder(number){
 
  }
 
+  o.paymentMethod=paymentMethod;
+
  o.status="COMPLETED";
 
  o.completedAt=Date.now();
 
  completedOrders.push(o);
-addShiftSale(orderTotal(o),o.number);
+addShiftSale(orderTotal(o),o.number,paymentMethod);
  activeOrders.splice(ix,1);
 
  saveOrders();
