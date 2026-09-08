@@ -1725,7 +1725,23 @@ function getShiftDifferenceLabel(difference){
   }
 
   const summary = getShiftSummary();
+    const cashSales=(shift.orders || [])
 
+    .filter(o=>!o.paymentMethod || o.paymentMethod==="CASH")
+
+    .reduce((sum,o)=>sum+Number(o.amount || 0),0);
+
+  const cardSales=(shift.orders || [])
+
+    .filter(o=>o.paymentMethod==="CARD")
+
+    .reduce((sum,o)=>sum+Number(o.amount || 0),0);
+
+  const mobileMoneySales=(shift.orders || [])
+
+    .filter(o=>o.paymentMethod==="MOBILE MONEY")
+
+    .reduce((sum,o)=>sum+Number(o.amount || 0),0);
   return `
 
     <div class="card">
@@ -1735,9 +1751,15 @@ function getShiftDifferenceLabel(difference){
       <p><b>Opened:</b> ${formatShiftDate(summary.openedAt)}</p>
       <p><b>Duration:</b> ${Math.floor(Math.max(0, Date.now() - new Date(summary.openedAt)) / 3600000)}h ${Math.floor((Math.max(0, Date.now() - new Date(summary.openedAt)) % 3600000) / 60000)}min</p>
       <p><b>Opened By:</b> ${summary.openedBy || "Unknown"} (${String(summary.role || "").toUpperCase()})</p>
-      <p><b>Opening Cash:</b> ${formatShiftMoney(summary.openingCash)}</p>
+            <p><b>Opening Cash:</b> ${formatShiftMoney(summary.openingCash)}</p>
 
-      <p><b>Sales:</b> ${formatShiftMoney(summary.sales)}</p>
+      <p><b>Total Sales:</b> ${formatShiftMoney(summary.sales)}</p>
+
+      <p><b>💵 Cash:</b> ${formatShiftMoney(cashSales)}</p>
+
+      <p><b>💳 Card:</b> ${formatShiftMoney(cardSales)}</p>
+
+      <p><b>📱 Mobile Money:</b> ${formatShiftMoney(mobileMoneySales)}</p>
 
       <p><b>Orders:</b> ${summary.salesCount}</p>
 
@@ -14521,15 +14543,19 @@ if(missingStock.length){
 
     completedAt:null,
 
-    paymentMethod:null,
+        paymentMethod:null,
 
-    status:"NEW"
+    status:"AWAITING PAYMENT"
 
  };
 
- activeOrders.push(order);
- deductOrderInventory(order);
+  activeOrders.push(order);
+
  saveOrders();
+
+ paymentMethodPage(order.number);
+
+ return;
 
  currentDraftId=null;
 
@@ -14911,15 +14937,15 @@ function activeOrderDetail(number){
 
      </div>
 
-          <button
+               <button
 
       class="green"
 
       style="margin-top:18px;width:100%"
 
-      onclick="paymentMethodPage(${Number(o.number)})">
+      onclick="cashierFinishOrder(${Number(o.number)})">
 
-      COMPLETE & PAY
+      COMPLETED
 
      </button>
 
@@ -14960,11 +14986,11 @@ function paymentMethodPage(number){
 
   }
 
-  if(o.status!=="READY"){
+    if(o.status!=="AWAITING PAYMENT"){
 
-    alert("Kitchen must mark the order READY first.");
+    alert("This order is not awaiting payment.");
 
-    return activeOrderDetail(number);
+    return home();
 
   }
 
@@ -14972,15 +14998,7 @@ function paymentMethodPage(number){
 
     <div class="app">
 
-      <button
-
-        class="back"
-
-        onclick="activeOrderDetail(${Number(o.number)})">
-
-        ← BACK
-
-      </button>
+      
 
       <div class="logo">
 
@@ -15010,7 +15028,7 @@ function paymentMethodPage(number){
 
           style="width:100%;margin-top:10px;"
 
-          onclick="cashierCompleteOrder(${Number(o.number)},'CASH')">
+          onclick="confirmOrderPayment(${Number(o.number)},'CASH')"
 
           💵 CASH
 
@@ -15022,7 +15040,7 @@ function paymentMethodPage(number){
 
           style="width:100%;margin-top:10px;"
 
-          onclick="cashierCompleteOrder(${Number(o.number)},'CARD')">
+          onclick="confirmOrderPayment(${Number(o.number)},'CARD')"
 
           💳 CARD
 
@@ -15034,7 +15052,7 @@ function paymentMethodPage(number){
 
           style="width:100%;margin-top:10px;"
 
-          onclick="cashierCompleteOrder(${Number(o.number)},'MOBILE MONEY')">
+          onclick="confirmOrderPayment(${Number(o.number)},'MOBILE MONEY')"
 
           📱 MOBILE MONEY
 
@@ -15047,7 +15065,7 @@ function paymentMethodPage(number){
   `;
 
 }
-function cashierCompleteOrder(number,paymentMethod){
+function confirmOrderPayment(number,paymentMethod){
 
  const ix=
 
@@ -15071,6 +15089,63 @@ function cashierCompleteOrder(number,paymentMethod){
 
  activeOrders[ix];
 
+  if(o.status!=="AWAITING PAYMENT"){
+
+   return alert(
+
+     "This order is not awaiting payment."
+
+   );
+
+ }
+
+ o.paymentMethod=paymentMethod;
+
+ o.status="NEW";
+  o.startedAt=Date.now();
+ deductOrderInventory(o);
+
+ addShiftSale(orderTotal(o),o.number,paymentMethod);
+  cart=[];
+
+ customer={
+
+   name:"",
+
+   phone:"",
+
+   address:"",
+
+   table:""
+
+ };
+
+ orderType="";
+
+ currentDraftId=null;
+ saveOrders();
+
+ home();
+
+}
+function cashierFinishOrder(number){
+
+ const ix=
+
+ activeOrders.findIndex(
+
+   x=>Number(x.number)===Number(number)
+
+ );
+
+ if(ix<0){
+
+   return home();
+
+ }
+
+ const o=activeOrders[ix];
+
  if(o.status!=="READY"){
 
    return alert(
@@ -15081,14 +15156,12 @@ function cashierCompleteOrder(number,paymentMethod){
 
  }
 
-  o.paymentMethod=paymentMethod;
-
  o.status="COMPLETED";
 
  o.completedAt=Date.now();
 
  completedOrders.push(o);
-addShiftSale(orderTotal(o),o.number,paymentMethod);
+
  activeOrders.splice(ix,1);
 
  saveOrders();
@@ -15096,16 +15169,17 @@ addShiftSale(orderTotal(o),o.number,paymentMethod);
  home();
 
 }
-
 /* KITCHEN */
 
 function kitchenHome(){
 
  clearInterval(timerInterval);
 
- const orders=
+  const orders=
 
  [...activeOrders]
+
+ .filter(o=>o.status!=="AWAITING PAYMENT")
 
  .sort(
 
