@@ -149,7 +149,31 @@ input{width:100%;max-width:100%;min-width:0;padding:14px;border-radius:10px;bord
   .order-top{flex-direction:column}
 
 }
+@media print{
 
+  button{
+
+    display:none !important;
+
+  }
+
+  body{
+
+    background:#fff !important;
+
+    color:#000 !important;
+
+  }
+
+  .panel{
+
+    box-shadow:none !important;
+
+    border:none !important;
+
+  }
+
+}
 </style>
 
 </head>
@@ -12832,7 +12856,17 @@ function completedOrderDetail(index){
     📜 Completed orders are read-only.
 
    </div>
+        <button
 
+     class="primary"
+
+     style="margin-top:20px"
+
+     onclick="showReceipt(${Number(o.number)},true)">
+
+     🧾 REPRINT RECEIPT
+
+    </button>
   </div>
 
  </div>`;
@@ -14814,7 +14848,9 @@ if(missingStock.length){
    number:nextOrderNumber++,
 
    type:orderType,
+      cashierName:currentStaffName,
 
+   cashierStaffId:currentStaffId,
    customer:{...customer},
 
    cart:JSON.parse(JSON.stringify(cart)),
@@ -15382,7 +15418,7 @@ function confirmOrderPayment(number,paymentMethod){
  }
 
  o.paymentMethod=paymentMethod;
-
+ o.paidAt=Date.now();
  o.status="NEW";
   o.startedAt=Date.now();
  deductOrderInventory(o);
@@ -15404,10 +15440,248 @@ function confirmOrderPayment(number,paymentMethod){
 
  orderType="";
 
- currentDraftId=null;
+  currentDraftId=null;
+
  saveOrders();
 
- home();
+ showReceipt(o.number);
+
+}
+function showReceipt(number,fromHistory=false){
+
+ const o=
+
+  activeOrders.find(
+
+   x=>Number(x.number)===Number(number)
+
+  ) ||
+
+  completedOrders.find(
+
+   x=>Number(x.number)===Number(number)
+
+  );
+
+ if(!o){
+
+  alert("Order not found.");
+
+  return home();
+
+ }
+
+ const paidDate=
+
+  new Date(Number(o.paidAt || o.startedAt || Date.now()));
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <div class="panel">
+
+   <div style="text-align:center">
+
+    <h1>MR K BURGERS</h1>
+
+    <div class="muted">RECEIPT</div>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Order</span>
+
+    <strong>#${padOrder(o.number)}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Date</span>
+
+    <strong>${paidDate.toLocaleString()}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Cashier</span>
+
+    <strong>${esc(o.cashierName || currentStaffName || "Cashier")}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Order Type</span>
+
+    <strong>${esc(o.type || "")}</strong>
+
+   </div>
+       ${
+
+    o.customer?.name
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Customer</span>
+
+      <strong>${esc(o.customer.name)}</strong>
+
+     </div>
+
+    `
+
+    :""
+
+   }
+
+   ${
+
+    o.customer?.table
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Table</span>
+
+      <strong>${esc(o.customer.table)}</strong>
+
+     </div>
+
+    `
+
+    :""
+
+   }
+
+   ${
+
+    o.customer?.phone
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Phone</span>
+
+      <strong>${esc(o.customer.phone)}</strong>
+
+     </div>
+
+    `
+
+    :""
+
+   }
+
+   ${
+
+    o.customer?.address
+
+    ?`
+
+     <div class="info-row">
+
+      <span>Address</span>
+
+      <strong>${esc(o.customer.address)}</strong>
+
+     </div>
+
+    `
+
+    :""
+
+   }
+   <div class="info-row">
+
+    <span>Payment</span>
+
+    <strong>${esc(o.paymentMethod || "CASH")}</strong>
+
+   </div>
+      <hr>
+
+   <h3>ITEMS</h3>
+
+      ${(o.cart || []).map(item=>`
+
+    <div style="margin-bottom:12px">
+
+     <div class="info-row">
+
+      <span>
+
+       ${Number(item.qty || 1)} × ${esc(item.name || "")}
+
+      </span>
+
+      <strong>
+
+       ${itemLineTotal(item).toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+     ${removedHtml(item)}
+
+     ${(item.extras || []).map(extra=>`
+
+      <div class="muted">
+
+       + ${Number(extra.qty || 1)} × ${esc(extra.name || "")}
+
+      </div>
+
+     `).join("")}
+
+    </div>
+
+   `).join("")}
+
+   <hr>
+      <div class="info-row">
+
+    <span>Total</span>
+
+    <strong>${orderTotal(o).toLocaleString()} CFA</strong>
+
+   </div>
+
+   <button
+
+    class="primary"
+
+    style="margin-top:20px"
+
+    onclick="window.print()">
+
+    🧾 PRINT RECEIPT
+
+   </button>
+
+      <button
+
+    class="back"
+
+    style="margin-top:10px"
+
+    onclick="${fromHistory ? "showOrderHistory()" : "home()"}">
+
+    DONE
+
+   </button>
+
+  </div>
+
+ </div>`;
 
 }
 function cashierFinishOrder(number){
