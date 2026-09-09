@@ -213,6 +213,13 @@ let draftOrders=safeLoad("mrkDraftOrders",[]);
 let completedOrders=safeLoad("mrkCompletedOrders",[]);
 
 let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
+let ownerCashAccount=safeLoad("mrkOwnerCashAccount",{
+
+ balance:0,
+
+ transactions:[]
+
+});
 let expenses=safeLoad("mrkExpenses",[]);
 
 let expenseCategories=safeLoad("mrkExpenseCategories",[
@@ -346,6 +353,86 @@ function safeLoad(key,fallback){
    return fallback;
 
  }
+
+}
+  function addOwnerCashTransaction(type,amount,description,source="MANUAL"){
+
+ amount=Number(amount);
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  return false;
+
+ }
+
+ if(type!=="IN" && type!=="OUT"){
+
+  return false;
+
+ }
+
+ if(type==="IN"){
+
+  ownerCashAccount.balance=
+
+   Number(ownerCashAccount.balance || 0)+amount;
+
+ }else{
+
+  ownerCashAccount.balance=
+
+   Number(ownerCashAccount.balance || 0)-amount;
+
+ }
+
+ if(!Array.isArray(ownerCashAccount.transactions)){
+
+  ownerCashAccount.transactions=[];
+
+ }
+
+ ownerCashAccount.transactions.unshift({
+
+  id:
+
+   "cashTransaction_"+
+
+   Date.now()+"_"+
+
+   Math.random().toString(36).slice(2,8),
+
+  type:type,
+
+  amount:amount,
+
+  description:description || "",
+
+  source:source,
+
+  createdAt:Date.now(),
+
+  createdBy:currentStaffName,
+
+  createdByStaffId:currentStaffId,
+
+  balanceAfter:ownerCashAccount.balance
+
+ });
+
+ saveOwnerCashAccount();
+
+ return true;
+
+}
+  function saveOwnerCashAccount(){
+
+ localStorage.setItem(
+
+  "mrkOwnerCashAccount",
+
+  JSON.stringify(ownerCashAccount)
+
+ );
 
 }
 function saveExpenses(){
@@ -789,6 +876,13 @@ function header(label){
       <h3>EXPENSES</h3>
 
      </div>
+     <div class="card" onclick="ownerCashAccountPage()" style="cursor:pointer">
+
+ <div class="category-icon">💵</div>
+
+ <h3>OWNER CASH ACCOUNT</h3>
+
+</div>
     <div class="card" onclick="ownerReports()" style="cursor:pointer">
 
  <div class="category-icon">📈</div>
@@ -820,6 +914,580 @@ function header(label){
     </div>
 
    </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerCashAccountPage(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can access the cash account.");
+
+  ownerHome();
+
+  return;
+
+ }
+
+ clearInterval(timerInterval);
+
+ const balance=
+
+  Number(ownerCashAccount.balance || 0);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerHome()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — CASH ACCOUNT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    💵 OWNER CASH ACCOUNT
+
+   </span>
+
+   <h1>Cash Account</h1>
+
+   <div class="summary">
+
+    <div class="info-row">
+
+     <span>Current Balance</span>
+
+     <strong>
+
+      ${balance.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+   </div>
+
+   <div class="grid" style="margin-top:20px">
+
+    <div
+
+     class="card"
+
+     onclick="ownerCashInPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>CASH IN</h3>
+
+     <p class="muted">
+
+      Add cash to the account
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerCashOutPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➖</div>
+
+     <h3>CASH OUT</h3>
+
+     <p class="muted">
+
+      Remove cash from the account
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerCashHistoryPage()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📋</div>
+
+     <h3>TRANSACTION HISTORY</h3>
+
+     <p class="muted">
+
+      View all cash movements
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerCashInPage(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can add cash.");
+
+  ownerHome();
+
+  return;
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerCashAccountPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — CASH IN</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ CASH IN
+
+   </span>
+
+   <h1>Add Cash</h1>
+
+   <div class="form">
+
+    <label>Amount</label>
+
+    <input
+
+     id="ownerCashInAmount"
+
+     type="number"
+
+     min="1"
+
+     placeholder="Amount in CFA">
+
+    <label>Reason</label>
+
+    <input
+
+     id="ownerCashInReason"
+
+     type="text"
+
+     placeholder="Example: Owner cash deposit">
+
+    <button
+
+     class="primary"
+
+     onclick="saveOwnerCashIn()">
+
+     ADD CASH
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveOwnerCashIn(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can add cash.");
+
+  return;
+
+ }
+
+ const amount=
+
+  Number(
+
+   document.getElementById("ownerCashInAmount").value
+
+  );
+
+ const reason=
+
+  document.getElementById("ownerCashInReason").value.trim();
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid amount.");
+
+  return;
+
+ }
+
+ if(!reason){
+
+  alert("Enter a reason for this cash deposit.");
+
+  return;
+
+ }
+
+ addOwnerCashTransaction(
+
+  "IN",
+
+  amount,
+
+  reason,
+
+  "MANUAL"
+
+ );
+
+ alert("Cash added successfully.");
+
+ ownerCashAccountPage();
+
+}
+  function ownerCashOutPage(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can remove cash.");
+
+  ownerHome();
+
+  return;
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerCashAccountPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — CASH OUT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➖ CASH OUT
+
+   </span>
+
+   <h1>Remove Cash</h1>
+
+   <div class="form">
+
+    <label>Amount</label>
+
+    <input
+
+     id="ownerCashOutAmount"
+
+     type="number"
+
+     min="1"
+
+     placeholder="Amount in CFA">
+
+    <label>Reason</label>
+
+    <input
+
+     id="ownerCashOutReason"
+
+     type="text"
+
+     placeholder="Example: Owner withdrawal">
+
+    <button
+
+     class="primary"
+
+     onclick="saveOwnerCashOut()">
+
+     REMOVE CASH
+
+    </button>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveOwnerCashOut(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can remove cash.");
+
+  return;
+
+ }
+
+ const amount=
+
+  Number(
+
+   document.getElementById("ownerCashOutAmount").value
+
+  );
+
+ const reason=
+
+  document.getElementById("ownerCashOutReason").value.trim();
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid amount.");
+
+  return;
+
+ }
+
+ if(!reason){
+
+  alert("Enter a reason for this cash withdrawal.");
+
+  return;
+
+ }
+if(amount>Number(ownerCashAccount.balance || 0)){
+
+ alert("Not enough cash in the Owner Cash Account.");
+
+ return;
+
+}
+ addOwnerCashTransaction(
+
+  "OUT",
+
+  amount,
+
+  reason,
+
+  "MANUAL"
+
+ );
+
+ alert("Cash removed successfully.");
+
+ ownerCashAccountPage();
+
+}
+  function ownerCashHistoryPage(){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can view the cash account.");
+
+  ownerHome();
+
+  return;
+
+ }
+
+ const transactions=
+
+  Array.isArray(ownerCashAccount.transactions)
+
+   ? ownerCashAccount.transactions
+
+   : [];
+
+ const rows=transactions.map(t=>{
+
+  const time=
+
+   new Date(t.createdAt).toLocaleString();
+
+  const sign=
+
+   t.type==="IN" ? "+" : "-";
+
+  return `
+
+   <div class="summary" style="margin-bottom:12px">
+
+    <div class="info-row">
+
+     <span>${time}</span>
+
+     <strong>${sign}${Number(t.amount || 0).toLocaleString()} CFA</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Type</span>
+
+     <strong>${t.type==="IN" ? "CASH IN" : "CASH OUT"}</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Description</span>
+
+     <strong>${t.description || "-"}</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Source</span>
+
+     <strong>${t.source || "-"}</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Actor</span>
+
+     <strong>${t.createdBy || "-"}</strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Balance After</span>
+
+     <strong>${Number(t.balanceAfter || 0).toLocaleString()} CFA</strong>
+
+    </div>
+
+   </div>
+
+  `;
+
+ }).join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerCashAccountPage()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — CASH HISTORY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📋 TRANSACTION HISTORY
+
+   </span>
+
+   <h1>Cash Account History</h1>
+
+   <div class="summary" style="margin-bottom:20px">
+
+    <div class="info-row">
+
+     <span>Current Balance</span>
+
+     <strong>
+
+      ${Number(ownerCashAccount.balance || 0).toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+   </div>
+
+   ${
+
+    rows ||
+
+    `<p class="muted">
+
+      No cash account transactions yet.
+
+     </p>`
+
+   }
 
   </div>
 
@@ -1346,19 +2014,35 @@ function header(label){
 
  const shift=getActiveShift();
 
- if(shift){
+if(shift){
 
-  shiftCashOut(
+ shiftCashOut(
 
-   amount,
+  amount,
 
-   "Expense: "+category.name+
+  "Expense: "+category.name+
 
-   (note ? " — "+note : "")
+  (note ? " — "+note : "")
 
-  );
+ );
 
- }
+}else{
+
+ addOwnerCashTransaction(
+
+  "OUT",
+
+  amount,
+
+  "Expense: "+category.name+
+
+  (note ? " — "+note : ""),
+
+  "EXPENSE"
+
+ );
+
+}
 
  alert("Expense saved successfully.");
 
@@ -3129,7 +3813,21 @@ function openShift(openingCash, openedBy="", role="cashier"){
   };
 
   saveActiveShift(shift);
+if(openingCash>0){
 
+ addOwnerCashTransaction(
+
+  "OUT",
+
+  openingCash,
+
+  "Opening cash transferred to shift",
+
+  "SHIFT_OPEN"
+
+ );
+
+}
   return true;
 
 }
@@ -3364,7 +4062,21 @@ shift.status = "closed";
   saveShiftHistory(history);
 
   localStorage.removeItem(SHIFT_ACTIVE_KEY);
+  if(actualCash>0){
 
+ addOwnerCashTransaction(
+
+  "IN",
+
+  actualCash,
+
+  "Cash transferred from closed shift",
+
+  "SHIFT_CLOSE"
+
+ );
+
+}
   return shift;
 
 }
