@@ -10654,7 +10654,13 @@ const graphSvg=`
  const weekSelector=
 
   content.querySelector(".info-row").outerHTML;
+ const weekApplyButton=
 
+  content.querySelector("button.primary")
+
+   ?content.querySelector("button.primary").outerHTML
+
+   :"";
  const endDisplay=new Date(start);
 
  endDisplay.setDate(endDisplay.getDate()+6);
@@ -10666,7 +10672,7 @@ const graphSvg=`
  content.innerHTML=`
 
   ${weekSelector}
-
+  ${weekApplyButton}
   <div class="info-row">
 
    <span>Week</span>
