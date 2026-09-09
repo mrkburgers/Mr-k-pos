@@ -1971,15 +1971,90 @@ if(amount>Number(ownerCashAccount.balance || 0)){
  }
 const activeShift=getActiveShift();
 
+if(activeShift){
+
+ const shiftCash=
+
+  calculateExpectedCash(activeShift);
+
+ const ownerCash=
+
+  Number(ownerCashAccount.balance || 0);
+
+ if(amount>shiftCash){
+
+  const requiredCash=
+
+   amount-shiftCash;
+
+  if(requiredCash>ownerCash){
+
+   alert(
+
+    "Not enough cash available in the Shift and Owner Cash Account."
+
+   );
+
+   return;
+
+  }
+
+  const transferConfirmed=
+
+   confirm(
+
+    "Insufficient Shift Cash\n\n"+
+
+    "Shift available: "+
+
+    shiftCash.toLocaleString()+" CFA\n"+
+
+    "Expense: "+
+
+    amount.toLocaleString()+" CFA\n"+
+
+    "Transfer required from Owner Cash Account: "+
+
+    requiredCash.toLocaleString()+" CFA\n\n"+
+
+    "Transfer and pay this expense?"
+
+   );
+
+  if(!transferConfirmed){
+
+   return;
+
+  }
+
+  const transferred=
+
+   shiftCashIn(
+
+    requiredCash,
+
+    "Expense cash top-up: "+category.name
+
+   );
+
+  if(!transferred){
+
+   return;
+
+  }
+
+ }
+
+}
 if(
 
- activeShift &&
+ !activeShift &&
 
- amount>calculateExpectedCash(activeShift)
+ amount>Number(ownerCashAccount.balance || 0)
 
 ){
 
- alert("Not enough cash in the current shift.");
+ alert("Not enough cash in the Owner Cash Account.");
 
  return;
 
@@ -2030,7 +2105,7 @@ if(
 
 if(shift){
 
- shiftCashOut(
+ shiftExpenseOut(
 
   amount,
 
@@ -3935,7 +4010,31 @@ function shiftCashIn(amount, reason=""){
     return false;
 
   }
+ if(
 
+  amount >
+
+  Number(ownerCashAccount.balance || 0)
+
+){
+
+  alert("Not enough cash in the Owner Cash Account.");
+
+  return false;
+
+}
+
+addOwnerCashTransaction(
+
+  "OUT",
+
+  amount,
+
+  "Cash transferred to active shift",
+
+  "SHIFT_CASH_IN"
+
+);
   shift.cashIn = Number(shift.cashIn || 0) + amount;
 
   if(!shift.movements) shift.movements = [];
@@ -3985,7 +4084,33 @@ function shiftCashOut(amount, reason=""){
     return false;
 
   }
+ if(
 
+  amount >
+
+  calculateExpectedCash(shift)
+
+){
+
+  alert("Not enough cash in the current shift.");
+
+  return false;
+
+}
+
+addOwnerCashTransaction(
+
+  "IN",
+
+  amount,
+
+  "Cash transferred from active shift"+
+
+  (reason ? " — "+reason : ""),
+
+  "SHIFT_CASH_OUT"
+
+);
   shift.cashOut = Number(shift.cashOut || 0) + amount;
 
 if(!shift.movements) shift.movements = [];
@@ -4006,7 +4131,63 @@ if(!shift.movements) shift.movements = [];
   return true;
 
 }
+function shiftExpenseOut(amount, reason=""){
 
+  const shift=getActiveShift();
+
+  if(!shift){
+
+    alert("No shift is currently open.");
+
+    return false;
+
+  }
+
+  amount=Number(amount);
+
+  if(!Number.isFinite(amount) || amount<=0){
+
+    alert("Enter a valid amount.");
+
+    return false;
+
+  }
+
+  if(amount>calculateExpectedCash(shift)){
+
+    alert("Not enough cash in the current shift.");
+
+    return false;
+
+  }
+
+  shift.cashOut=
+
+    Number(shift.cashOut || 0)+amount;
+
+  if(!shift.movements){
+
+    shift.movements=[];
+
+  }
+
+  shift.movements.push({
+
+    type:"expense",
+
+    amount:amount,
+
+    reason:reason,
+
+    time:new Date().toISOString()
+
+  });
+
+  saveActiveShift(shift);
+
+  return true;
+
+}
 function calculateExpectedCash(shift){
 
   if(!shift) return 0;
