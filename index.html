@@ -1969,7 +1969,21 @@ if(amount>Number(ownerCashAccount.balance || 0)){
   return;
 
  }
+const activeShift=getActiveShift();
 
+if(
+
+ activeShift &&
+
+ amount>calculateExpectedCash(activeShift)
+
+){
+
+ alert("Not enough cash in the current shift.");
+
+ return;
+
+}
  const expense={
 
   id:
@@ -3775,7 +3789,19 @@ function openShift(openingCash, openedBy="", role="cashier"){
     return false;
 
   }
+  if(
 
+ openingCash>
+
+ Number(ownerCashAccount.balance || 0)
+
+){
+
+ alert("Not enough cash in the Owner Cash Account.");
+
+ return false;
+
+}
   const shift = {
 
     id: Date.now(),
