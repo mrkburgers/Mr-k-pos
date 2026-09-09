@@ -2235,13 +2235,29 @@ if(shift){
 
    <label>Date</label>
 
-   <input
+       <input
 
-    type="date"
+     id="expenseHistoryDate"
 
-    value="${selectedDate}"
+     type="date"
 
-    onchange="expenseHistoryPage(this.value)">
+     value="${selectedDate}">
+
+    <button
+
+     class="primary"
+
+     style="margin-top:10px"
+
+     onclick="expenseHistoryPage(
+
+      document.getElementById('expenseHistoryDate').value
+
+     )">
+
+     APPLY DATE
+
+    </button>
 
    <div class="summary">
 
@@ -2919,6 +2935,10 @@ if(shift){
 
     ${
 
+        <div class="form" style="margin-top:20px">
+
+    ${
+
      period==="day"
 
      ?`
@@ -2927,11 +2947,11 @@ if(shift){
 
       <input
 
+       id="expenseReportPeriodValue"
+
        type="date"
 
-       value="${value}"
-
-       onchange="expenseReportsPage('day',this.value)">
+       value="${value}">
 
      `
 
@@ -2949,11 +2969,11 @@ if(shift){
 
       <input
 
+       id="expenseReportPeriodValue"
+
        type="date"
 
-       value="${value}"
-
-       onchange="expenseReportsPage('week',this.value)">
+       value="${value}">
 
      `
 
@@ -2971,11 +2991,11 @@ if(shift){
 
       <input
 
+       id="expenseReportPeriodValue"
+
        type="month"
 
-       value="${value}"
-
-       onchange="expenseReportsPage('month',this.value)">
+       value="${value}">
 
      `
 
@@ -2993,21 +3013,35 @@ if(shift){
 
       <input
 
+       id="expenseReportPeriodValue"
+
        type="number"
 
        min="2000"
 
-       max="2100"
-
-       value="${value}"
-
-       onchange="expenseReportsPage('year',this.value)">
+       value="${value}">
 
      `
 
      :""
 
     }
+
+    <button
+
+     class="primary"
+
+     onclick="expenseReportsPage(
+
+      '${period}',
+
+      document.getElementById('expenseReportPeriodValue').value
+
+     )">
+
+     APPLY PERIOD
+
+    </button>
 
    </div>
 
@@ -10157,21 +10191,35 @@ const graphSvg=`
 
  content.innerHTML=`
 
-  <div class="info-row">
+     <div class="info-row">
 
-   <span>Date</span>
+    <span>Date</span>
 
-   <input
+    <input
 
-    type="date"
+     id="ownerSalesDailyDate"
 
-    value="${selectedDate}"
+     type="date"
 
-    onchange="ownerSalesHistoryDaily(this.value)"
+     value="${selectedDate}">
 
-   >
+   </div>
 
-  </div>
+   <button
+
+    class="primary"
+
+    style="margin-top:10px"
+
+    onclick="ownerSalesHistoryDaily(
+
+     document.getElementById('ownerSalesDailyDate').value
+
+    )">
+
+    APPLY DATE
+
+   </button>
 
  `;
 
@@ -10201,21 +10249,35 @@ const graphSvg=`
 
  content.innerHTML=`
 
-  <div class="info-row">
+     <div class="info-row">
 
-   <span>Week Starting</span>
+    <span>Week Starting</span>
 
-   <input
+    <input
 
-    type="date"
+     id="ownerSalesWeeklyDate"
 
-    value="${selectedWeek}"
+     type="date"
 
-    onchange="ownerSalesHistoryWeekly(this.value)"
+     value="${selectedWeek}">
 
-   >
+   </div>
 
-  </div>
+   <button
+
+    class="primary"
+
+    style="margin-top:10px"
+
+    onclick="ownerSalesHistoryWeekly(
+
+     document.getElementById('ownerSalesWeeklyDate').value
+
+    )">
+
+    APPLY WEEK
+
+   </button>
 
  `;
 
@@ -10236,9 +10298,7 @@ const graphSvg=`
 
    <span>Month</span>
 
-   <select id="ownerSalesMonth"
-
-    onchange="ownerSalesHistoryMonthly()">
+       <select id="ownerSalesMonth">
 
     <option value="0" ${currentMonth===0?"selected":""}>January</option>
 
@@ -10268,71 +10328,81 @@ const graphSvg=`
 
   </div>
 
-  <div class="info-row">
+     <div class="info-row">
 
-   <span>Year</span>
+    <span>Year</span>
 
-   <select id="ownerSalesYear"
+    <input
 
-    onchange="ownerSalesHistoryMonthly()">
+     id="ownerSalesYear"
 
-    ${Array.from(
+     type="number"
 
- {length:(currentYear+10)-2026+1},
+     min="2000"
 
- (_,i)=>2026+i
+     value="${currentYear}">
 
-).map(year=>
+   </div>
+   <button
 
- `<option value="${year}" ${year===currentYear?"selected":""}>${year}</option>`
+    class="primary"
 
-).join("")}
+    style="margin-top:10px"
 
-   </select>
+    onclick="ownerSalesHistoryMonthly()">
 
-  </div>
+    APPLY MONTH
 
+   </button>
  `;
 
  ownerSalesHistoryMonthly();
 
 }
 
- if(period==="yearly"){
+  if(period==="yearly"){
 
- const currentYear=new Date().getFullYear();
+  const currentYear=new Date().getFullYear();
 
- content.innerHTML=`
+  content.innerHTML=`
 
-  <div class="info-row">
+   <div class="info-row">
 
-   <span>Year</span>
+    <span>Year</span>
 
-   <select id="ownerSalesHistoryYear"
+    <input
 
-    onchange="ownerSalesHistoryYearly(this.value)">
+     id="ownerSalesHistoryYear"
 
-    ${Array.from(
+     type="number"
 
-     {length:(currentYear+10)-2026+1},
+     min="2000"
 
-     (_,i)=>2026+i
+     value="${currentYear}">
 
-    ).map(year=>
+   </div>
 
-     `<option value="${year}" ${year===currentYear?"selected":""}>${year}</option>`
+   <button
 
-    ).join("")}
+    class="primary"
 
-   </select>
+    style="margin-top:10px"
 
-  </div>
+    onclick="ownerSalesHistoryYearly(
 
- `;
+     document.getElementById('ownerSalesHistoryYear').value
 
- ownerSalesHistoryYearly(currentYear);
+    )">
 
-}
+    APPLY YEAR
+
+   </button>
+
+  `;
+
+  ownerSalesHistoryYearly(currentYear);
+
+ }
 
 }
   function ownerSalesHistoryDaily(selectedDate){
