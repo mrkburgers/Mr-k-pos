@@ -2384,8 +2384,266 @@ if(shift){
  </div>`;
 
 }
-  function expenseReportsPage(){ 
-   if(role!=="owner" && role!=="manager"){
+  function getReportPeriodRange(period,value){
+
+ const now=new Date();
+
+ let start;
+
+ let end;
+
+ let label="";
+
+ if(period==="day"){
+
+  const selected=
+
+   value
+
+   ?new Date(value+"T00:00:00")
+
+   :new Date(
+
+     now.getFullYear(),
+
+     now.getMonth(),
+
+     now.getDate()
+
+    );
+
+  start=
+
+   new Date(
+
+    selected.getFullYear(),
+
+    selected.getMonth(),
+
+    selected.getDate()
+
+   );
+
+  end=
+
+   new Date(
+
+    selected.getFullYear(),
+
+    selected.getMonth(),
+
+    selected.getDate()+1
+
+   );
+
+  label=
+
+   selected.toLocaleDateString(
+
+    undefined,
+
+    {
+
+     day:"numeric",
+
+     month:"long",
+
+     year:"numeric"
+
+    }
+
+   );
+
+ }
+
+ if(period==="week"){
+
+  const selected=
+
+   value
+
+   ?new Date(value+"T00:00:00")
+
+   :new Date(now);
+
+  const monday=new Date(selected);
+
+  monday.setHours(0,0,0,0);
+
+  monday.setDate(
+
+   selected.getDate()-
+
+   ((selected.getDay()+6)%7)
+
+  );
+
+  const nextMonday=new Date(monday);
+
+  nextMonday.setDate(
+
+   monday.getDate()+7
+
+  );
+
+  const sunday=new Date(monday);
+
+  sunday.setDate(
+
+   monday.getDate()+6
+
+  );
+
+  start=monday;
+
+  end=nextMonday;
+
+  label=
+
+   monday.toLocaleDateString(
+
+    undefined,
+
+    {
+
+     day:"numeric",
+
+     month:"short",
+
+     year:"numeric"
+
+    }
+
+   )+
+
+   " — "+
+
+   sunday.toLocaleDateString(
+
+    undefined,
+
+    {
+
+     day:"numeric",
+
+     month:"short",
+
+     year:"numeric"
+
+    }
+
+   );
+
+ }
+
+ if(period==="month"){
+
+  let year=now.getFullYear();
+
+  let month=now.getMonth();
+
+  if(value){
+
+   const parts=value.split("-");
+
+   year=Number(parts[0]);
+
+   month=Number(parts[1])-1;
+
+  }
+
+  start=new Date(year,month,1);
+
+  end=new Date(year,month+1,1);
+
+  label=
+
+   start.toLocaleDateString(
+
+    undefined,
+
+    {
+
+     month:"long",
+
+     year:"numeric"
+
+    }
+
+   );
+
+ }
+
+ if(period==="year"){
+
+  const year=
+
+   value
+
+   ?Number(value)
+
+   :now.getFullYear();
+
+  start=new Date(year,0,1);
+
+  end=new Date(year+1,0,1);
+
+  label=String(year);
+
+ }
+
+ return {
+
+  start:start.getTime(),
+
+  end:end.getTime(),
+
+  label:label
+
+ };
+
+}
+  function expenseReportsPage(period="month",value=""){ 
+
+ const now=new Date();
+
+ if(!value){
+
+  if(period==="day" || period==="week"){
+
+   value=
+
+    now.getFullYear()+"-"+
+
+    String(now.getMonth()+1).padStart(2,"0")+"-"+
+
+    String(now.getDate()).padStart(2,"0");
+
+  }
+
+  if(period==="month"){
+
+   value=
+
+    now.getFullYear()+"-"+
+
+    String(now.getMonth()+1).padStart(2,"0");
+
+  }
+
+  if(period==="year"){
+
+   value=String(now.getFullYear());
+
+  }
+
+ }
+
+ const reportRange=
+
+  getReportPeriodRange(period,value);
+
+ if(role!=="owner" && role!=="manager"){
 
   alert("You do not have permission to view expense reports.");
 
@@ -2401,7 +2659,6 @@ if(shift){
    ?"MANAGER"
 
    :"OWNER";
- const now=new Date();
 
  const startOfToday=
 
@@ -2520,7 +2777,69 @@ if(shift){
   .filter(category=>category.total>0)
 
   .sort((a,b)=>b.total-a.total);
+ const reportExpenses=
 
+  expenses.filter(expense=>{
+
+   const createdAt=
+
+    Number(expense.createdAt);
+
+   return (
+
+    createdAt>=reportRange.start &&
+
+    createdAt<reportRange.end
+
+   );
+
+  });
+
+ const reportTotal=
+
+  reportExpenses.reduce(
+
+   (sum,expense)=>
+
+    sum+Number(expense.amount || 0),
+
+   0
+
+  );
+
+ const reportCategoryTotals=
+
+  expenseCategories
+
+   .map(category=>({
+
+    name:category.name,
+
+    total:reportExpenses
+
+     .filter(
+
+      expense=>
+
+       expense.categoryId===category.id
+
+     )
+
+     .reduce(
+
+      (sum,expense)=>
+
+       sum+Number(expense.amount || 0),
+
+      0
+
+     )
+
+   }))
+
+   .filter(category=>category.total>0)
+
+   .sort((a,b)=>b.total-a.total);
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -2552,52 +2871,162 @@ if(shift){
    </span>
 
    <h1>Expense Reports</h1>
+     <div class="actions">
 
-   <div class="summary">
+    <button
+
+     class="${period==="day" ? "primary" : "secondary"}"
+
+     onclick="expenseReportsPage('day')">
+
+     DAY
+
+    </button>
+
+    <button
+
+     class="${period==="week" ? "primary" : "secondary"}"
+
+     onclick="expenseReportsPage('week')">
+
+     WEEK
+
+    </button>
+
+    <button
+
+     class="${period==="month" ? "primary" : "secondary"}"
+
+     onclick="expenseReportsPage('month')">
+
+     MONTH
+
+    </button>
+
+    <button
+
+     class="${period==="year" ? "primary" : "secondary"}"
+
+     onclick="expenseReportsPage('year')">
+
+     YEAR
+
+    </button>
+
+   </div>
+
+   <div class="form" style="margin-top:20px">
+
+    ${
+
+     period==="day"
+
+     ?`
+
+      <label>Choose Date</label>
+
+      <input
+
+       type="date"
+
+       value="${value}"
+
+       onchange="expenseReportsPage('day',this.value)">
+
+     `
+
+     :""
+
+    }
+
+    ${
+
+     period==="week"
+
+     ?`
+
+      <label>Choose Any Date in the Week</label>
+
+      <input
+
+       type="date"
+
+       value="${value}"
+
+       onchange="expenseReportsPage('week',this.value)">
+
+     `
+
+     :""
+
+    }
+
+    ${
+
+     period==="month"
+
+     ?`
+
+      <label>Choose Month</label>
+
+      <input
+
+       type="month"
+
+       value="${value}"
+
+       onchange="expenseReportsPage('month',this.value)">
+
+     `
+
+     :""
+
+    }
+
+    ${
+
+     period==="year"
+
+     ?`
+
+      <label>Choose Year</label>
+
+      <input
+
+       type="number"
+
+       min="2000"
+
+       max="2100"
+
+       value="${value}"
+
+       onchange="expenseReportsPage('year',this.value)">
+
+     `
+
+     :""
+
+    }
+
+   </div>
+
+   <div class="system-note">
+
+    Selected Period:
+
+    <strong>${reportRange.label}</strong>
+
+   </div>
+      <div class="summary">
 
     <div class="info-row">
 
-     <span>Today</span>
+     <span>Total Expenses</span>
 
      <strong>
 
-      ${todayTotal.toLocaleString()} CFA
-
-     </strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>This Week</span>
-
-     <strong>
-
-      ${weekTotal.toLocaleString()} CFA
-
-     </strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>This Month</span>
-
-     <strong>
-
-      ${monthTotal.toLocaleString()} CFA
-
-     </strong>
-
-    </div>
-
-    <div class="info-row">
-
-     <span>This Year</span>
-
-     <strong>
-
-      ${yearTotal.toLocaleString()} CFA
+      ${reportTotal.toLocaleString()} CFA
 
      </strong>
 
@@ -2605,17 +3034,17 @@ if(shift){
 
    </div>
 
-   <h2 style="margin-top:25px">
+      <h2 style="margin-top:25px">
 
-    This Month by Category
+    ${reportRange.label} by Category
 
    </h2>
 
    ${
 
-    categoryTotals.length
+    reportCategoryTotals.length
 
-    ?categoryTotals.map(category=>`
+    ?reportCategoryTotals.map(category=>`
 
      <div class="info-row">
 
@@ -2635,7 +3064,7 @@ if(shift){
 
      <div class="system-note">
 
-      No expenses recorded this month.
+      No expenses recorded for this period.
 
      </div>
 
