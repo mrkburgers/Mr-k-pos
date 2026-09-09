@@ -10486,11 +10486,17 @@ const graphSvg=`
  if(!content)return;
 
  const dateSelector=content.querySelector(".info-row").outerHTML;
+ const dateApplyButton=
 
+  content.querySelector("button.primary")
+
+   ?content.querySelector("button.primary").outerHTML
+
+   :"";
   content.innerHTML=`
 
   ${dateSelector}
-
+  ${dateApplyButton}
   <div class="info-row">
 
    <span>Total Sales</span>
