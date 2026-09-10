@@ -616,6 +616,32 @@ ${esc(ownerAccount.name)}: ${esc(ownerAccount.staffId)}
  </div>`;
 
 }
+let staffMembers=safeLoad("mrkStaffMembers",[]);
+
+function saveStaffMembers(){
+
+ localStorage.setItem(
+
+  "mrkStaffMembers",
+
+  JSON.stringify(staffMembers)
+
+ );
+
+}
+  function createStaffMemberId(){
+
+ return (
+
+  "staff_"+
+
+  Date.now()+"_"+
+
+  Math.random().toString(36).slice(2,8)
+
+ );
+
+}
 let staffAccounts=safeLoad("mrkStaffAccounts",[
 
  {
@@ -693,6 +719,87 @@ function saveStaffAccounts(){
  );
 
 }
+function migrateStaffAccountsToMembers(){
+
+ let changed=false;
+
+ staffAccounts.forEach(account=>{
+
+  let employee=null;
+
+  if(account.employeeId){
+
+   employee=staffMembers.find(
+
+    m=>m.id===account.employeeId
+
+   );
+
+  }
+
+  if(!employee){
+
+   employee=staffMembers.find(
+
+    m=>m.posStaffId===account.staffId
+
+   );
+
+  }
+
+  if(!employee){
+
+   const employeeId=createStaffMemberId();
+
+   employee={
+
+    id:employeeId,
+
+    name:account.name,
+
+    position:
+
+     account.role.charAt(0).toUpperCase()+
+
+     account.role.slice(1),
+
+    salary:0,
+
+    startDate:"",
+
+    active:account.active!==false,
+
+    posStaffId:account.staffId
+
+   };
+
+   staffMembers.push(employee);
+
+   changed=true;
+
+  }
+
+  if(account.employeeId!==employee.id){
+
+   account.employeeId=employee.id;
+
+   changed=true;
+
+  }
+
+ });
+
+ if(changed){
+
+  saveStaffMembers();
+
+  saveStaffAccounts();
+
+ }
+
+}
+
+migrateStaffAccountsToMembers();
 function login(){
 
  const u=document
@@ -8064,11 +8171,34 @@ item.allowedExtraIds=
  ownerEditAccount();
 
 }
+  function getPosAccountForEmployee(employee){
+
+ return staffAccounts.find(
+
+  account=>
+
+   account.employeeId===employee.id ||
+
+   (
+
+    employee.posStaffId &&
+
+    account.staffId===employee.posStaffId
+
+   )
+
+ ) || null;
+
+}
   function ownerStaffList(){
 
  clearInterval(timerInterval);
 
- const staffCards=staffAccounts.map(s=>`
+ const staffCards=staffMembers.map(s=>{
+
+ const posAccount=getPosAccountForEmployee(s);
+
+ return `
 
   <div class="card">
 
@@ -8076,9 +8206,35 @@ item.allowedExtraIds=
 
    <div class="info-row">
 
-    <span>Role</span>
+    <span>Position</span>
 
-    <strong>${s.role.toUpperCase()}</strong>
+    <strong>${s.position || "—"}</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Monthly Salary</span>
+
+    <strong>${Number(s.salary || 0).toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>POS Access</span>
+
+    <strong>${posAccount?"YES":"NO"}</strong>
+
+   </div>
+
+   ${posAccount?`
+
+   <div class="info-row">
+
+    <span>POS Role</span>
+
+    <strong>${posAccount.role.toUpperCase()}</strong>
 
    </div>
 
@@ -8086,9 +8242,11 @@ item.allowedExtraIds=
 
     <span>Staff ID</span>
 
-    <strong>${s.staffId}</strong>
+    <strong>${posAccount.staffId}</strong>
 
    </div>
+
+   `:""}
 
    <div class="info-row">
 
@@ -8097,15 +8255,14 @@ item.allowedExtraIds=
     <strong>${s.active?"ACTIVE":"INACTIVE"}</strong>
 
    </div>
-
-  <div style="
+<div style="
 
  display:grid;
 
- grid-template-columns:0.8fr 1.4fr 0.9fr;
+ grid-template-columns:1fr 1fr;
 
  gap:8px;
-font-size:13px;
+
  margin-top:16px;
 
 ">
@@ -8114,7 +8271,7 @@ font-size:13px;
 
   class="secondary"
 
-  onclick="ownerEditStaff('${s.staffId}')">
+  onclick="ownerEditEmployee('${s.id}')">
 
   EDIT
 
@@ -8124,27 +8281,18 @@ font-size:13px;
 
   class="secondary"
 
-  onclick="ownerToggleStaff('${s.staffId}')">
+  onclick="ownerToggleEmployee('${s.id}')">
 
   ${s.active?"DEACTIVATE":"ACTIVATE"}
 
  </button>
 
- <button
-
-  class="secondary"
-
-  onclick="ownerDeleteStaff('${s.staffId}')">
-
-  DELETE
-
- </button>
-
 </div>
+  </div>
 
-</div>
+ `;
 
- `).join("");
+}).join("");
 
  document.getElementById("root").innerHTML=`
 
@@ -8162,40 +8310,40 @@ font-size:13px;
 
   <div class="logo">
 
-   MR K BURGERS
+ MR K BURGERS
 
-   <span>OWNER — STAFF LIST</span>
+ <span>OWNER — EMPLOYEES</span>
 
-  </div>
+</div>
 
-  <div class="panel">
+<div class="panel">
 
-   <span class="badge">
+ <span class="badge">
 
-    👥 STAFF LIST
+  👥 EMPLOYEES
 
-   </span>
+ </span>
 
-   <h1>Staff Accounts</h1>
+ <h1>Employee List</h1>
 
-   ${staffCards}
+ ${staffCards}
 
   </div>
 
  </div>`;
 
 }
-  function ownerToggleStaff(staffId){
+  function ownerToggleEmployee(employeeId){
 
- const staff=staffAccounts.find(
+ const employee=staffMembers.find(
 
-  s=>s.staffId===staffId
+  s=>s.id===employeeId
 
  );
 
- if(!staff)return;
+ if(!employee)return;
 
- const action=staff.active
+ const action=employee.active
 
   ?"deactivate"
 
@@ -8203,7 +8351,7 @@ font-size:13px;
 
  if(!confirm(
 
-  `Are you sure you want to ${action} ${staff.name}?`
+  `Are you sure you want to ${action} ${employee.name}?`
 
  )){
 
@@ -8211,51 +8359,77 @@ font-size:13px;
 
  }
 
- staff.active=!staff.active;
+ employee.active=!employee.active;
 
- saveStaffAccounts();
+ const posAccount=getPosAccountForEmployee(employee);
+
+ if(posAccount){
+
+  posAccount.active=employee.active;
+
+  saveStaffAccounts();
+
+ }
+
+ saveStaffMembers();
 
  ownerStaffList();
 
 }
-  function ownerDeleteStaff(staffId){
+  function ownerDeleteEmployee(employeeId){
 
- const staff=staffAccounts.find(
+ const employee=staffMembers.find(
 
-  s=>s.staffId===staffId
+  s=>s.id===employeeId
 
  );
 
- if(!staff)return;
+ if(!employee)return;
+
+ const posAccount=getPosAccountForEmployee(employee);
 
  const confirmed=confirm(
 
-  `Permanently delete ${staff.name} (${staff.staffId})?\n\nThis cannot be undone.`
+  `Permanently delete ${employee.name}?\n\nThis cannot be undone.`
 
  );
 
  if(!confirmed)return;
 
- staffAccounts=staffAccounts.filter(
+ staffMembers=staffMembers.filter(
 
-  s=>s.staffId!==staffId
+  s=>s.id!==employeeId
 
  );
 
- saveStaffAccounts();
+ if(posAccount){
+
+  staffAccounts=staffAccounts.filter(
+
+   s=>s.employeeId!==employeeId
+
+  );
+
+  saveStaffAccounts();
+
+ }
+
+ saveStaffMembers();
 
  ownerStaffList();
 
 }
-  function ownerEditStaff(staffId){
+  function ownerEditEmployee(employeeId){
 
- const staff=staffAccounts.find(
+ const employee=staffMembers.find(
 
-  s=>s.staffId===staffId
+  s=>s.id===employeeId
 
  );
 
- if(!staff)return;
+ if(!employee)return;
+
+ const posAccount=getPosAccountForEmployee(employee);
 
  clearInterval(timerInterval);
 
@@ -8275,136 +8449,270 @@ font-size:13px;
 
   <div class="logo">
 
-   MR K BURGERS
+ MR K BURGERS
 
-   <span>OWNER — EDIT STAFF</span>
-
-  </div>
-
-  <div class="panel">
-
-   <span class="badge">
-
-    ✏️ EDIT STAFF
-
-   </span>
-
-   <h1>${staff.name}</h1>
-
-   <div class="info-row">
-
-    <span>Name</span>
-
-    <input
-
-     id="editStaffName"
-
-     value="${staff.name}">
-
-   </div>
-
-   <div class="info-row">
-
- <span>Staff ID</span>
-
- <input
-
-  id="editStaffId"
-
-  value="${staff.staffId}">
+ <span>OWNER — EDIT EMPLOYEE</span>
 
 </div>
 
+<div class="panel">
+
+ <span class="badge">
+
+  ✏️ EDIT EMPLOYEE
+
+ </span>
+
+ <h1>${employee.name}</h1>
+
+ <div class="info-row">
+
+  <span>Name</span>
+
+  <input
+
+   id="editStaffName"
+
+   value="${employee.name}">
+
+ </div>
+
    <div class="info-row">
 
-    <span>New PIN</span>
+ <span>Position</span>
 
-    <input
+ <input
 
-     id="editStaffPin"
+  id="editStaffPosition"
 
-     type="password"
+  type="text"
 
-     inputmode="numeric"
+  value="${employee.position || ""}">
 
-     maxlength="4"
+</div>
+<div class="info-row">
 
-     placeholder="Leave blank to keep current PIN">
+ <span>Monthly Salary</span>
 
-   </div>
+ <input
 
-   <div class="info-row">
+  id="editStaffSalary"
 
-    <span>Role</span>
+  type="number"
 
-    <select id="editStaffRole">
+  min="0"
 
-     <option
+  value="${Number(employee.salary || 0)}">
 
-      value="manager"
+</div>
+<div class="info-row">
 
-      ${staff.role==="manager"?"selected":""}>
+ <span>Start Date</span>
 
-      Manager
+ <input
 
-     </option>
+  id="editStaffStartDate"
 
-     <option
+  type="date"
 
-      value="cashier"
+  value="${employee.startDate || ""}">
 
-      ${staff.role==="cashier"?"selected":""}>
+</div>
+<div class="info-row">
 
-      Cashier
+ <span>POS Access</span>
 
-     </option>
+ <select
 
-     <option
+  id="editStaffPosAccess"
 
-      value="kitchen"
+  onchange="toggleEditStaffPosFields()">
 
-      ${staff.role==="kitchen"?"selected":""}>
+  <option
 
-      Kitchen
+   value="no"
 
-     </option>
+   ${posAccount?"":"selected"}>
 
-    </select>
+   No
 
-   </div>
+  </option>
+
+  <option
+
+   value="yes"
+
+   ${posAccount?"selected":""}>
+
+   Yes
+
+  </option>
+
+ </select>
+
+</div>
+   <div
+
+ id="editStaffPosFields"
+
+ style="display:${posAccount?"block":"none"}">
+
+ <div class="info-row">
+
+  <span>Staff ID</span>
+
+  <input
+
+   id="editStaffId"
+
+   type="text"
+
+   value="${posAccount?posAccount.staffId:""}"
+
+   placeholder="Staff ID">
+
+ </div>
+
+ <div class="info-row">
+
+  <span>New PIN</span>
+
+  <input
+
+   id="editStaffPin"
+
+   type="password"
+
+   inputmode="numeric"
+
+   maxlength="4"
+
+   placeholder="${posAccount?"Leave blank to keep current PIN":"Enter 4-digit PIN"}">
+
+ </div>
+
+ <div class="info-row">
+
+  <span>Role</span>
+
+  <select id="editStaffRole">
+
+   <option value="">Select role</option>
+
+   <option
+
+    value="manager"
+
+    ${posAccount && posAccount.role==="manager"?"selected":""}>
+
+    Manager
+
+   </option>
+
+   <option
+
+    value="cashier"
+
+    ${posAccount && posAccount.role==="cashier"?"selected":""}>
+
+    Cashier
+
+   </option>
+
+   <option
+
+    value="kitchen"
+
+    ${posAccount && posAccount.role==="kitchen"?"selected":""}>
+
+    Kitchen
+
+   </option>
+
+  </select>
+
+ </div>
+
+</div>
 
    <button
 
-    class="primary"
+ class="primary"
 
-    style="margin-top:20px;width:100%"
+ style="margin-top:20px;width:100%"
 
-    onclick="saveStaffEdit('${staff.staffId}')">
+ onclick="saveEmployeeEdit('${employee.id}')">
 
-    SAVE CHANGES
+ SAVE CHANGES
 
-   </button>
+</button>
 
   </div>
 
  </div>`;
 
 }
-  function saveStaffEdit(staffId){
+  function toggleEditStaffPosFields(){
 
- const staff=staffAccounts.find(
+ const access=document
 
-  s=>s.staffId===staffId
+  .getElementById("editStaffPosAccess")
+
+  .value;
+
+ const fields=document
+
+  .getElementById("editStaffPosFields");
+
+ fields.style.display=
+
+  access==="yes"
+
+   ?"block"
+
+   :"none";
+
+}
+  function saveEmployeeEdit(employeeId){
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
 
  );
 
- if(!staff)return;
+ if(!employee)return;
+
+ const posAccount=getPosAccountForEmployee(employee);
 
  const name=document
 
   .getElementById("editStaffName")
 
   .value.trim();
+const position=document
+
+ .getElementById("editStaffPosition")
+
+ .value.trim();
+
+const salary=Number(
+
+ document.getElementById("editStaffSalary").value
+
+);
+
+const startDate=document
+
+ .getElementById("editStaffStartDate")
+
+ .value;
+
+const posAccess=document
+
+ .getElementById("editStaffPosAccess")
+
+ .value;
 const newStaffId=document
 
  .getElementById("editStaffId")
@@ -8422,22 +8730,71 @@ const newStaffId=document
 
   .value;
 
- if(!name){
+ if(!name || !position || !startDate){
 
-  alert("Name cannot be empty.");
+ alert("Please complete all employee fields.");
 
-  return;
+ return;
 
- }
- if(!newStaffId){
+}
 
- alert("Staff ID cannot be empty.");
+if(!Number.isFinite(salary) || salary<0){
+
+ alert("Enter a valid monthly salary.");
 
  return;
 
 }
 
 if(
+
+ posAccess==="yes" &&
+
+ (!newStaffId || !staffRole)
+
+){
+
+ alert("Please complete all POS access fields.");
+
+ return;
+
+}
+
+if(
+
+ posAccess==="yes" &&
+
+ !posAccount &&
+
+ !/^\d{4}$/.test(pin)
+
+){
+
+ alert("PIN must contain exactly 4 numbers.");
+
+ return;
+
+}
+
+if(
+
+ posAccess==="yes" &&
+
+ pin &&
+
+ !/^\d{4}$/.test(pin)
+
+){
+
+ alert("PIN must contain exactly 4 numbers.");
+
+ return;
+
+}
+
+if(
+
+ posAccess==="yes" &&
 
  newStaffId.toLowerCase()===
 
@@ -8450,15 +8807,24 @@ if(
  return;
 
 }
-const duplicate=staffAccounts.find(
 
- s=>
+const duplicate=
 
-  s!==staff &&
+ posAccess==="yes"
 
-  s.staffId.toLowerCase()===newStaffId.toLowerCase()
+  ?staffAccounts.find(
 
-);
+    s=>
+
+     s!==posAccount &&
+
+     s.staffId.toLowerCase()===
+
+     newStaffId.toLowerCase()
+
+   )
+
+  :null;
 
 if(duplicate){
 
@@ -8467,29 +8833,78 @@ if(duplicate){
  return;
 
 }
- if(pin && !/^\d{4}$/.test(pin)){
 
-  alert("PIN must contain exactly 4 numbers.");
+ employee.name=name;
 
-  return;
+employee.position=position;
+
+employee.salary=salary;
+
+employee.startDate=startDate;
+
+if(posAccess==="yes"){
+
+ if(posAccount){
+
+  posAccount.name=name;
+
+  posAccount.staffId=newStaffId;
+
+  posAccount.role=staffRole;
+
+  posAccount.active=employee.active!==false;
+
+  if(pin){
+
+   posAccount.pin=pin;
+
+  }
+
+ }else{
+
+  staffAccounts.push({
+
+   name:name,
+
+   staffId:newStaffId,
+
+   pin:pin,
+
+   role:staffRole,
+
+   active:employee.active!==false,
+
+   employeeId:employee.id
+
+  });
 
  }
 
- staff.name=name;
-staff.staffId=newStaffId;
- staff.role=staffRole;
+ employee.posStaffId=newStaffId;
 
- if(pin){
+}else{
 
-  staff.pin=pin;
+ if(posAccount){
+
+  staffAccounts=staffAccounts.filter(
+
+   s=>s!==posAccount
+
+  );
 
  }
 
- saveStaffAccounts();
+ employee.posStaffId=null;
 
- alert("Staff account updated successfully.");
+}
 
- ownerStaffList();
+saveStaffMembers();
+
+saveStaffAccounts();
+
+alert("Employee updated successfully.");
+
+ownerStaffList();
 
 }
   function ownerAddStaff(){
@@ -8514,7 +8929,7 @@ staff.staffId=newStaffId;
 
    MR K BURGERS
 
-   <span>OWNER — ADD STAFF</span>
+   <span>OWNER — ADD EMPLOYEE</span>
 
   </div>
 
@@ -8522,11 +8937,11 @@ staff.staffId=newStaffId;
 
    <span class="badge">
 
-    ➕ ADD STAFF
+    ➕ ADD EMPLOYEE
 
    </span>
 
-   <h1>Create Staff Account</h1>
+   <h1>Create Employee</h1>
 
    <div class="info-row">
 
@@ -8541,7 +8956,63 @@ staff.staffId=newStaffId;
      placeholder="Staff name">
 
    </div>
+   <div class="info-row">
 
+ <span>Position</span>
+
+ <input
+
+  id="newStaffPosition"
+
+  type="text"
+
+  placeholder="Example: Cashier, Cook, Waiter">
+
+</div>
+<div class="info-row">
+
+ <span>Monthly Salary</span>
+
+ <input
+
+  id="newStaffSalary"
+
+  type="number"
+
+  min="0"
+
+  placeholder="Monthly salary in CFA">
+
+</div>
+<div class="info-row">
+
+ <span>Start Date</span>
+
+ <input
+
+  id="newStaffStartDate"
+
+  type="date">
+
+</div>
+<div class="info-row">
+
+ <span>POS Access</span>
+
+ <select
+
+  id="newStaffPosAccess"
+
+  onchange="toggleNewStaffPosFields()">
+
+  <option value="no">No</option>
+
+  <option value="yes">Yes</option>
+
+ </select>
+
+</div>
+<div id="newStaffPosFields" style="display:none">
    <div class="info-row">
 
     <span>Staff ID</span>
@@ -8587,7 +9058,7 @@ staff.staffId=newStaffId;
      <option value="kitchen">Kitchen</option>
 
     </select>
-
+   </div>
    </div>
 
    <button
@@ -8607,19 +9078,64 @@ staff.staffId=newStaffId;
  </div>`;
 
 }
+  function toggleNewStaffPosFields(){
+
+ const access=document
+
+  .getElementById("newStaffPosAccess")
+
+  .value;
+
+ const fields=document
+
+  .getElementById("newStaffPosFields");
+
+ fields.style.display=
+
+  access==="yes"
+
+   ?"block"
+
+   :"none";
+
+}
   function createStaffAccount(){
 
  const name=document
 
-  .getElementById("newStaffName")
+ .getElementById("newStaffName")
 
-  .value.trim();
+ .value.trim();
 
- const staffId=document
+const position=document
 
-  .getElementById("newStaffId")
+ .getElementById("newStaffPosition")
 
-  .value.trim();
+ .value.trim();
+
+const salary=Number(
+
+ document.getElementById("newStaffSalary").value
+
+);
+
+const startDate=document
+
+ .getElementById("newStaffStartDate")
+
+ .value;
+
+const posAccess=document
+
+ .getElementById("newStaffPosAccess")
+
+ .value;
+
+const staffId=document
+
+ .getElementById("newStaffId")
+
+ .value.trim();
 
  const pin=document
 
@@ -8633,23 +9149,53 @@ staff.staffId=newStaffId;
 
   .value;
 
- if(!name || !staffId || !pin || !staffRole){
+ if(!name || !position || !startDate){
 
-  alert("Please complete all fields.");
+ alert("Please complete all employee fields.");
 
-  return;
+ return;
 
- }
+}
 
- if(!/^\d{4}$/.test(pin)){
+if(!Number.isFinite(salary) || salary<0){
 
-  alert("PIN must contain exactly 4 numbers.");
+ alert("Enter a valid monthly salary.");
 
-  return;
+ return;
 
- }
+}
+
+if(
+
+ posAccess==="yes" &&
+
+ (!staffId || !pin || !staffRole)
+
+){
+
+ alert("Please complete all POS access fields.");
+
+ return;
+
+}
+
+if(
+
+ posAccess==="yes" &&
+
+ !/^\d{4}$/.test(pin)
+
+){
+
+ alert("PIN must contain exactly 4 numbers.");
+
+ return;
+
+}
 
  if(
+
+ posAccess==="yes" &&
 
  staffId.toLowerCase()===
 
@@ -8657,25 +9203,61 @@ staff.staffId=newStaffId;
 
 ){
 
-  alert("That Staff ID is reserved for the Owner account.");
+ alert("That Staff ID is reserved for the Owner account.");
 
-  return;
+ return;
 
 }
 
- const alreadyExists=staffAccounts.some(
+const alreadyExists=
 
-  s=>s.staffId.toLowerCase()===staffId.toLowerCase()
+ posAccess==="yes"
 
- );
+  ?staffAccounts.some(
 
- if(alreadyExists){
+    s=>s.staffId.toLowerCase()===staffId.toLowerCase()
 
-  alert("This Staff ID already exists.");
+   )
 
-  return;
+  :false;
 
- }
+if(alreadyExists){
+
+ alert("This Staff ID already exists.");
+
+ return;
+
+}
+
+ const employeeId=createStaffMemberId();
+
+staffMembers.push({
+
+ id:employeeId,
+
+ name:name,
+
+ position:position,
+
+ salary:salary,
+
+ startDate:startDate,
+
+ active:true,
+
+ posStaffId:
+
+  posAccess==="yes"
+
+   ?staffId
+
+   :null
+
+});
+
+saveStaffMembers();
+
+if(posAccess==="yes"){
 
  staffAccounts.push({
 
@@ -8687,15 +9269,19 @@ staff.staffId=newStaffId;
 
   role:staffRole,
 
-  active:true
+  active:true,
+
+  employeeId:employeeId
 
  });
 
  saveStaffAccounts();
 
- alert("Staff account created successfully.");
+}
 
- ownerStaffList();
+alert("Employee created successfully.");
+
+ownerStaffList();
 
 }
   
