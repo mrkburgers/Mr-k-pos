@@ -8765,6 +8765,17 @@ item.allowedExtraIds=
     </strong>
 
    </div>
+      <div class="info-row">
+
+    <span>Period</span>
+
+    <strong>
+
+     ${period.closed ? "CLOSED" : "OPEN"}
+
+    </strong>
+
+   </div>
    <div class="info-row">
 
     <span>Bonus</span>
@@ -8867,70 +8878,294 @@ item.allowedExtraIds=
 </div>
       <div class="grid" style="margin-top:20px">
 
-    <div
+     ${
 
-     class="card"
+  !period.closed
 
-     onclick="ownerPaySalary('${period.id}')"
+  ?`
 
-     style="cursor:pointer">
+   <div
 
-     <div class="category-icon">💰</div>
+    class="card"
 
-     <h3>PAY SALARY</h3>
+    onclick="ownerPaySalary('${period.id}')"
 
-     <p class="muted">
+    style="cursor:pointer">
 
-      Record a full or partial salary payment
+    <div class="category-icon">💰</div>
 
-     </p>
+    <h3>PAY SALARY</h3>
 
-    </div>
+    <p class="muted">
 
-    <div
+     Record a full or partial salary payment
 
-     class="card"
+    </p>
 
-     onclick="ownerAddSalaryAdjustment('${period.id}')"
+   </div>
 
-     style="cursor:pointer">
+  `
 
-     <div class="category-icon">➕</div>
+  :""
 
-     <h3>ADD ADJUSTMENT</h3>
+ }
 
-     <p class="muted">
+     ${
 
-      Bonus, overtime or deduction
+  !period.closed
 
-     </p>
+  ?`
 
-    </div>
+   <div
 
-    <div
+    class="card"
 
-     class="card"
+    onclick="ownerAddSalaryAdjustment('${period.id}')"
 
-     onclick="ownerRecoverAdvance('${period.id}')"
+    style="cursor:pointer">
 
-     style="cursor:pointer">
+    <div class="category-icon">➕</div>
 
-     <div class="category-icon">↩️</div>
+    <h3>ADD ADJUSTMENT</h3>
 
-     <h3>RECOVER ADVANCE</h3>
+    <p class="muted">
 
-     <p class="muted">
+     Bonus, overtime or deduction
 
-      Deduct part of an outstanding advance
+    </p>
 
-     </p>
+   </div>
 
-    </div>
+  `
 
+  :""
+
+ }
+
+     ${
+
+  !period.closed
+
+  ?`
+
+   <div
+
+    class="card"
+
+    onclick="ownerRecoverAdvance('${period.id}')"
+
+    style="cursor:pointer">
+
+    <div class="category-icon">↩️</div>
+
+    <h3>RECOVER ADVANCE</h3>
+
+    <p class="muted">
+
+     Deduct part of an outstanding advance
+
+    </p>
+
+   </div>
+
+  `
+
+  :""
+
+ }
+    ${
+
+     period.closed
+
+     ?`
+
+      <div
+
+       class="card"
+
+       onclick="reopenSalaryPeriod('${period.id}')"
+
+       style="cursor:pointer">
+
+       <div class="category-icon">🔓</div>
+
+       <h3>REOPEN PERIOD</h3>
+
+       <p class="muted">
+
+        Reopen this salary period for corrections
+
+       </p>
+
+      </div>
+
+     `
+
+     :`
+
+      <div
+
+       class="card"
+
+       onclick="closeSalaryPeriod('${period.id}')"
+
+       style="cursor:pointer">
+
+       <div class="category-icon">🔒</div>
+
+       <h3>CLOSE PERIOD</h3>
+
+       <p class="muted">
+
+        Lock this settled salary period
+
+       </p>
+
+      </div>
+
+     `
+
+    }
    </div>
   </div>
 
  </div>`;
+
+}
+  function closeSalaryPeriod(periodId){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can close salary periods.");
+
+  return;
+
+ }
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  return;
+
+ }
+
+ if(period.closed){
+
+  alert("This salary period is already closed.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
+
+ const totals=calculateSalaryPeriod(period.id);
+
+ if(totals.remaining!==0){
+
+  alert(
+
+   "This salary period cannot be closed until the remaining balance is 0 CFA."
+
+  );
+
+  return;
+
+ }
+
+ const confirmed=confirm(
+
+  "Close this salary period?\n\n"+
+
+  "Once closed, salary payments, adjustments and advance recoveries will be locked."
+
+ );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ period.closed=true;
+
+ period.closedAt=new Date().toISOString();
+
+ period.closedBy=currentStaffName || "Owner";
+
+ saveSalaryPeriods();
+
+ alert("Salary period closed successfully.");
+
+ ownerSalaryPeriod(period.id);
+
+}
+  function reopenSalaryPeriod(periodId){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can reopen salary periods.");
+
+  return;
+
+ }
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  return;
+
+ }
+
+ if(!period.closed){
+
+  alert("This salary period is already open.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
+
+ const confirmed=confirm(
+
+  "Reopen this salary period?\n\n"+
+
+  "Payments, adjustments and advance recoveries will become available again."
+
+ );
+
+ if(!confirmed){
+
+  return;
+
+ }
+
+ period.closed=false;
+
+ period.reopenedAt=new Date().toISOString();
+
+ period.reopenedBy=currentStaffName || "Owner";
+
+ saveSalaryPeriods();
+
+ alert("Salary period reopened successfully.");
+
+ ownerSalaryPeriod(period.id);
 
 }
   function ownerPaySalary(periodId){
@@ -8952,7 +9187,15 @@ item.allowedExtraIds=
   return;
 
  }
+ if(period.closed){
 
+  alert("This salary period is closed. Reopen it before recording a salary payment.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
@@ -9188,7 +9431,15 @@ item.allowedExtraIds=
   return;
 
  }
+ if(period.closed){
 
+  alert("This salary period is closed. Reopen it before recording a salary payment.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
@@ -9415,7 +9666,15 @@ item.allowedExtraIds=
   return;
 
  }
+ if(period.closed){
 
+  alert("This salary period is closed. Reopen it before adding an adjustment.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
@@ -9556,7 +9815,15 @@ item.allowedExtraIds=
   return;
 
  }
+ if(period.closed){
 
+  alert("This salary period is closed. Reopen it before adding an adjustment.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
@@ -10003,7 +10270,15 @@ item.allowedExtraIds=
   return;
 
  }
+ if(period.closed){
 
+  alert("This salary period is closed. Reopen it before recovering an advance.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
@@ -10218,7 +10493,15 @@ item.allowedExtraIds=
   return;
 
  }
+  if(period.closed){
 
+  alert("This salary period is closed. Reopen it before recovering an advance.");
+
+  ownerSalaryPeriod(period.id);
+
+  return;
+
+ }
  const employee=staffMembers.find(
 
   s=>s.id===period.employeeId
