@@ -642,6 +642,55 @@ function saveStaffMembers(){
  );
 
 }
+let salaryPeriods=safeLoad("mrkSalaryPeriods",[]);
+function saveSalaryPeriods(){
+
+ localStorage.setItem(
+
+  "mrkSalaryPeriods",
+
+  JSON.stringify(salaryPeriods)
+
+ );
+
+}
+let staffAdvances=safeLoad("mrkStaffAdvances",[]);
+function saveStaffAdvances(){
+
+ localStorage.setItem(
+
+  "mrkStaffAdvances",
+
+  JSON.stringify(staffAdvances)
+
+ );
+
+}
+let payrollTransactions=safeLoad("mrkPayrollTransactions",[]);
+function savePayrollTransactions(){
+
+ localStorage.setItem(
+
+  "mrkPayrollTransactions",
+
+  JSON.stringify(payrollTransactions)
+
+ );
+
+}
+function createPayrollRecordId(prefix){
+
+ return (
+
+  prefix+"_"+
+
+  Date.now()+"_"+
+
+  Math.random().toString(36).slice(2,8)
+
+ );
+
+}
 let staffAccounts=safeLoad("mrkStaffAccounts",[
 
  {
@@ -7967,7 +8016,25 @@ item.allowedExtraIds=
      </p>
 
     </div>
+        <div
 
+     class="card"
+
+     onclick="ownerSalariesAdvances()"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">💵</div>
+
+     <h3>SALARIES / ADVANCES</h3>
+
+     <p class="muted">
+
+      Manage salaries, payments and advances
+
+     </p>
+
+    </div>
     <div
 
      class="card" onclick="ownerAddStaff()"
@@ -7991,6 +8058,2467 @@ item.allowedExtraIds=
   </div>
 
  </div>`;
+
+}
+  function ownerSalariesAdvances(){
+
+ clearInterval(timerInterval);
+
+ const staffCards=staffMembers.map(s=>`
+
+  <div
+
+   class="card"
+
+   onclick="ownerPayrollEmployee('${s.id}')"
+
+   style="cursor:pointer">
+
+   <div class="category-icon">👤</div>
+
+   <h3>${s.name}</h3>
+
+   <p class="muted">
+
+    ${s.position || "No position"}
+
+   </p>
+
+   <p>
+
+    Monthly Salary:
+
+    <strong>
+
+     ${Number(s.salary || 0).toLocaleString()} CFA
+
+    </strong>
+
+   </p>
+
+   <p class="muted">
+
+    ${s.active ? "ACTIVE" : "INACTIVE"}
+
+   </p>
+
+  </div>
+
+ `).join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerStaffManagement()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALARIES / ADVANCES</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    💵 SALARIES / ADVANCES
+
+   </span>
+
+   <h1>Employees</h1>
+
+   <p class="muted">
+
+    Select an employee to manage salary and advances.
+
+   </p>
+
+   <div class="grid">
+
+    ${
+
+     staffCards ||
+
+     `<p class="muted">No employees found.</p>`
+
+    }
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+  function ownerPayrollEmployee(employeeId){
+
+ clearInterval(timerInterval);
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+   const employeeAdvances=staffAdvances.filter(
+
+  advance=>advance.employeeId===employee.id
+
+ );
+
+ const outstandingAdvance=
+
+  employeeAdvances.reduce(
+
+   (total,advance)=>{
+
+    const recovered=
+
+     payrollTransactions
+
+      .filter(
+
+       transaction=>
+
+        transaction.type==="ADVANCE_RECOVERY" &&
+
+        transaction.advanceId===advance.id
+
+      )
+
+      .reduce(
+
+       (sum,transaction)=>
+
+        sum+Number(transaction.amount || 0),
+
+       0
+
+      );
+
+    return total+
+
+     Math.max(
+
+      0,
+
+      Number(advance.amount || 0)-recovered
+
+     );
+
+   },
+
+   0
+
+  );
+  const periods=salaryPeriods
+
+  .filter(
+
+   p=>p.employeeId===employee.id
+
+  )
+
+  .sort(
+
+   (a,b)=>b.month.localeCompare(a.month)
+
+  );
+
+  const periodCards=periods.map(p=>`
+
+  <div
+
+   class="card"
+
+   onclick="ownerSalaryPeriod('${p.id}')"
+
+   style="cursor:pointer">
+
+   <div class="category-icon">📅</div>
+
+   <h3>${p.month}</h3>
+
+   <p>
+
+    Base Salary:
+
+    <strong>
+
+     ${Number(p.baseSalary || 0).toLocaleString()} CFA
+
+    </strong>
+
+   </p>
+
+   <p class="muted">
+
+    Status: ${p.status || "UNPAID"}
+
+   </p>
+
+  </div>
+
+ `).join("");
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerSalariesAdvances()">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALARIES / ADVANCES</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    👤 EMPLOYEE PAYROLL
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    ${employee.position || "No position"}
+
+   </p>
+
+   <div class="info-row">
+
+    <span>Monthly Salary</span>
+
+    <strong>
+
+     ${Number(employee.salary || 0).toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+   <div class="info-row">
+
+    <span>Outstanding Advance</span>
+
+    <strong>
+
+     ${outstandingAdvance.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+   <div class="info-row">
+
+    <span>Status</span>
+
+    <strong>
+
+     ${employee.active ? "ACTIVE" : "INACTIVE"}
+
+    </strong>
+
+   </div>
+     <h2 style="margin-top:24px">
+
+    Salary Periods
+
+   </h2>
+
+   <div class="grid">
+
+    ${
+
+     periodCards ||
+
+     `<p class="muted">No salary periods yet.</p>`
+
+    }
+
+   </div>
+   <div class="grid" style="margin-top:20px">
+
+    <div
+
+     class="card"
+
+     onclick="ownerCreateSalaryPeriod('${employee.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">📅</div>
+
+     <h3>SALARY PERIOD</h3>
+
+     <p class="muted">
+
+      Create or manage salary periods
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerGiveAdvance('${employee.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">💵</div>
+
+     <h3>GIVE ADVANCE</h3>
+
+     <p class="muted">
+
+      Record a new staff advance
+
+     </p>
+
+    </div>
+
+   </div>
+
+  </div>
+
+ </div>`;
+
+}
+ function ownerCreateSalaryPeriod(employeeId){
+
+ clearInterval(timerInterval);
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const today=new Date();
+
+ const currentMonth=
+
+  today.getFullYear()+"-"+
+
+  String(today.getMonth()+1).padStart(2,"0");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerPayrollEmployee('${employee.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — NEW SALARY PERIOD</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📅 SALARY PERIOD
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    Create a salary period for this employee.
+
+   </p>
+
+   <div class="info-row">
+
+    <span>Month</span>
+
+    <input
+
+     id="salaryPeriodMonth"
+
+     type="month"
+
+     value="${currentMonth}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Base Salary</span>
+
+    <input
+
+     id="salaryPeriodBase"
+
+     type="number"
+
+     min="0"
+
+     value="${Number(employee.salary || 0)}">
+
+   </div>
+
+   <button
+
+    onclick="saveNewSalaryPeriod('${employee.id}')">
+
+    CREATE SALARY PERIOD
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+} 
+  function saveNewSalaryPeriod(employeeId){
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const month=document
+
+  .getElementById("salaryPeriodMonth")
+
+  .value;
+
+ const baseSalary=Number(
+
+  document
+
+   .getElementById("salaryPeriodBase")
+
+   .value
+
+ );
+
+ if(!month){
+
+  alert("Please select a salary month.");
+
+  return;
+
+ }
+
+ if(!Number.isFinite(baseSalary) || baseSalary<0){
+
+  alert("Enter a valid base salary.");
+
+  return;
+
+ }
+
+ const existing=salaryPeriods.find(
+
+  p=>
+
+   p.employeeId===employee.id &&
+
+   p.month===month
+
+ );
+
+ if(existing){
+
+  alert("A salary period already exists for this month.");
+
+  return;
+
+ }
+
+ const period={
+
+  id:createPayrollRecordId("salaryPeriod"),
+
+  employeeId:employee.id,
+
+  month:month,
+
+  baseSalary:baseSalary,
+
+  status:"UNPAID",
+
+  closed:false,
+
+  createdAt:new Date().toISOString(),
+
+  createdBy:
+
+   currentUser?.name ||
+
+   "Owner"
+
+ };
+
+ salaryPeriods.push(period);
+
+ saveSalaryPeriods();
+
+ alert("Salary period created successfully.");
+
+ ownerPayrollEmployee(employee.id);
+
+}
+  function ownerSalaryPeriod(periodId){
+
+ clearInterval(timerInterval);
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+ const totals=calculateSalaryPeriod(period.id);
+  const periodTransactions=payrollTransactions
+
+  .filter(
+
+   transaction=>transaction.periodId===period.id
+
+  )
+
+  .sort(
+
+   (a,b)=>
+
+    new Date(b.createdAt || 0)-
+
+    new Date(a.createdAt || 0)
+
+  );
+
+ const transactionCards=periodTransactions.map(
+
+  transaction=>`
+
+   <div class="info-row">
+
+    <span>
+
+     ${transaction.type.replaceAll("_"," ")}
+
+    </span>
+
+    <strong>
+
+     ${Number(transaction.amount || 0).toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+  `
+
+ ).join("");
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerPayrollEmployee('${employee.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALARY PERIOD</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    📅 ${period.month}
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    ${employee.position || "No position"}
+
+   </p>
+
+   <div class="info-row">
+
+    <span>Base Salary</span>
+
+    <strong>
+
+     ${Number(period.baseSalary || 0).toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Status</span>
+
+    <strong>
+
+     ${period.status || "UNPAID"}
+
+    </strong>
+
+   </div>
+   <div class="info-row">
+
+    <span>Bonus</span>
+
+    <strong>
+
+     +${totals.bonus.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Overtime</span>
+
+    <strong>
+
+     +${totals.overtime.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Deductions</span>
+
+    <strong>
+
+     -${totals.deduction.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Advance Recovery</span>
+
+    <strong>
+
+     -${totals.advanceRecovery.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Salary Due</span>
+
+    <strong>
+
+     ${totals.salaryDue.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Already Paid</span>
+
+    <strong>
+
+     ${totals.paid.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Remaining</span>
+
+    <strong>
+
+     ${totals.remaining.toLocaleString()} CFA
+
+    </strong>
+
+   </div>
+   <h2 style="margin-top:24px">
+
+ Payroll History
+
+</h2>
+
+<div>
+
+ ${
+
+  transactionCards ||
+
+  `<p class="muted">No payroll transactions yet.</p>`
+
+ }
+
+</div>
+      <div class="grid" style="margin-top:20px">
+
+    <div
+
+     class="card"
+
+     onclick="ownerPaySalary('${period.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">💰</div>
+
+     <h3>PAY SALARY</h3>
+
+     <p class="muted">
+
+      Record a full or partial salary payment
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerAddSalaryAdjustment('${period.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">➕</div>
+
+     <h3>ADD ADJUSTMENT</h3>
+
+     <p class="muted">
+
+      Bonus, overtime or deduction
+
+     </p>
+
+    </div>
+
+    <div
+
+     class="card"
+
+     onclick="ownerRecoverAdvance('${period.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">↩️</div>
+
+     <h3>RECOVER ADVANCE</h3>
+
+     <p class="muted">
+
+      Deduct part of an outstanding advance
+
+     </p>
+
+    </div>
+
+   </div>
+  </div>
+
+ </div>`;
+
+}
+  function ownerPaySalary(periodId){
+
+ clearInterval(timerInterval);
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ const totals=calculateSalaryPeriod(periodId);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerSalaryPeriod('${period.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — PAY SALARY</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    💰 SALARY PAYMENT
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">${period.month}</p>
+
+   <div class="info-row">
+
+    <span>Remaining Salary</span>
+
+    <strong>${totals.remaining.toLocaleString()} CFA</strong>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Amount to Pay</span>
+
+    <input
+
+     id="salaryPaymentAmount"
+
+     type="number"
+
+     min="0"
+
+     value="${totals.remaining}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Payment Date</span>
+
+    <input
+
+     id="salaryPaymentDate"
+
+     type="date"
+
+     value="${new Date().toISOString().slice(0,10)}">
+
+   </div>
+
+   <button
+
+    onclick="saveSalaryPayment('${period.id}')">
+
+    PAY SALARY
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function processPayrollCashOut(amount,reason){
+
+ amount=Number(amount);
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid payment amount.");
+
+  return false;
+
+ }
+
+ const activeShift=getActiveShift();
+
+ if(activeShift){
+
+  const shiftCash=
+
+   calculateExpectedCash(activeShift);
+
+  const ownerCash=
+
+   Number(ownerCashAccount.balance || 0);
+
+  if(amount>shiftCash){
+
+   const requiredCash=
+
+    amount-shiftCash;
+
+   if(requiredCash>ownerCash){
+
+    alert(
+
+     "Not enough cash available in the Shift and Owner Cash Account."
+
+    );
+
+    return false;
+
+   }
+
+   const confirmed=confirm(
+
+    "Insufficient Shift Cash\n\n"+
+
+    "Shift available: "+
+
+    shiftCash.toLocaleString()+" CFA\n"+
+
+    "Payment: "+
+
+    amount.toLocaleString()+" CFA\n"+
+
+    "Transfer required from Owner Cash Account: "+
+
+    requiredCash.toLocaleString()+" CFA\n\n"+
+
+    "Transfer and continue?"
+
+   );
+
+   if(!confirmed){
+
+    return false;
+
+   }
+
+   const transferred=shiftCashIn(
+
+    requiredCash,
+
+    reason+" cash top-up"
+
+   );
+
+   if(!transferred){
+
+    return false;
+
+   }
+
+  }
+
+  return shiftExpenseOut(
+
+   amount,
+
+   reason
+
+  );
+
+ }
+
+ if(
+
+  amount>
+
+  Number(ownerCashAccount.balance || 0)
+
+ ){
+
+  alert(
+
+   "Not enough cash in the Owner Cash Account."
+
+  );
+
+  return false;
+
+ }
+
+ return addOwnerCashTransaction(
+
+  "OUT",
+
+  amount,
+
+  reason,
+
+  "PAYROLL"
+
+ );
+
+}
+  function saveSalaryPayment(periodId){
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const amount=Number(
+
+  document
+
+   .getElementById("salaryPaymentAmount")
+
+   .value
+
+ );
+
+ const paymentDate=document
+
+  .getElementById("salaryPaymentDate")
+
+  .value;
+
+ const totals=calculateSalaryPeriod(period.id);
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid salary payment amount.");
+
+  return;
+
+ }
+
+ if(amount>totals.remaining){
+
+  alert(
+
+   "Payment cannot exceed the remaining salary balance."
+
+  );
+
+  return;
+
+ }
+
+ if(!paymentDate){
+
+  alert("Please select a payment date.");
+
+  return;
+
+ }
+ let payrollExpenseCategory=
+
+  expenseCategories.find(
+
+   category=>category.id==="payroll"
+
+  );
+
+ if(!payrollExpenseCategory){
+
+  payrollExpenseCategory={
+
+   id:"payroll",
+
+   name:"Payroll",
+
+   active:true
+
+  };
+
+  expenseCategories.push(
+
+   payrollExpenseCategory
+
+  );
+
+  saveExpenseCategories();
+
+ }
+ const paid=processPayrollCashOut(
+
+  amount,
+
+  "Salary payment — "+
+
+  employee.name+
+
+  " — "+
+
+  period.month
+
+ );
+
+ if(!paid){
+
+  return;
+
+ }
+ const expense={
+
+  id:
+
+   "expense_"+
+
+   Date.now()+"_"+
+
+   Math.random()
+
+    .toString(36)
+
+    .slice(2,8),
+
+  categoryId:payrollExpenseCategory.id,
+
+  categoryName:payrollExpenseCategory.name,
+
+  amount:amount,
+
+  note:
+
+   "Salary payment — "+
+
+   employee.name+
+
+   " — "+
+
+   period.month,
+
+  reference:period.id,
+
+  paymentMethod:"CASH",
+
+  createdAt:Date.now(),
+
+  createdBy:currentStaffName,
+
+  createdByStaffId:currentStaffId,
+
+  createdByRole:role,
+
+  source:"SYSTEM"
+
+ };
+
+ expenses.unshift(expense);
+
+ saveExpenses();
+ payrollTransactions.push({
+
+  id:createPayrollRecordId("payrollTransaction"),
+
+  employeeId:employee.id,
+
+  periodId:period.id,
+
+  type:"SALARY_PAYMENT",
+
+  amount:amount,
+    expenseId:expense.id,
+  date:paymentDate,
+
+  note:"",
+
+  createdAt:new Date().toISOString(),
+
+  createdBy:
+
+   currentStaffName ||
+
+   "Owner"
+
+ });
+
+ savePayrollTransactions();
+
+ const updatedTotals=
+
+  calculateSalaryPeriod(period.id);
+
+ if(updatedTotals.remaining<=0){
+
+  period.status="PAID";
+
+ }else{
+
+  period.status="PARTIALLY PAID";
+
+ }
+
+ saveSalaryPeriods();
+
+ alert("Salary payment saved successfully.");
+
+ ownerSalaryPeriod(period.id);
+
+}
+  function ownerAddSalaryAdjustment(periodId){
+
+ clearInterval(timerInterval);
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerSalaryPeriod('${period.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — SALARY ADJUSTMENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ➕ SALARY ADJUSTMENT
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    ${period.month}
+
+   </p>
+
+   <div class="info-row">
+
+    <span>Adjustment Type</span>
+
+    <select id="salaryAdjustmentType">
+
+     <option value="BONUS">
+
+      Bonus
+
+     </option>
+
+     <option value="OVERTIME">
+
+      Overtime
+
+     </option>
+
+     <option value="DEDUCTION">
+
+      Deduction
+
+     </option>
+
+    </select>
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Amount</span>
+
+    <input
+
+     id="salaryAdjustmentAmount"
+
+     type="number"
+
+     min="0">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Reason / Note</span>
+
+    <input
+
+     id="salaryAdjustmentNote"
+
+     type="text"
+
+     placeholder="Optional note">
+
+   </div>
+
+   <button
+
+    onclick="saveSalaryAdjustment('${period.id}')">
+
+    SAVE ADJUSTMENT
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveSalaryAdjustment(periodId){
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const type=document
+
+  .getElementById("salaryAdjustmentType")
+
+  .value;
+
+ const amount=Number(
+
+  document
+
+   .getElementById("salaryAdjustmentAmount")
+
+   .value
+
+ );
+
+ const note=document
+
+  .getElementById("salaryAdjustmentNote")
+
+  .value
+
+  .trim();
+
+ if(
+
+  !["BONUS","OVERTIME","DEDUCTION"]
+
+   .includes(type)
+
+ ){
+
+  alert("Invalid adjustment type.");
+
+  return;
+
+ }
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid adjustment amount.");
+
+  return;
+
+ }
+ if(type==="DEDUCTION"){
+
+  const totalsBefore=
+
+   calculateSalaryPeriod(period.id);
+
+  if(amount>totalsBefore.remaining){
+
+   alert(
+
+    "Deduction cannot exceed the remaining salary balance."
+
+   );
+
+   return;
+
+  }
+
+ }
+ payrollTransactions.push({
+
+  id:createPayrollRecordId("payrollTransaction"),
+
+  employeeId:employee.id,
+
+  periodId:period.id,
+
+  type:type,
+
+  amount:amount,
+
+  note:note,
+
+  createdAt:new Date().toISOString(),
+
+  createdBy:
+
+   currentStaffName ||
+
+   "Owner"
+
+ });
+
+ savePayrollTransactions();
+
+ const totals=
+
+  calculateSalaryPeriod(period.id);
+
+ if(totals.remaining<=0){
+
+  period.status="PAID";
+
+ }else if(totals.paid>0){
+
+  period.status="PARTIALLY PAID";
+
+ }else{
+
+  period.status="UNPAID";
+
+ }
+
+ saveSalaryPeriods();
+
+ alert("Salary adjustment saved successfully.");
+
+ ownerSalaryPeriod(period.id);
+
+}
+  function ownerGiveAdvance(employeeId){
+
+ clearInterval(timerInterval);
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerPayrollEmployee('${employee.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — GIVE ADVANCE</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    💵 STAFF ADVANCE
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    Record money given to this employee as an advance.
+
+   </p>
+
+   <div class="info-row">
+
+    <span>Advance Amount</span>
+
+    <input
+
+     id="staffAdvanceAmount"
+
+     type="number"
+
+     min="0">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Date</span>
+
+    <input
+
+     id="staffAdvanceDate"
+
+     type="date"
+
+     value="${new Date().toISOString().slice(0,10)}">
+
+   </div>
+
+   <div class="info-row">
+
+    <span>Reason / Note</span>
+
+    <input
+
+     id="staffAdvanceNote"
+
+     type="text"
+
+     placeholder="Optional note">
+
+   </div>
+
+   <button
+
+    onclick="saveStaffAdvance('${employee.id}')">
+
+    GIVE ADVANCE
+
+   </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function saveStaffAdvance(employeeId){
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const amount=Number(
+
+  document
+
+   .getElementById("staffAdvanceAmount")
+
+   .value
+
+ );
+
+ const advanceDate=document
+
+  .getElementById("staffAdvanceDate")
+
+  .value;
+
+ const note=document
+
+  .getElementById("staffAdvanceNote")
+
+  .value
+
+  .trim();
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid advance amount.");
+
+  return;
+
+ }
+
+ if(!advanceDate){
+
+  alert("Please select an advance date.");
+
+  return;
+
+ }
+
+ const paid=processPayrollCashOut(
+
+  amount,
+
+  "Staff advance — "+
+
+  employee.name
+
+ );
+
+ if(!paid){
+
+  return;
+
+ }
+
+ const advance={
+
+  id:createPayrollRecordId("advance"),
+
+  employeeId:employee.id,
+
+  amount:amount,
+
+  date:advanceDate,
+
+  note:note,
+
+  status:"OUTSTANDING",
+
+  createdAt:new Date().toISOString(),
+
+  createdBy:
+
+   currentStaffName ||
+
+   "Owner"
+
+ };
+
+  let payrollExpenseCategory=
+
+  expenseCategories.find(
+
+   category=>category.id==="payroll"
+
+  );
+
+ if(!payrollExpenseCategory){
+
+  payrollExpenseCategory={
+
+   id:"payroll",
+
+   name:"Payroll",
+
+   active:true
+
+  };
+
+  expenseCategories.push(
+
+   payrollExpenseCategory
+
+  );
+
+  saveExpenseCategories();
+
+ }
+
+ const expense={
+
+  id:
+
+   "expense_"+
+
+   Date.now()+"_"+
+
+   Math.random()
+
+    .toString(36)
+
+    .slice(2,8),
+
+  categoryId:payrollExpenseCategory.id,
+
+  categoryName:payrollExpenseCategory.name,
+
+  amount:amount,
+
+  note:
+
+   "Staff advance — "+
+
+   employee.name,
+
+  reference:advance.id,
+
+  paymentMethod:"CASH",
+
+  createdAt:Date.now(),
+
+  createdBy:currentStaffName,
+
+  createdByStaffId:currentStaffId,
+
+  createdByRole:role,
+
+  source:"SYSTEM"
+
+ };
+
+ expenses.unshift(expense);
+
+ saveExpenses();
+  advance.expenseId=expense.id;
+
+ staffAdvances.push(advance);
+
+ saveStaffAdvances();
+ alert("Staff advance saved successfully.");
+
+ ownerPayrollEmployee(employee.id);
+
+}
+  function ownerRecoverAdvance(periodId){
+
+ clearInterval(timerInterval);
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const advances=staffAdvances
+
+  .filter(
+
+   advance=>advance.employeeId===employee.id
+
+  )
+
+  .map(advance=>{
+
+   const recovered=payrollTransactions
+
+    .filter(
+
+     transaction=>
+
+      transaction.type==="ADVANCE_RECOVERY" &&
+
+      transaction.advanceId===advance.id
+
+    )
+
+    .reduce(
+
+     (sum,transaction)=>
+
+      sum+Number(transaction.amount || 0),
+
+     0
+
+    );
+
+   return {
+
+    ...advance,
+
+    remaining:Math.max(
+
+     0,
+
+     Number(advance.amount || 0)-recovered
+
+    )
+
+   };
+
+  })
+
+  .filter(
+
+   advance=>advance.remaining>0
+
+  );
+
+ const advanceOptions=advances.map(
+
+  advance=>`
+
+   <option value="${advance.id}">
+
+    ${advance.date} —
+
+    ${advance.remaining.toLocaleString()} CFA remaining
+
+   </option>
+
+  `
+
+ ).join("");
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerSalaryPeriod('${period.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — RECOVER ADVANCE</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    ↩️ ADVANCE RECOVERY
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    ${period.month}
+
+   </p>
+
+   ${
+
+    advances.length
+
+    ? `
+
+     <div class="info-row">
+
+      <span>Advance</span>
+
+      <select id="advanceRecoveryId">
+
+       ${advanceOptions}
+
+      </select>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Amount to Recover</span>
+
+      <input
+
+       id="advanceRecoveryAmount"
+
+       type="number"
+
+       min="0">
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Reason / Note</span>
+
+      <input
+
+       id="advanceRecoveryNote"
+
+       type="text"
+
+       placeholder="Optional note">
+
+     </div>
+
+     <button
+
+      onclick="saveAdvanceRecovery('${period.id}')">
+
+      RECOVER ADVANCE
+
+     </button>
+
+    `
+
+    : `
+
+     <p class="muted">
+
+      No outstanding advances for this employee.
+
+     </p>
+
+    `
+
+   }
+
+  </div>
+
+ </div>`;
+
+}
+  function saveAdvanceRecovery(periodId){
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  alert("Salary period not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===period.employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const advanceId=document
+
+  .getElementById("advanceRecoveryId")
+
+  .value;
+
+ const amount=Number(
+
+  document
+
+   .getElementById("advanceRecoveryAmount")
+
+   .value
+
+ );
+
+ const note=document
+
+  .getElementById("advanceRecoveryNote")
+
+  .value
+
+  .trim();
+
+ const advance=staffAdvances.find(
+
+  a=>
+
+   a.id===advanceId &&
+
+   a.employeeId===employee.id
+
+ );
+
+ if(!advance){
+
+  alert("Advance not found.");
+
+  return;
+
+ }
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  alert("Enter a valid recovery amount.");
+
+  return;
+
+ }
+
+ const alreadyRecovered=payrollTransactions
+
+  .filter(
+
+   transaction=>
+
+    transaction.type==="ADVANCE_RECOVERY" &&
+
+    transaction.advanceId===advance.id
+
+  )
+
+  .reduce(
+
+   (sum,transaction)=>
+
+    sum+Number(transaction.amount || 0),
+
+   0
+
+  );
+
+ const advanceRemaining=Math.max(
+
+  0,
+
+  Number(advance.amount || 0)-
+
+  alreadyRecovered
+
+ );
+
+ if(amount>advanceRemaining){
+
+  alert(
+
+   "Recovery cannot exceed the outstanding advance balance."
+
+  );
+
+  return;
+
+ }
+
+ const totalsBefore=
+
+  calculateSalaryPeriod(period.id);
+
+ if(amount>totalsBefore.remaining){
+
+  alert(
+
+   "Recovery cannot exceed the remaining salary balance."
+
+  );
+
+  return;
+
+ }
+
+ payrollTransactions.push({
+
+  id:createPayrollRecordId("payrollTransaction"),
+
+  employeeId:employee.id,
+
+  periodId:period.id,
+
+  advanceId:advance.id,
+
+  type:"ADVANCE_RECOVERY",
+
+  amount:amount,
+
+  note:note,
+
+  createdAt:new Date().toISOString(),
+
+  createdBy:
+
+   currentStaffName ||
+
+   "Owner"
+
+ });
+
+ savePayrollTransactions();
+
+ const totalRecovered=
+
+  alreadyRecovered+amount;
+
+ if(
+
+  totalRecovered>=
+
+  Number(advance.amount || 0)
+
+ ){
+
+  advance.status="SETTLED";
+
+ }else{
+
+  advance.status="PARTIALLY RECOVERED";
+
+ }
+
+ saveStaffAdvances();
+
+ const totalsAfter=
+
+  calculateSalaryPeriod(period.id);
+
+ if(totalsAfter.remaining<=0){
+
+  period.status="PAID";
+
+ }else if(totalsAfter.paid>0){
+
+  period.status="PARTIALLY PAID";
+
+ }else{
+
+  period.status="UNPAID";
+
+ }
+
+ saveSalaryPeriods();
+
+ alert("Advance recovery saved successfully.");
+
+ ownerSalaryPeriod(period.id);
+
+}
+  function calculateSalaryPeriod(periodId){
+
+ const period=salaryPeriods.find(
+
+  p=>p.id===periodId
+
+ );
+
+ if(!period){
+
+  return {
+
+   bonus:0,
+
+   overtime:0,
+
+   deduction:0,
+
+   advanceRecovery:0,
+
+   paid:0,
+
+   salaryDue:0,
+
+   remaining:0
+
+  };
+
+ }
+
+ const transactions=payrollTransactions.filter(
+
+  t=>t.periodId===periodId
+
+ );
+
+ const totalByType=type=>
+
+  transactions
+
+   .filter(t=>t.type===type)
+
+   .reduce(
+
+    (sum,t)=>sum+Number(t.amount || 0),
+
+    0
+
+   );
+
+ const bonus=totalByType("BONUS");
+
+ const overtime=totalByType("OVERTIME");
+
+ const deduction=totalByType("DEDUCTION");
+
+ const advanceRecovery=
+
+  totalByType("ADVANCE_RECOVERY");
+
+ const paid=totalByType("SALARY_PAYMENT");
+
+ const salaryDue=
+
+  Number(period.baseSalary || 0)+
+
+  bonus+
+
+  overtime-
+
+  deduction-
+
+  advanceRecovery;
+
+ const remaining=Math.max(
+
+  0,
+
+  salaryDue-paid
+
+ );
+
+ return {
+
+  bonus,
+
+  overtime,
+
+  deduction,
+
+  advanceRecovery,
+
+  paid,
+
+  salaryDue,
+
+  remaining
+
+ };
 
 }
   function ownerEditAccount(){
