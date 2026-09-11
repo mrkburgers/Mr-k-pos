@@ -678,6 +678,19 @@ function savePayrollTransactions(){
  );
 
 }
+  let finalSettlements=safeLoad("mrkFinalSettlements",[]);
+
+function saveFinalSettlements(){
+
+ localStorage.setItem(
+
+  "mrkFinalSettlements",
+
+  JSON.stringify(finalSettlements)
+
+ );
+
+}
 function createPayrollRecordId(prefix){
 
  return (
@@ -8155,7 +8168,25 @@ item.allowedExtraIds=
     }
 
    </div>
+     <div
 
+     class="card"
+
+     onclick="ownerFinalSettlement('${employee.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🏁</div>
+
+     <h3>FINAL SETTLEMENT</h3>
+
+     <p class="muted">
+
+      Review and finalize employee settlement
+
+     </p>
+
+    </div>
   </div>
 
  </div>`;
@@ -8416,6 +8447,983 @@ item.allowedExtraIds=
 
  </div>`;
 
+}
+  function calculateFinalSettlement(employeeId){
+
+ const employeePeriods=salaryPeriods.filter(
+
+  period=>period.employeeId===employeeId
+
+ );
+
+ const salaryRemaining=
+
+  employeePeriods.reduce(
+
+   (total,period)=>{
+
+    const totals=calculateSalaryPeriod(period.id);
+
+    return total+Number(totals.remaining || 0);
+
+   },
+
+   0
+
+  );
+
+ const employeeAdvances=staffAdvances.filter(
+
+  advance=>advance.employeeId===employeeId
+
+ );
+
+ const outstandingAdvance=
+
+  employeeAdvances.reduce(
+
+   (total,advance)=>{
+
+    const recovered=
+
+     payrollTransactions
+
+      .filter(
+
+       transaction=>
+
+        transaction.type==="ADVANCE_RECOVERY" &&
+
+        transaction.advanceId===advance.id
+
+      )
+
+      .reduce(
+
+       (sum,transaction)=>
+
+        sum+Number(transaction.amount || 0),
+
+       0
+
+      );
+
+    return total+
+
+     Math.max(
+
+      0,
+
+      Number(advance.amount || 0)-recovered
+
+     );
+
+   },
+
+   0
+
+  );
+
+ return {
+
+  salaryRemaining,
+
+  outstandingAdvance,
+
+  finalBalance:
+
+   salaryRemaining-outstandingAdvance
+
+ };
+
+}
+  function ownerFinalSettlement(employeeId){
+
+ clearInterval(timerInterval);
+
+ if(role!=="owner"){
+
+  alert("Only the owner can manage final settlements.");
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const totals=
+
+  calculateFinalSettlement(employee.id);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button
+
+   class="back"
+
+   onclick="ownerPayrollEmployee('${employee.id}')">
+
+   ← BACK
+
+  </button>
+
+  <div class="logo">
+
+   MR K BURGERS
+
+   <span>OWNER — FINAL SETTLEMENT</span>
+
+  </div>
+
+  <div class="panel">
+
+   <span class="badge">
+
+    🏁 FINAL SETTLEMENT
+
+   </span>
+
+   <h1>${employee.name}</h1>
+
+   <p class="muted">
+
+    ${employee.position || "No position"}
+
+   </p>
+
+   <div class="summary">
+
+    <div class="info-row">
+
+     <span>Unpaid Salary</span>
+
+     <strong>
+
+      ${totals.salaryRemaining.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+    <div class="info-row">
+
+     <span>Outstanding Advances</span>
+
+     <strong>
+
+      ${totals.outstandingAdvance.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+        <div class="info-row">
+
+     <span>Current Final Balance</span>
+
+     <strong id="finalSettlementCalculatedBalance">
+
+      ${totals.finalBalance.toLocaleString()} CFA
+
+     </strong>
+
+    </div>
+
+   </div>
+
+   <div class="form" style="margin-top:20px">
+
+    <label>Final Bonus</label>
+
+        <input
+
+     id="finalSettlementBonus"
+
+     type="number"
+
+     min="0"
+
+     value="0"
+
+     oninput="previewFinalSettlement('${employee.id}')">
+
+    <label>Final Overtime</label>
+
+    <input
+
+     id="finalSettlementOvertime"
+
+     type="number"
+
+     min="0"
+
+     value="0"
+
+     oninput="previewFinalSettlement('${employee.id}')">
+
+    <label>Final Deduction</label>
+
+        <button
+
+     class="primary"
+
+     onclick="saveFinalSettlement('${employee.id}')">
+
+     FINALIZE SETTLEMENT
+
+    </button>
+
+  </div>
+
+ </div>`;
+
+}
+  function previewFinalSettlement(employeeId){
+
+ const bonus=
+
+  Number(
+
+   document.getElementById("finalSettlementBonus").value || 0
+
+  );
+
+ const overtime=
+
+  Number(
+
+   document.getElementById("finalSettlementOvertime").value || 0
+
+  );
+
+ const deduction=
+
+  Number(
+
+   document.getElementById("finalSettlementDeduction").value || 0
+
+  );
+
+ if(
+
+  bonus<0 ||
+
+  overtime<0 ||
+
+  deduction<0
+
+ ){
+
+  alert("Final settlement adjustments cannot be negative.");
+
+  return;
+
+ }
+
+ const totals=
+
+  calculateFinalSettlement(employeeId);
+
+ const finalBalance=
+
+  totals.salaryRemaining+
+
+  bonus+
+
+  overtime-
+
+  deduction-
+
+  totals.outstandingAdvance;
+
+ const balanceElement=
+
+  document.getElementById(
+
+   "finalSettlementCalculatedBalance"
+
+  );
+
+ if(balanceElement){
+
+  balanceElement.textContent=
+
+   finalBalance.toLocaleString()+" CFA";
+
+ }
+
+}
+  function saveFinalSettlement(employeeId){
+
+ if(role!=="owner"){
+
+  alert("Only the owner can finalize employee settlements.");
+
+  return;
+
+ }
+
+ const employee=staffMembers.find(
+
+  s=>s.id===employeeId
+
+ );
+
+ if(!employee){
+
+  alert("Employee not found.");
+
+  ownerSalariesAdvances();
+
+  return;
+
+ }
+
+ const existingSettlement=
+
+  finalSettlements.find(
+
+   settlement=>
+
+    settlement.employeeId===employee.id &&
+
+    settlement.status!=="REOPENED"
+
+  );
+
+ if(existingSettlement){
+
+  alert("This employee already has a finalized settlement.");
+
+  return;
+
+ }
+
+ const bonus=
+
+  Number(
+
+   document.getElementById("finalSettlementBonus").value || 0
+
+  );
+
+ const overtime=
+
+  Number(
+
+   document.getElementById("finalSettlementOvertime").value || 0
+
+  );
+
+ const deduction=
+
+  Number(
+
+   document.getElementById("finalSettlementDeduction").value || 0
+
+  );
+
+ if(
+
+  !Number.isFinite(bonus) ||
+
+  !Number.isFinite(overtime) ||
+
+  !Number.isFinite(deduction) ||
+
+  bonus<0 ||
+
+  overtime<0 ||
+
+  deduction<0
+
+ ){
+
+  alert("Enter valid final settlement adjustments.");
+
+  return;
+
+ }
+
+ const totals=
+
+  calculateFinalSettlement(employee.id);
+
+ const finalBalance=
+
+  totals.salaryRemaining+
+
+  bonus+
+
+  overtime-
+
+  deduction-
+
+  totals.outstandingAdvance;
+ const balanceMessage=
+
+  finalBalance>0
+
+   ?"Mr K will pay the employee "
+
+    +finalBalance.toLocaleString()+" CFA."
+
+   :finalBalance<0
+
+    ?"The employee will have "
+
+     +Math.abs(finalBalance).toLocaleString()
+
+     +" CFA recorded as recoverable."
+
+    :"The employee is fully settled. No cash payment is required.";
+
+ const confirmed=confirm(
+
+  "Finalize settlement for "+employee.name+"?\n\n"+
+
+  "Unpaid Salary: "+
+
+  totals.salaryRemaining.toLocaleString()+" CFA\n"+
+
+  "Final Bonus: "+
+
+  bonus.toLocaleString()+" CFA\n"+
+
+  "Final Overtime: "+
+
+  overtime.toLocaleString()+" CFA\n"+
+
+  "Final Deduction: "+
+
+  deduction.toLocaleString()+" CFA\n"+
+
+  "Outstanding Advances: "+
+
+  totals.outstandingAdvance.toLocaleString()+" CFA\n\n"+
+
+  "FINAL BALANCE: "+
+
+  finalBalance.toLocaleString()+" CFA\n\n"+
+
+  balanceMessage
+
+ );
+
+ if(!confirmed){
+
+  return;
+
+ }
+ const settlementId=
+
+  createPayrollRecordId("finalSettlement");
+
+ const salaryItems=
+
+  salaryPeriods
+
+   .filter(
+
+    period=>period.employeeId===employee.id
+
+   )
+
+   .map(period=>{
+
+    const periodTotals=
+
+     calculateSalaryPeriod(period.id);
+
+    return {
+
+     periodId:period.id,
+
+     month:period.month,
+
+     remaining:
+
+      Number(periodTotals.remaining || 0)
+
+    };
+
+   })
+
+   .filter(
+
+    item=>item.remaining>0
+
+   );
+
+ const advanceItems=
+
+  staffAdvances
+
+   .filter(
+
+    advance=>advance.employeeId===employee.id
+
+   )
+
+   .map(advance=>{
+
+    const recovered=
+
+     payrollTransactions
+
+      .filter(
+
+       transaction=>
+
+        transaction.type==="ADVANCE_RECOVERY" &&
+
+        transaction.advanceId===advance.id
+
+      )
+
+      .reduce(
+
+       (sum,transaction)=>
+
+        sum+Number(transaction.amount || 0),
+
+       0
+
+      );
+
+    return {
+
+     advanceId:advance.id,
+
+     originalAmount:
+
+      Number(advance.amount || 0),
+
+     outstanding:
+
+      Math.max(
+
+       0,
+
+       Number(advance.amount || 0)-recovered
+
+      )
+
+    };
+
+   })
+
+   .filter(
+
+    item=>item.outstanding>0
+
+   );
+
+ const settlement={
+
+  id:settlementId,
+
+  employeeId:employee.id,
+
+  employeeName:employee.name,
+
+  salaryItems:salaryItems,
+
+  salaryRemaining:
+
+   totals.salaryRemaining,
+
+  bonus:bonus,
+
+  overtime:overtime,
+
+  deduction:deduction,
+
+  advanceItems:advanceItems,
+
+  outstandingAdvance:
+
+   totals.outstandingAdvance,
+
+  finalBalance:finalBalance,
+
+  status:"PENDING",
+
+  createdAt:
+
+   new Date().toISOString(),
+
+  createdBy:
+
+   currentStaffName || "Owner"
+
+ };
+  let settlementExpenseId=null;
+
+ if(finalBalance>0){
+
+  let payrollExpenseCategory=
+
+   expenseCategories.find(
+
+    category=>category.id==="payroll"
+
+   );
+
+  if(!payrollExpenseCategory){
+
+   payrollExpenseCategory={
+
+    id:"payroll",
+
+    name:"Payroll",
+
+    active:true
+
+   };
+
+   expenseCategories.push(
+
+    payrollExpenseCategory
+
+   );
+
+   saveExpenseCategories();
+
+  }
+
+  const paid=
+
+   processPayrollCashOut(
+
+    finalBalance,
+
+    "Final settlement — "+employee.name
+
+   );
+
+  if(!paid){
+
+   return;
+
+  }
+
+  const expense={
+
+   id:
+
+    "expense_"+
+
+    Date.now()+"_"+
+
+    Math.random()
+
+     .toString(36)
+
+     .slice(2,8),
+
+   categoryId:
+
+    payrollExpenseCategory.id,
+
+   categoryName:
+
+    payrollExpenseCategory.name,
+
+   amount:finalBalance,
+
+   note:
+
+    "Final settlement — "+
+
+    employee.name,
+
+   reference:
+
+    settlementId,
+
+   paymentMethod:"CASH",
+
+   createdAt:Date.now(),
+
+   createdBy:currentStaffName,
+
+   createdByStaffId:
+
+    currentStaffId,
+
+   createdByRole:role,
+
+   source:"SYSTEM"
+
+  };
+
+  expenses.unshift(expense);
+
+  saveExpenses();
+
+  settlementExpenseId=
+
+   expense.id;
+
+ }
+ salaryItems.forEach(item=>{
+
+  payrollTransactions.push({
+
+   id:
+
+    createPayrollRecordId(
+
+     "payrollTransaction"
+
+    ),
+
+   employeeId:
+
+    employee.id,
+
+   periodId:
+
+    item.periodId,
+
+   type:
+
+    "SALARY_PAYMENT",
+
+   amount:
+
+    item.remaining,
+
+   expenseId:
+
+    settlementExpenseId,
+
+   finalSettlementId:
+
+    settlementId,
+
+   date:
+
+    new Date()
+
+     .toISOString()
+
+     .slice(0,10),
+
+   note:
+
+    "Final settlement",
+
+   createdAt:
+
+    new Date().toISOString(),
+
+   createdBy:
+
+    currentStaffName || "Owner"
+
+  });
+
+  const period=
+
+   salaryPeriods.find(
+
+    p=>p.id===item.periodId
+
+   );
+
+  if(period){
+
+   period.status="PAID";
+
+  }
+
+ });
+
+ savePayrollTransactions();
+
+ saveSalaryPeriods();
+ advanceItems.forEach(item=>{
+
+  payrollTransactions.push({
+
+   id:
+
+    createPayrollRecordId(
+
+     "payrollTransaction"
+
+    ),
+
+   employeeId:
+
+    employee.id,
+
+   advanceId:
+
+    item.advanceId,
+
+   type:
+
+    "ADVANCE_RECOVERY",
+
+   amount:
+
+    item.outstanding,
+
+   finalSettlementId:
+
+    settlementId,
+
+   date:
+
+    new Date()
+
+     .toISOString()
+
+     .slice(0,10),
+
+   note:
+
+    "Recovered through final settlement",
+
+   createdAt:
+
+    new Date().toISOString(),
+
+   createdBy:
+
+    currentStaffName || "Owner"
+
+  });
+
+ });
+
+ savePayrollTransactions();
+ settlement.status="FINALIZED";
+
+ settlement.expenseId=
+
+  settlementExpenseId;
+
+ settlement.amountPaid=
+
+  finalBalance>0
+
+   ?finalBalance
+
+   :0;
+
+ settlement.recoverableAmount=
+
+  finalBalance<0
+
+   ?Math.abs(finalBalance)
+
+   :0;
+
+ settlement.recoverableRemaining=
+
+  finalBalance<0
+
+   ?Math.abs(finalBalance)
+
+   :0;
+
+ settlement.finalizedAt=
+
+  new Date().toISOString();
+
+ settlement.finalizedBy=
+
+  currentStaffName || "Owner";
+ salaryItems.forEach(item=>{
+
+  const period=
+
+   salaryPeriods.find(
+
+    p=>p.id===item.periodId
+
+   );
+
+  if(!period){
+
+   return;
+
+  }
+
+  period.closed=true;
+
+  period.closedAt=
+
+   new Date().toISOString();
+
+  period.closedBy=
+
+   currentStaffName || "Owner";
+
+  period.closedReason=
+
+   "FINAL_SETTLEMENT";
+
+  period.finalSettlementId=
+
+   settlementId;
+
+ });
+
+ saveSalaryPeriods();
+ finalSettlements.unshift(
+
+  settlement
+
+ );
+
+ saveFinalSettlements();
+ employee.active=false;
+
+ const posAccount=
+
+  getPosAccountForEmployee(employee);
+
+ if(posAccount){
+
+  posAccount.active=false;
+
+  saveStaffAccounts();
+
+ }
+
+ saveStaffMembers();
+ alert(
+
+  "Final settlement finalized successfully."
+
+ );
+
+ ownerPayrollEmployee(
+
+  employee.id
+
+ );
 }
  function ownerCreateSalaryPeriod(employeeId){
 
