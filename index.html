@@ -8077,7 +8077,19 @@ item.allowedExtraIds=
 
  clearInterval(timerInterval);
 
- const staffCards=staffMembers.map(s=>`
+  const staffCards=staffMembers.map(s=>{
+
+  const settlement=finalSettlements.find(
+
+   item=>
+
+    item.employeeId===s.id &&
+
+    item.status==="FINALIZED"
+
+  );
+
+  return `
 
   <div
 
@@ -8111,13 +8123,27 @@ item.allowedExtraIds=
 
    <p class="muted">
 
-    ${s.active ? "ACTIVE" : "INACTIVE"}
+ ${
 
-   </p>
+  settlement
+
+   ? "🏁 SETTLED"
+
+   :s.active
+
+    ?"ACTIVE"
+
+    :"INACTIVE"
+
+ }
+
+</p>
 
   </div>
 
- `).join("");
+   `;
+
+ }).join("");
 
  document.getElementById("root").innerHTML=`
 
@@ -8193,6 +8219,15 @@ item.allowedExtraIds=
   return;
 
  }
+     const settlement=finalSettlements.find(
+
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
    const employeeAdvances=staffAdvances.filter(
 
   advance=>advance.employeeId===employee.id
@@ -8355,15 +8390,27 @@ item.allowedExtraIds=
    </div>
    <div class="info-row">
 
-    <span>Status</span>
+ <span>Status</span>
 
-    <strong>
+ <strong>
 
-     ${employee.active ? "ACTIVE" : "INACTIVE"}
+  ${
 
-    </strong>
+   settlement
 
-   </div>
+    ? "🏁 SETTLED"
+
+    :employee.active
+
+     ?"ACTIVE"
+
+     :"INACTIVE"
+
+  }
+
+ </strong>
+
+</div>
      <h2 style="margin-top:24px">
 
     Salary Periods
@@ -8382,6 +8429,36 @@ item.allowedExtraIds=
 
    </div>
    <div class="grid" style="margin-top:20px">
+
+ ${
+
+  settlement
+
+   ?`
+
+    <div
+
+     class="card"
+
+     onclick="ownerFinalSettlement('${employee.id}')"
+
+     style="cursor:pointer">
+
+     <div class="category-icon">🏁</div>
+
+     <h3>VIEW FINAL SETTLEMENT</h3>
+
+     <p class="muted">
+
+      View completed employee settlement
+
+     </p>
+
+    </div>
+
+   `
+
+   :`
 
     <div
 
@@ -8422,26 +8499,32 @@ item.allowedExtraIds=
      </p>
 
     </div>
-       <div
 
-      class="card"
+    <div
 
-      onclick="ownerFinalSettlement('${employee.id}')"
+     class="card"
 
-      style="cursor:pointer">
+     onclick="ownerFinalSettlement('${employee.id}')"
 
-      <div class="category-icon">🏁</div>
+     style="cursor:pointer">
 
-      <h3>FINAL SETTLEMENT</h3>
+     <div class="category-icon">🏁</div>
 
-      <p class="muted">
+     <h3>FINAL SETTLEMENT</h3>
 
-       Review and finalize employee settlement
+     <p class="muted">
 
-      </p>
+      Review and finalize employee settlement
 
-     </div>
-   </div>
+     </p>
+
+    </div>
+
+   `
+
+ }
+
+</div>
 
   </div>
 
@@ -8564,7 +8647,135 @@ item.allowedExtraIds=
   return;
 
  }
+  const existingSettlement=finalSettlements.find(
 
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
+
+ if(existingSettlement){
+
+  document.getElementById("root").innerHTML=`
+
+  <div class="app">
+
+   <button
+
+    class="back"
+
+    onclick="ownerPayrollEmployee('${employee.id}')">
+
+    ← BACK
+
+   </button>
+
+   <div class="logo">
+
+    MR K BURGERS
+
+    <span>OWNER — FINAL SETTLEMENT</span>
+
+   </div>
+
+   <div class="panel">
+
+    <span class="badge">
+
+     🏁 SETTLEMENT COMPLETED
+
+    </span>
+
+    <h1>${employee.name}</h1>
+
+    <p class="muted">
+
+     ${employee.position || "No position"}
+
+    </p>
+
+    <div class="summary">
+
+     <div class="info-row">
+
+      <span>Final Balance</span>
+
+      <strong>
+
+       ${Number(existingSettlement.finalBalance || 0).toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Amount Paid</span>
+
+      <strong>
+
+       ${Number(existingSettlement.amountPaid || 0).toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Recoverable Remaining</span>
+
+      <strong>
+
+       ${Number(existingSettlement.recoverableRemaining || 0).toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Finalized By</span>
+
+      <strong>
+
+       ${existingSettlement.finalizedBy || "Owner"}
+
+      </strong>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>Finalized On</span>
+
+      <strong>
+
+       ${
+
+        existingSettlement.finalizedAt
+
+         ?new Date(existingSettlement.finalizedAt).toLocaleString()
+
+         :"—"
+
+       }
+
+      </strong>
+
+     </div>
+
+    </div>
+
+   </div>
+
+  </div>`;
+
+  return;
+
+ }
  const totals=
 
   calculateFinalSettlement(employee.id);
@@ -9454,7 +9665,31 @@ item.allowedExtraIds=
   return;
 
  }
+ const settlement=finalSettlements.find(
 
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
+
+ if(settlement){
+
+  alert(
+
+   "This employee has a finalized settlement. "+
+
+   "Reopen the settlement before creating a new salary period."
+
+  );
+
+  ownerPayrollEmployee(employee.id);
+
+  return;
+
+ }
  const today=new Date();
 
  const currentMonth=
@@ -9561,7 +9796,29 @@ item.allowedExtraIds=
   return;
 
  }
+ const settlement=finalSettlements.find(
 
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
+
+ if(settlement || !employee.active){
+
+  alert(
+
+   "A salary period cannot be created for a settled or inactive employee."
+
+  );
+
+  ownerPayrollEmployee(employee.id);
+
+  return;
+
+ }
  const month=document
 
   .getElementById("salaryPeriodMonth")
@@ -10992,7 +11249,31 @@ item.allowedExtraIds=
   return;
 
  }
+ const settlement=finalSettlements.find(
 
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
+
+ if(settlement){
+
+  alert(
+
+   "This employee has a finalized settlement. "+
+
+   "Reopen the settlement before giving a new advance."
+
+  );
+
+  ownerPayrollEmployee(employee.id);
+
+  return;
+
+ }
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -11103,7 +11384,29 @@ item.allowedExtraIds=
   return;
 
  }
+ const settlement=finalSettlements.find(
 
+  item=>
+
+   item.employeeId===employee.id &&
+
+   item.status==="FINALIZED"
+
+ );
+
+ if(settlement || !employee.active){
+
+  alert(
+
+   "An advance cannot be created for a settled or inactive employee."
+
+  );
+
+  ownerPayrollEmployee(employee.id);
+
+  return;
+
+ }
  const amount=Number(
 
   document
