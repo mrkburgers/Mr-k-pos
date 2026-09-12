@@ -1,0 +1,17 @@
+{
+
+  "name": "mr-k-pos",
+
+  "version": "2.0.0",
+
+  "description": "Mr K Burgers POS v2",
+
+  "main": "server.js",
+
+  "scripts": {
+
+    "start": "node server.js"
+
+  }
+
+}
