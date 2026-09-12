@@ -7628,29 +7628,7 @@ saveInventory();
  </div>`;
 
 }
-  function toggleIngredientActive(id){
-
- const ingredient=menuIngredients.find(
-
-  item=>item.id===id
-
- );
-
- if(!ingredient){
-
-  alert("Ingredient not found.");
-
-  return;
-
- }
-
- ingredient.active=!ingredient.active;
-
- saveMenuIngredients();
-
- ownerIngredientList();
-
-}
+  
   function toggleIngredientActive(id){
 
  const ingredient=menuIngredients.find(
