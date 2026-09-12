@@ -8292,8 +8292,18 @@ item.allowedExtraIds=
    (a,b)=>b.month.localeCompare(a.month)
 
   );
+   const openPeriods=periods.filter(
 
-  const periodCards=periods.map(p=>`
+  p=>!p.closed
+
+ );
+
+ const closedPeriods=periods.filter(
+
+  p=>p.closed
+
+ );
+  const openPeriodCards=openPeriods.map(p=>`
 
   <div
 
@@ -8324,6 +8334,37 @@ item.allowedExtraIds=
     Status: ${p.status || "UNPAID"}
 
    </p>
+
+  </div>
+
+ `).join("");
+     const closedPeriodRows=closedPeriods.map(p=>`
+
+  <div
+
+   class="info-row"
+
+   onclick="ownerSalaryPeriod('${p.id}')"
+
+   style="cursor:pointer">
+
+   <span>
+
+    <strong>${p.month}</strong><br>
+
+    <span class="muted">
+
+     ${Number(p.baseSalary || 0).toLocaleString()} CFA
+
+    </span>
+
+   </span>
+
+   <strong>
+
+    ${p.status || "PAID"} ✓
+
+   </strong>
 
   </div>
 
@@ -8411,23 +8452,7 @@ item.allowedExtraIds=
  </strong>
 
 </div>
-     <h2 style="margin-top:24px">
-
-    Salary Periods
-
-   </h2>
-
-   <div class="grid">
-
-    ${
-
-     periodCards ||
-
-     `<p class="muted">No salary periods yet.</p>`
-
-    }
-
-   </div>
+     
    <div class="grid" style="margin-top:20px">
 
  ${
@@ -8525,7 +8550,46 @@ item.allowedExtraIds=
  }
 
 </div>
+<h2 style="margin-top:24px">
 
+ Salary Periods
+
+</h2>
+
+<div class="grid">
+
+ ${
+
+ openPeriodCards ||
+
+ `<p class="muted">No open salary period.</p>`
+
+}
+
+</div>
+ ${
+
+  closedPeriodRows
+
+   ?`
+
+    <h2 style="margin-top:28px">
+
+     Salary History
+
+    </h2>
+
+    <div class="summary">
+
+     ${closedPeriodRows}
+
+    </div>
+
+   `
+
+   :""
+
+ }
   </div>
 
  </div>`;
