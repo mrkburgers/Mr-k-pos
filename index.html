@@ -205,7 +205,7 @@ let currentDraftId=null;
 let cart=[];
 
 let customer={name:"",phone:"",address:"",table:""};
-
+const mrkStorageErrors=[];
 let activeOrders=safeLoad("mrkActiveOrders",[]);
 
 let draftOrders=safeLoad("mrkDraftOrders",[]);
@@ -396,11 +396,50 @@ function safeLoad(key,fallback){
 
    return JSON.parse(raw);
 
- }catch(e){
+  }catch(e){
 
-   return fallback;
+    if(!mrkStorageErrors.includes(key)){
+
+      mrkStorageErrors.push(key);
+
+    }
+
+    return fallback;
 
  }
+
+}
+  function showStorageIntegrityWarning(){
+
+  if(
+
+    role!=="owner" ||
+
+    !mrkStorageErrors.length ||
+
+    showStorageIntegrityWarning.shown
+
+  ){
+
+    return;
+
+  }
+
+  showStorageIntegrityWarning.shown=true;
+
+  alert(
+
+    "⚠️ DATA INTEGRITY WARNING\n\n"+
+
+    "Some saved POS data could not be read:\n\n"+
+
+    mrkStorageErrors.join("\n")+
+
+    "\n\nYour original stored data has not been deleted.\n"+
+
+    "Please restore a known-good backup before continuing."
+
+  );
 
 }
   function exportMrKBackup(){
@@ -560,29 +599,37 @@ function safeLoad(key,fallback){
      exportMrKBackup();
    MRK_BACKUP_KEYS.forEach(key=>{
 
-    if(
+        if(
 
-     Object.prototype.hasOwnProperty.call(
+      Object.prototype.hasOwnProperty.call(
 
-      backup.data,
+       backup.data,
 
-      key
+       key
 
-     )
+      )
 
     ){
 
-     localStorage.setItem(
+      if(backup.data[key]===null){
 
-      key,
+        localStorage.removeItem(key);
 
-      backup.data[key]
+      }else{
 
-     );
+        localStorage.setItem(
+
+         key,
+
+         backup.data[key]
+
+        );
+
+      }
 
     }else{
 
-     localStorage.removeItem(key);
+      localStorage.removeItem(key);
 
     }
 
@@ -1148,15 +1195,23 @@ function login(){
 
 ){
 
- loggedIn=true;
+   loggedIn=true;
 
- role="owner";
-currentStaffName=ownerAccount.name;
+  role="owner";
 
-currentStaffId=ownerAccount.staffId;
- ownerHome();
+ currentStaffName=ownerAccount.name;
 
- return;
+ currentStaffId=ownerAccount.staffId;
+
+  getActiveShift();
+
+  getShiftHistory();
+
+  showStorageIntegrityWarning();
+
+  ownerHome();
+
+  return;
 
 }
 
@@ -4747,7 +4802,13 @@ function getActiveShift(){
 
     return JSON.parse(localStorage.getItem(SHIFT_ACTIVE_KEY)) || null;
 
-  }catch(e){
+    }catch(e){
+
+    if(!mrkStorageErrors.includes(SHIFT_ACTIVE_KEY)){
+
+      mrkStorageErrors.push(SHIFT_ACTIVE_KEY);
+
+    }
 
     return null;
 
@@ -4767,7 +4828,13 @@ function getShiftHistory(){
 
     return JSON.parse(localStorage.getItem(SHIFT_HISTORY_KEY)) || [];
 
-  }catch(e){
+    }catch(e){
+
+    if(!mrkStorageErrors.includes(SHIFT_HISTORY_KEY)){
+
+      mrkStorageErrors.push(SHIFT_HISTORY_KEY);
+
+    }
 
     return [];
 
