@@ -206,6 +206,7 @@ let cart=[];
 
 let customer={name:"",phone:"",address:"",table:""};
 const mrkStorageErrors=[];
+safeLoad("mrkIntegrityTest",null);
 let activeOrders=safeLoad("mrkActiveOrders",[]);
 
 let draftOrders=safeLoad("mrkDraftOrders",[]);
@@ -440,6 +441,35 @@ function safeLoad(key,fallback){
     "Please restore a known-good backup before continuing."
 
   );
+
+}
+  function runMrKIntegrityTest(){
+
+  if(role!=="owner")return;
+
+  const testKey="mrkIntegrityTest";
+
+  if(localStorage.getItem(testKey)!==null){
+
+    localStorage.removeItem(testKey);
+
+    alert("Integrity test data cleared.");
+
+    location.reload();
+
+    return;
+
+  }
+
+  localStorage.setItem(
+
+    testKey,
+
+    "{invalid-json"
+
+  );
+
+  location.reload();
 
 }
   function exportMrKBackup(){
@@ -4244,6 +4274,25 @@ function saveEditedExpenseCategory(categoryId){
   </p>
 
  </div>
+   <div
+
+   class="card"
+
+   onclick="runMrKIntegrityTest()"
+
+   style="cursor:pointer">
+
+   <div class="category-icon">🧪</div>
+
+   <h3>TEST DATA INTEGRITY</h3>
+
+   <p class="muted">
+
+    Temporary storage corruption test
+
+   </p>
+
+  </div>
 </div>
  <input
 
