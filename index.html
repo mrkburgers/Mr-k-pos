@@ -418,13 +418,59 @@ function safeLoad(key,fallback){
 
  try{
 
-   const raw=localStorage.getItem(key);
+    const raw=localStorage.getItem(key);
 
-   if(raw===null)return fallback;
+    if(raw===null)return fallback;
 
-   return JSON.parse(raw);
+    const parsed=JSON.parse(raw);
 
-  }catch(e){
+    const fallbackIsArray=
+
+     Array.isArray(fallback);
+
+    const parsedIsArray=
+
+     Array.isArray(parsed);
+
+    const invalidArray=
+
+     fallbackIsArray &&
+
+     !parsedIsArray;
+
+    const invalidObject=
+
+     !fallbackIsArray &&
+
+     fallback!==null &&
+
+     typeof fallback==="object" &&
+
+     (
+
+      parsed===null ||
+
+      typeof parsed!=="object" ||
+
+      parsedIsArray
+
+     );
+
+    if(invalidArray || invalidObject){
+
+      if(!mrkStorageErrors.includes(key)){
+
+        mrkStorageErrors.push(key);
+
+      }
+
+      return fallback;
+
+    }
+
+    return parsed;
+
+ }catch(e){
 
     if(!mrkStorageErrors.includes(key)){
 
