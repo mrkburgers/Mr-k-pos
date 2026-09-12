@@ -212,7 +212,35 @@ let draftOrders=safeLoad("mrkDraftOrders",[]);
 
 let completedOrders=safeLoad("mrkCompletedOrders",[]);
 
-let nextOrderNumber=Number(localStorage.getItem("mrkNextOrderNumber")||"1");
+const storedNextOrderNumber=
+
+ localStorage.getItem("mrkNextOrderNumber");
+
+let nextOrderNumber=
+
+ storedNextOrderNumber===null
+
+ ? 1
+
+ : Number(storedNextOrderNumber);
+
+if(
+
+ !Number.isInteger(nextOrderNumber) ||
+
+ nextOrderNumber<1
+
+){
+
+ if(!mrkStorageErrors.includes("mrkNextOrderNumber")){
+
+  mrkStorageErrors.push("mrkNextOrderNumber");
+
+ }
+
+ nextOrderNumber=1;
+
+}
 let ownerCashAccount=safeLoad("mrkOwnerCashAccount",{
 
  balance:0,
