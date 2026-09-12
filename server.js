@@ -1,28 +1,24 @@
-const http = require("http");
+const express = require("express");
+
+const app = express();
 
 const PORT = 3000;
 
-const server = http.createServer((req, res) => {
+app.get("/api/health", (req, res) => {
 
-  res.writeHead(200, { "Content-Type": "application/json" });
+  res.json({
 
-  res.end(
+    app: "Mr K POS",
 
-    JSON.stringify({
+    version: "2.0.0",
 
-      app: "Mr K POS",
+    status: "server online"
 
-      version: "2.0.0",
-
-      status: "server online"
-
-    })
-
-  );
+  });
 
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
 
