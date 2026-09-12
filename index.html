@@ -336,7 +336,55 @@ let expenseCategories=safeLoad("mrkExpenseCategories",[
 
 ]);
 let timerInterval=null;
+const MRK_BACKUP_KEYS=[
 
+ "mrkActiveOrders",
+
+ "mrkDraftOrders",
+
+ "mrkCompletedOrders",
+
+ "mrkNextOrderNumber",
+
+ "mrkOwnerCashAccount",
+
+ "mrkExpenses",
+
+ "mrkExpenseCategories",
+
+ "mrkStaffMembers",
+
+ "mrkSalaryPeriods",
+
+ "mrkStaffAdvances",
+
+ "mrkPayrollTransactions",
+
+ "mrkFinalSettlements",
+
+ "mrkOwnerAccount",
+
+ "mrkStaffAccounts",
+
+ "mrkActiveShift",
+
+ "mrkShiftHistory",
+
+ "mrkMenuCategories",
+
+ "mrkMenuIngredients",
+
+ "mrkOwnerMenuData",
+
+ "mrkInventoryStock",
+
+ "mrkSuppliers",
+
+ "mrkInventoryDeliveries",
+
+ "mrkInventoryMovements"
+
+];
 
 function safeLoad(key,fallback){
 
@@ -353,6 +401,222 @@ function safeLoad(key,fallback){
    return fallback;
 
  }
+
+}
+  function exportMrKBackup(){
+
+ const backupData={};
+
+  MRK_BACKUP_KEYS.forEach(key=>{
+
+  backupData[key]=
+
+   localStorage.getItem(key);
+
+ });
+
+ const backup={
+
+  app:"Mr K Burgers POS",
+
+  backupVersion:1,
+
+  createdAt:new Date().toISOString(),
+
+  data:backupData
+
+ };
+
+ const blob=new Blob(
+
+  [JSON.stringify(backup,null,2)],
+
+  {type:"application/json"}
+
+ );
+
+ const url=URL.createObjectURL(blob);
+
+ const link=document.createElement("a");
+
+ const today=new Date()
+
+  .toISOString()
+
+  .slice(0,10);
+
+ link.href=url;
+
+ link.download=
+
+  `mrk-pos-backup-${today}.json`;
+
+ document.body.appendChild(link);
+
+ link.click();
+
+ link.remove();
+
+ URL.revokeObjectURL(url);
+
+}
+  function restoreMrKBackup(event){
+
+ const input=event.target;
+
+ const file=input.files[0];
+
+ if(!file)return;
+
+ const reader=new FileReader();
+
+ reader.onload=function(){
+
+  try{
+
+   const backup=JSON.parse(reader.result);
+
+   if(
+
+    !backup ||
+
+    backup.app!=="Mr K Burgers POS" ||
+
+    backup.backupVersion!==1 ||
+
+    !backup.data ||
+
+    typeof backup.data!=="object"
+
+   ){
+
+    alert("Invalid Mr K POS backup file.");
+
+    input.value="";
+
+    return;
+
+   }
+
+   const invalidKeys=
+
+    Object.keys(backup.data)
+
+    .filter(
+
+     key=>!MRK_BACKUP_KEYS.includes(key)
+
+    );
+
+   if(invalidKeys.length){
+
+    alert("Backup file contains invalid data.");
+
+    input.value="";
+
+    return;
+
+   }
+     const missingKeys=
+
+    MRK_BACKUP_KEYS.filter(
+
+     key=>
+
+      !Object.prototype.hasOwnProperty.call(
+
+       backup.data,
+
+       key
+
+      )
+
+    );
+
+   if(missingKeys.length){
+
+    alert("Backup file is incomplete.");
+
+    input.value="";
+
+    return;
+
+   }
+   const confirmed=confirm(
+
+    "Restore this backup?\n\n"+
+
+    "Your current POS data will be replaced."
+
+   );
+
+   if(!confirmed){
+
+    input.value="";
+
+    return;
+
+   }
+     exportMrKBackup();
+   MRK_BACKUP_KEYS.forEach(key=>{
+
+    if(
+
+     Object.prototype.hasOwnProperty.call(
+
+      backup.data,
+
+      key
+
+     )
+
+    ){
+
+     localStorage.setItem(
+
+      key,
+
+      backup.data[key]
+
+     );
+
+    }else{
+
+     localStorage.removeItem(key);
+
+    }
+
+   });
+
+   alert(
+
+    "Backup restored successfully. "+
+
+    "The POS will now reload."
+
+   );
+
+   location.reload();
+
+  }catch(error){
+
+   alert("Unable to restore backup file.");
+
+   input.value="";
+
+  }
+
+ };
+
+ reader.onerror=function(){
+
+  alert("Unable to read backup file.");
+
+  input.value="";
+
+ };
+
+ reader.readAsText(file);
 
 }
   function addOwnerCashTransaction(type,amount,description,source="MANUAL"){
@@ -3867,28 +4131,76 @@ function saveEditedExpenseCategory(categoryId){
 
    <div class="grid">
 
-    <div
+ <div
 
-     class="card"
+  class="card"
 
-     onclick="ownerMenuManagement()"
+  onclick="ownerMenuManagement()"
 
-     style="cursor:pointer">
+  style="cursor:pointer">
 
-     <div class="category-icon">🍔</div>
+  <div class="category-icon">🍔</div>
 
-     <h3>MENU MANAGEMENT</h3>
+  <h3>MENU MANAGEMENT</h3>
 
-     <p class="muted">
+  <p class="muted">
 
-      Items, ingredients, recipes and prices
+   Items, ingredients, recipes and prices
 
-     </p>
+  </p>
 
-    </div>
+ </div>
 
-   </div>
+ <div
 
+  class="card"
+
+  onclick="exportMrKBackup()"
+
+  style="cursor:pointer">
+
+  <div class="category-icon">💾</div>
+
+  <h3>EXPORT BACKUP</h3>
+
+  <p class="muted">
+
+   Download a complete POS data backup
+
+  </p>
+
+ </div>
+ <div
+
+  class="card"
+
+  onclick="document.getElementById('mrkBackupFileInput').click()"
+
+  style="cursor:pointer">
+
+  <div class="category-icon">♻️</div>
+
+  <h3>RESTORE BACKUP</h3>
+
+  <p class="muted">
+
+   Restore POS data from a backup file
+
+  </p>
+
+ </div>
+</div>
+ <input
+
+  id="mrkBackupFileInput"
+
+  type="file"
+
+  accept=".json,application/json"
+
+  onchange="restoreMrKBackup(event)"
+
+  style="display:none">
   </div>
 
  </div>`;
