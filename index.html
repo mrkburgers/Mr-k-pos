@@ -1068,6 +1068,109 @@ function addOwnerDigitalTransaction(
  return true;
 
 }
+  function transferOwnerDigitalToCash(accountType,amount){
+
+  if(role!=="owner"){
+
+    return false;
+
+  }
+
+  amount=Number(amount);
+
+  if(!Number.isFinite(amount) || amount<=0){
+
+    return false;
+
+  }
+
+  let accountName="";
+
+  if(accountType==="CARD"){
+
+    accountName="Card";
+
+  }else if(accountType==="MOBILE MONEY"){
+
+    accountName="Mobile Money";
+
+  }else{
+
+    return false;
+
+  }
+
+  const account=
+
+    accountType==="CARD"
+
+      ? ownerCardAccount
+
+      : ownerMobileMoneyAccount;
+
+  if(Number(account.balance || 0)<amount){
+
+    return false;
+
+  }
+
+  const reference=
+
+    "TRANSFER_"+
+
+    Date.now()+"_"+
+
+    Math.random().toString(36).slice(2,8);
+
+  const digitalSuccess=
+
+    addOwnerDigitalTransaction(
+
+      accountType,
+
+      "OUT",
+
+      amount,
+
+      accountName+" to Cash transfer",
+
+      "TRANSFER",
+
+      reference
+
+    );
+
+  if(!digitalSuccess){
+
+    return false;
+
+  }
+
+  const cashSuccess=
+
+    addOwnerCashTransaction(
+
+      "IN",
+
+      amount,
+
+      accountName+" to Cash transfer",
+
+      "TRANSFER",
+
+      reference
+
+    );
+
+  if(!cashSuccess){
+
+    return false;
+
+  }
+
+  return true;
+
+}
   function setOwnerDigitalOpeningBalance(
 
  accountType,
@@ -1970,12 +2073,272 @@ function header(label){
      </p>
 
     </div>
+     <div
 
+      class="card"
+
+      onclick="ownerTransferToCashPage()"
+
+      style="cursor:pointer">
+
+      <div class="category-icon">🔄</div>
+
+      <h3>TRANSFER TO CASH</h3>
+
+      <p class="muted">
+
+       Transfer Card or Mobile Money balance into Cash
+
+      </p>
+
+     </div>
    </div>
 
   </div>
 
  </div>`;
+
+}
+  function ownerTransferToCashPage(){
+
+  if(role!=="owner"){
+
+    alert("Only the owner can transfer funds.");
+
+    ownerHome();
+
+    return;
+
+  }
+
+  const cardBalance=
+
+    Number(ownerCardAccount.balance || 0);
+
+  const mobileMoneyBalance=
+
+    Number(ownerMobileMoneyAccount.balance || 0);
+
+  document.getElementById("root").innerHTML=`
+
+  <div class="app">
+
+   <button
+
+    class="back"
+
+    onclick="ownerCashAccountPage()">
+
+    ← BACK
+
+   </button>
+
+   <div class="logo">
+
+    MR K BURGERS
+
+    <span>OWNER — TRANSFER TO CASH</span>
+
+   </div>
+
+   <div class="panel">
+
+    <span class="badge">
+
+     🔄 TRANSFER TO CASH
+
+    </span>
+
+    <h1>Transfer Funds to Cash</h1>
+
+    <div class="summary">
+
+     <div class="info-row">
+
+      <span>💳 Card Balance</span>
+
+      <strong>
+
+       ${cardBalance.toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+     <div class="info-row">
+
+      <span>📱 Mobile Money Balance</span>
+
+      <strong>
+
+       ${mobileMoneyBalance.toLocaleString()} CFA
+
+      </strong>
+
+     </div>
+
+    </div>
+
+    <div class="form" style="margin-top:20px">
+
+     <label>Transfer From</label>
+
+     <select id="ownerTransferAccount">
+
+      <option value="">
+
+       Select Account
+
+      </option>
+
+      <option value="CARD">
+
+       Card
+
+      </option>
+
+      <option value="MOBILE MONEY">
+
+       Mobile Money
+
+      </option>
+
+     </select>
+
+     <label>Amount</label>
+
+     <input
+
+      id="ownerTransferAmount"
+
+      type="number"
+
+      min="1"
+
+      placeholder="Amount in CFA">
+
+     <button
+
+      class="primary"
+
+      onclick="saveOwnerTransferToCash()">
+
+      TRANSFER TO CASH
+
+     </button>
+
+    </div>
+
+   </div>
+
+  </div>`;
+
+}
+  function saveOwnerTransferToCash(){
+
+  if(role!=="owner"){
+
+    alert("Only the owner can transfer funds.");
+
+    return;
+
+  }
+
+  const accountType=
+
+    document.getElementById("ownerTransferAccount").value;
+
+  const amount=
+
+    Number(
+
+      document.getElementById("ownerTransferAmount").value
+
+    );
+
+  if(
+
+    accountType!=="CARD" &&
+
+    accountType!=="MOBILE MONEY"
+
+  ){
+
+    alert("Select Card or Mobile Money.");
+
+    return;
+
+  }
+
+  if(!Number.isFinite(amount) || amount<=0){
+
+    alert("Enter a valid transfer amount.");
+
+    return;
+
+  }
+
+  const account=
+
+    accountType==="CARD"
+
+      ? ownerCardAccount
+
+      : ownerMobileMoneyAccount;
+
+  if(amount>Number(account.balance || 0)){
+
+    alert(
+
+      "Not enough balance in the selected account."
+
+    );
+
+    return;
+
+  }
+
+  const confirmed=confirm(
+
+    "Transfer "+
+
+    amount.toLocaleString()+
+
+    " CFA from "+
+
+    accountType+
+
+    " to Cash?"
+
+  );
+
+  if(!confirmed){
+
+    return;
+
+  }
+
+  const transferred=
+
+    transferOwnerDigitalToCash(
+
+      accountType,
+
+      amount
+
+    );
+
+  if(!transferred){
+
+    alert("Transfer could not be completed.");
+
+    return;
+
+  }
+
+  alert("Transfer completed successfully.");
+
+  ownerCashAccountPage();
 
 }
   function ownerCashInPage(){
