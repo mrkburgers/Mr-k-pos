@@ -2669,13 +2669,29 @@ if(amount>Number(ownerCashAccount.balance || 0)){
 
     </div>
 
-    <div class="info-row">
+         <div class="info-row">
 
-     <span>Type</span>
+      <span>Type</span>
 
-     <strong>${t.type==="IN" ? "CASH IN" : "CASH OUT"}</strong>
+      <strong>
 
-    </div>
+       ${
+
+        t.source==="TRANSFER"
+
+         ? "TRANSFER → CASH"
+
+         : t.type==="IN"
+
+          ? "CASH IN"
+
+          : "CASH OUT"
+
+       }
+
+      </strong>
+
+     </div>
 
     <div class="info-row">
 
@@ -2692,7 +2708,17 @@ if(amount>Number(ownerCashAccount.balance || 0)){
      <strong>${t.source || "-"}</strong>
 
     </div>
+         ${t.reference ? `
 
+     <div class="info-row">
+
+      <span>Reference</span>
+
+      <strong>${t.reference}</strong>
+
+     </div>
+
+     ` : ""}
     <div class="info-row">
 
      <span>Actor</span>
