@@ -830,30 +830,7 @@ function safeLoad(key,fallback){
 
  }
 
- if(!Array.isArray(ownerCashAccount.transactions)){
-
-  ownerCashAccount.transactions=[];
-
- }
- if(
-
-  reference &&
-
-  ownerCashAccount.transactions.some(
-
-   transaction=>
-
-    transaction.reference===reference &&
-
-    transaction.source===source
-
-  )
-
- ){
-
-  return false;
-
- }
+ 
  ownerCashAccount.transactions.unshift({
 
   id:
