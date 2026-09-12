@@ -248,6 +248,25 @@ let ownerCashAccount=safeLoad("mrkOwnerCashAccount",{
  transactions:[]
 
 });
+  let ownerCardAccount=safeLoad("mrkOwnerCardAccount",{
+
+ balance:0,
+
+ transactions:[],
+
+ openingBalanceSet:false
+
+});
+
+let ownerMobileMoneyAccount=safeLoad("mrkOwnerMobileMoneyAccount",{
+
+ balance:0,
+
+ transactions:[],
+
+ openingBalanceSet:false
+
+});
 let expenses=safeLoad("mrkExpenses",[]);
 
 let expenseCategories=safeLoad("mrkExpenseCategories",[
@@ -372,9 +391,13 @@ const MRK_BACKUP_KEYS=[
 
  "mrkCompletedOrders",
 
- "mrkNextOrderNumber",
+  "mrkNextOrderNumber",
 
  "mrkOwnerCashAccount",
+
+ "mrkOwnerCardAccount",
+
+ "mrkOwnerMobileMoneyAccount",
 
  "mrkExpenses",
 
@@ -741,7 +764,19 @@ function safeLoad(key,fallback){
  reader.readAsText(file);
 
 }
-  function addOwnerCashTransaction(type,amount,description,source="MANUAL"){
+  function addOwnerCashTransaction(
+
+ type,
+
+ amount,
+
+ description,
+
+ source="MANUAL",
+
+ reference=""
+
+){
 
  amount=Number(amount);
 
@@ -756,7 +791,31 @@ function safeLoad(key,fallback){
   return false;
 
  }
+ if(!Array.isArray(ownerCashAccount.transactions)){
 
+  ownerCashAccount.transactions=[];
+
+ }
+
+ if(
+
+  reference &&
+
+  ownerCashAccount.transactions.some(
+
+   transaction=>
+
+    transaction.reference===reference &&
+
+    transaction.source===source
+
+  )
+
+ ){
+
+  return false;
+
+ }
  if(type==="IN"){
 
   ownerCashAccount.balance=
@@ -776,7 +835,25 @@ function safeLoad(key,fallback){
   ownerCashAccount.transactions=[];
 
  }
+ if(
 
+  reference &&
+
+  ownerCashAccount.transactions.some(
+
+   transaction=>
+
+    transaction.reference===reference &&
+
+    transaction.source===source
+
+  )
+
+ ){
+
+  return false;
+
+ }
  ownerCashAccount.transactions.unshift({
 
   id:
@@ -791,9 +868,11 @@ function safeLoad(key,fallback){
 
   amount:amount,
 
-  description:description || "",
+    description:description || "",
 
   source:source,
+
+  reference:reference || "",
 
   createdAt:Date.now(),
 
@@ -819,6 +898,287 @@ function safeLoad(key,fallback){
   JSON.stringify(ownerCashAccount)
 
  );
+
+}
+ function saveOwnerCardAccount(){
+
+ localStorage.setItem(
+
+  "mrkOwnerCardAccount",
+
+  JSON.stringify(ownerCardAccount)
+
+ );
+
+}
+
+function saveOwnerMobileMoneyAccount(){
+
+ localStorage.setItem(
+
+  "mrkOwnerMobileMoneyAccount",
+
+  JSON.stringify(ownerMobileMoneyAccount)
+
+ );
+
+} 
+function addOwnerDigitalTransaction(
+
+ accountType,
+
+ type,
+
+ amount,
+
+ description,
+
+ source="MANUAL",
+
+ reference=""
+
+){
+
+ amount=Number(amount);
+
+ if(!Number.isFinite(amount) || amount<=0){
+
+  return false;
+
+ }
+
+ if(type!=="IN" && type!=="OUT"){
+
+  return false;
+
+ }
+
+ let account=null;
+
+ let saveAccount=null;
+
+ let idPrefix="";
+
+ if(accountType==="CARD"){
+
+  account=ownerCardAccount;
+
+  saveAccount=saveOwnerCardAccount;
+
+  idPrefix="cardTransaction_";
+
+ }else if(accountType==="MOBILE MONEY"){
+
+  account=ownerMobileMoneyAccount;
+
+  saveAccount=saveOwnerMobileMoneyAccount;
+
+  idPrefix="mobileMoneyTransaction_";
+
+ }else{
+
+  return false;
+
+ }
+
+ if(!Array.isArray(account.transactions)){
+
+  account.transactions=[];
+
+ }
+
+ if(
+
+  reference &&
+
+  account.transactions.some(
+
+   transaction=>
+
+    transaction.reference===reference &&
+
+    transaction.source===source
+
+  )
+
+ ){
+
+  return false;
+
+ }
+
+ if(
+
+  type==="OUT" &&
+
+  Number(account.balance || 0)<amount
+
+ ){
+
+  return false;
+
+ }
+
+ if(type==="IN"){
+
+  account.balance=
+
+   Number(account.balance || 0)+amount;
+
+ }else{
+
+  account.balance=
+
+   Number(account.balance || 0)-amount;
+
+ }
+
+ account.transactions.unshift({
+
+  id:
+
+   idPrefix+
+
+   Date.now()+"_"+
+
+   Math.random().toString(36).slice(2,8),
+
+  type:type,
+
+  amount:amount,
+
+  description:description || "",
+
+  source:source,
+
+  reference:reference || "",
+
+  createdAt:Date.now(),
+
+  createdBy:currentStaffName,
+
+  createdByStaffId:currentStaffId,
+
+  balanceAfter:account.balance
+
+ });
+
+ saveAccount();
+
+ return true;
+
+}
+  function setOwnerDigitalOpeningBalance(
+
+ accountType,
+
+ amount
+
+){
+
+ if(role!=="owner"){
+
+  return false;
+
+ }
+
+ amount=Number(amount);
+
+ if(!Number.isFinite(amount) || amount<0){
+
+  return false;
+
+ }
+
+ let account=null;
+
+ let saveAccount=null;
+
+ let accountName="";
+
+ if(accountType==="CARD"){
+
+  account=ownerCardAccount;
+
+  saveAccount=saveOwnerCardAccount;
+
+  accountName="Card";
+
+ }else if(accountType==="MOBILE MONEY"){
+
+  account=ownerMobileMoneyAccount;
+
+  saveAccount=saveOwnerMobileMoneyAccount;
+
+  accountName="Mobile Money";
+
+ }else{
+
+  return false;
+
+ }
+
+ if(account.openingBalanceSet===true){
+
+  return false;
+
+ }
+
+ account.balance=amount;
+
+ account.openingBalanceSet=true;
+
+ if(!Array.isArray(account.transactions)){
+
+  account.transactions=[];
+
+ }
+
+ if(amount>0){
+
+  account.transactions.unshift({
+
+   id:
+
+    "openingBalance_"+
+
+    Date.now()+"_"+
+
+    Math.random().toString(36).slice(2,8),
+
+   type:"IN",
+
+   amount:amount,
+
+   description:
+
+    accountName+" opening balance",
+
+   source:"OPENING_BALANCE",
+
+   reference:
+
+    accountType==="CARD"
+
+     ? "CARD_OPENING_BALANCE"
+
+     : "MOBILE_MONEY_OPENING_BALANCE",
+
+   createdAt:Date.now(),
+
+   createdBy:currentStaffName,
+
+   createdByStaffId:currentStaffId,
+
+   balanceAfter:account.balance
+
+  });
+
+ }
+
+ saveAccount();
+
+ return true;
 
 }
 function saveExpenses(){
@@ -23845,6 +24205,43 @@ function confirmOrderPayment(number,paymentMethod){
  deductOrderInventory(o);
 
  addShiftSale(orderTotal(o),o.number,paymentMethod);
+  if(paymentMethod==="CARD"){
+
+ addOwnerDigitalTransaction(
+
+  "CARD",
+
+  "IN",
+
+  orderTotal(o),
+
+  `Card sale - Order #${padOrder(o.number)}`,
+
+  "SALE",
+
+  `ORDER_${o.number}`
+
+ );
+
+}else if(paymentMethod==="MOBILE MONEY"){
+
+ addOwnerDigitalTransaction(
+
+  "MOBILE MONEY",
+
+  "IN",
+
+  orderTotal(o),
+
+  `Mobile Money sale - Order #${padOrder(o.number)}`,
+
+  "SALE",
+
+  `ORDER_${o.number}`
+
+ );
+
+}
   cart=[];
 
  customer={
