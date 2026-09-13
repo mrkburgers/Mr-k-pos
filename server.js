@@ -14,12 +14,15 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
 app.get("/kitchen-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "kitchen-v2.js"));
+});
+app.get("/cashier-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "cashier-v2.js"));
 });
 app.get("/api/health", (req, res) => {
   const databaseCheck = db
