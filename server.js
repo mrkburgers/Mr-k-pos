@@ -23,12 +23,16 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
+
 app.get("/kitchen-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "kitchen-v2.js"));
+});
+app.get("/menu-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "menu-v2.js"));
 });
 app.get("/cashier-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "cashier-v2.js"));
@@ -123,6 +127,73 @@ app.post("/api/login", (req, res) => {
   });
 });
 
+app.get("/api/menu", (req, res) => {
+  const categories = db.prepare(`
+    SELECT id, name, icon, active, sort_order, created_at, updated_at
+    FROM menu_categories
+    ORDER BY sort_order ASC, name ASC
+  `).all().map(category => ({
+    ...category,
+    active: Boolean(category.active)
+  }));
+
+  const ingredients = db.prepare(`
+    SELECT id, name, active, created_at, updated_at
+    FROM menu_ingredients
+    ORDER BY name ASC
+  `).all().map(ingredient => ({
+    ...ingredient,
+    active: Boolean(ingredient.active)
+  }));
+
+  const items = db.prepare(`
+    SELECT id, name, category_id, price, active, sort_order, created_at, updated_at
+    FROM menu_items
+    ORDER BY category_id ASC, sort_order ASC, name ASC
+  `).all().map(item => {
+    const itemIngredients = db.prepare(`
+      SELECT
+        i.id,
+        i.name,
+        mii.removable,
+        mii.sort_order
+      FROM menu_item_ingredients mii
+      JOIN menu_ingredients i
+        ON i.id = mii.ingredient_id
+      WHERE mii.menu_item_id = ?
+      ORDER BY mii.sort_order ASC, i.name ASC
+    `).all(item.id).map(ingredient => ({
+      ...ingredient,
+      removable: Boolean(ingredient.removable)
+    }));
+
+    const extras = db.prepare(`
+      SELECT mi.id, mi.name, mi.price, mi.active
+      FROM menu_item_extras mie
+      JOIN menu_items mi
+        ON mi.id = mie.extra_item_id
+      WHERE mie.menu_item_id = ?
+      ORDER BY mi.sort_order ASC, mi.name ASC
+    `).all(item.id).map(extra => ({
+      ...extra,
+      active: Boolean(extra.active)
+    }));
+
+    return {
+      ...item,
+      active: Boolean(item.active),
+      ingredients: itemIngredients,
+      extras
+    };
+  });
+
+  res.json({
+    categories,
+    items,
+    ingredients
+  });
+});
+
 app.get("/api/settings", (req, res) => {
   const settings = db
     .prepare(`
@@ -141,6 +212,7 @@ app.get("/api/settings", (req, res) => {
     online_ordering_enabled: Boolean(settings.online_ordering_enabled)
   });
 });
+
 app.patch("/api/settings/online-ordering", (req, res) => {
   const { enabled } = req.body;
 
@@ -157,16 +229,19 @@ app.patch("/api/settings/online-ordering", (req, res) => {
       updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run(enabled ? 1 : 0);
- io.emit("online-ordering-changed", {
+
+  io.emit("online-ordering-changed", {
     online_ordering_enabled: enabled
   });
   io.emit("settings-changed", {
-  online_ordering_enabled: enabled
-});
+    online_ordering_enabled: enabled
+  });
+
   res.json({
     online_ordering_enabled: enabled
   });
 });
+
 app.patch("/api/settings/restaurant-status", (req, res) => {
   const { status } = req.body;
 
@@ -183,16 +258,19 @@ app.patch("/api/settings/restaurant-status", (req, res) => {
       updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run(status);
-io.emit("restaurant-status-changed", {
-  restaurant_status: status
-});
-io.emit("settings-changed", {
-  restaurant_status: status
-});
+
+  io.emit("restaurant-status-changed", {
+    restaurant_status: status
+  });
+  io.emit("settings-changed", {
+    restaurant_status: status
+  });
+
   res.json({
     restaurant_status: status
   });
 });
+
 app.post("/api/orders", (req, res) => {
   const {
     order_uuid,
@@ -219,32 +297,33 @@ app.post("/api/orders", (req, res) => {
 
   const createOrder = db.transaction(() => {
     const nextOrderNumber = db.prepare(`
-  SELECT COALESCE(MAX(order_number), 0) + 1 AS next_number
-  FROM orders
-  WHERE date(created_at, 'localtime') = date('now', 'localtime')
-`).get().next_number;
+      SELECT COALESCE(MAX(order_number), 0) + 1 AS next_number
+      FROM orders
+      WHERE date(created_at, 'localtime') = date('now', 'localtime')
+    `).get().next_number;
+
     const result = db.prepare(`
       INSERT INTO orders (
-  order_uuid,
-  order_number,
-  order_type,
-  payment_status,
-  payment_method,
-  customer_name,
-  customer_phone,
-  total_amount
-)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        order_uuid,
+        order_number,
+        order_type,
+        payment_status,
+        payment_method,
+        customer_name,
+        customer_phone,
+        total_amount
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-  order_uuid,
-  nextOrderNumber,
-  order_type,
-  payment_status,
-  payment_method,
-  customer_name,
-  customer_phone,
-  total_amount
-);
+      order_uuid,
+      nextOrderNumber,
+      order_type,
+      payment_status,
+      payment_method,
+      customer_name,
+      customer_phone,
+      total_amount
+    );
 
     const orderId = result.lastInsertRowid;
 
@@ -270,45 +349,46 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     }
 
     return {
-  orderId,
-  orderNumber: nextOrderNumber
-};
+      orderId,
+      orderNumber: nextOrderNumber
+    };
   });
 
   let orderId;
-let orderNumber;
+  let orderNumber;
 
-try {
-  const createdOrder = createOrder();
-  orderId = createdOrder.orderId;
-  orderNumber = createdOrder.orderNumber;
-} catch (error) {
-  if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-    return res.status(409).json({
-      error: "order_uuid already exists"
-    });
+  try {
+    const createdOrder = createOrder();
+    orderId = createdOrder.orderId;
+    orderNumber = createdOrder.orderNumber;
+  } catch (error) {
+    if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+      return res.status(409).json({
+        error: "order_uuid already exists"
+      });
+    }
+    throw error;
   }
 
-  throw error;
-}
   io.emit("order-created", {
-  id: orderId,
-  order_number: orderNumber,
-  order_uuid,
-  status: "NEW",
-  order_type,
-  total_amount,
-  items
-});
+    id: orderId,
+    order_number: orderNumber,
+    order_uuid,
+    status: "NEW",
+    order_type,
+    total_amount,
+    items
+  });
 
   res.status(201).json({
-  id: orderId,
-  order_number: orderNumber,
-  order_uuid,
-  status: "NEW",
-  items
+    id: orderId,
+    order_number: orderNumber,
+    order_uuid,
+    status: "NEW",
+    items
+  });
 });
-});
+
 app.get("/api/orders", (req, res) => {
   const { status, payment_status } = req.query;
 
@@ -345,6 +425,7 @@ app.get("/api/orders", (req, res) => {
 
   res.json(orders);
 });
+
 app.get("/api/orders/:id", (req, res) => {
   const orderId = Number(req.params.id);
 
@@ -369,6 +450,7 @@ app.get("/api/orders/:id", (req, res) => {
 
   res.json(order);
 });
+
 app.patch("/api/orders/:id/status", (req, res) => {
   const orderId = Number(req.params.id);
   const { status } = req.body;
@@ -408,20 +490,21 @@ app.patch("/api/orders/:id/status", (req, res) => {
     WHERE id = ?
   `).run(status, orderId);
 
- io.emit("order-status-changed", {
-  id: orderId,
-  order_number: order.order_number,
-  order_uuid: order.order_uuid,
-  status
-});
+  io.emit("order-status-changed", {
+    id: orderId,
+    order_number: order.order_number,
+    order_uuid: order.order_uuid,
+    status
+  });
 
   res.json({
-  id: orderId,
-  order_number: order.order_number,
-  order_uuid: order.order_uuid,
-  status
+    id: orderId,
+    order_number: order.order_number,
+    order_uuid: order.order_uuid,
+    status
+  });
 });
-});
+
 app.patch("/api/orders/:id/payment-status", (req, res) => {
   const orderId = Number(req.params.id);
   const { payment_status } = req.body;
@@ -460,19 +543,20 @@ app.patch("/api/orders/:id/payment-status", (req, res) => {
   `).run(payment_status, orderId);
 
   io.emit("order-payment-status-changed", {
-  id: orderId,
-  order_number: order.order_number,
-  order_uuid: order.order_uuid,
-  payment_status
-});
+    id: orderId,
+    order_number: order.order_number,
+    order_uuid: order.order_uuid,
+    payment_status
+  });
 
   res.json({
-  id: orderId,
-  order_number: order.order_number,
-  order_uuid: order.order_uuid,
-  payment_status
+    id: orderId,
+    order_number: order.order_number,
+    order_uuid: order.order_uuid,
+    payment_status
+  });
 });
-});
+
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
 
@@ -480,8 +564,7 @@ io.on("connection", (socket) => {
     console.log(`Device disconnected: ${socket.id}`);
   });
 });
+
 server.listen(PORT, () => {
-
   console.log(`Mr K POS v2 server running on port ${PORT}`);
-
 });
