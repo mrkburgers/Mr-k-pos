@@ -59,6 +59,9 @@ app.patch("/api/settings/online-ordering", (req, res) => {
  io.emit("online-ordering-changed", {
     online_ordering_enabled: enabled
   });
+  io.emit("settings-changed", {
+  online_ordering_enabled: enabled
+});
   res.json({
     online_ordering_enabled: enabled
   });
