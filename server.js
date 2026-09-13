@@ -286,6 +286,55 @@ app.patch("/api/orders/:id/status", (req, res) => {
     status
   });
 });
+app.patch("/api/orders/:id/payment-status", (req, res) => {
+  const orderId = Number(req.params.id);
+  const { payment_status } = req.body;
+
+  const allowedPaymentStatuses = [
+    "PENDING",
+    "PAID",
+    "FAILED",
+    "REFUNDED"
+  ];
+
+  if (!allowedPaymentStatuses.includes(payment_status)) {
+    return res.status(400).json({
+      error: "invalid payment status"
+    });
+  }
+
+  const order = db.prepare(`
+    SELECT *
+    FROM orders
+    WHERE id = ?
+  `).get(orderId);
+
+  if (!order) {
+    return res.status(404).json({
+      error: "order not found"
+    });
+  }
+
+  db.prepare(`
+    UPDATE orders
+    SET
+      payment_status = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(payment_status, orderId);
+
+  io.emit("order-payment-status-changed", {
+    id: orderId,
+    order_uuid: order.order_uuid,
+    payment_status
+  });
+
+  res.json({
+    id: orderId,
+    order_uuid: order.order_uuid,
+    payment_status
+  });
+});
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
 
