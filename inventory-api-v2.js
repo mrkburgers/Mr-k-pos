@@ -30,6 +30,17 @@ module.exports=function registerInventoryV2(app,io,db){
 
   CREATE INDEX IF NOT EXISTS idx_inventory_movements_ingredient
   ON inventory_movements(ingredient_id, id DESC);
+
+  CREATE TABLE IF NOT EXISTS inventory_legacy_state (
+   id INTEGER PRIMARY KEY CHECK (id=1),
+   suppliers_json TEXT NOT NULL DEFAULT '[]',
+   deliveries_json TEXT NOT NULL DEFAULT '[]',
+   movements_json TEXT NOT NULL DEFAULT '[]',
+   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  INSERT OR IGNORE INTO inventory_legacy_state (id)
+  VALUES (1);
  `);
 
  const seedInventory=db.prepare(`
@@ -150,5 +161,77 @@ module.exports=function registerInventoryV2(app,io,db){
    LIMIT 500
   `).all();
   res.json(rows);
+ });
+
+ app.get("/api/inventory/legacy-state",(req,res)=>{
+  const state=db.prepare(`
+   SELECT suppliers_json,deliveries_json,movements_json
+   FROM inventory_legacy_state WHERE id=1
+  `).get();
+  const parse=(value)=>{try{return JSON.parse(value||"[]");}catch{return [];}};
+  res.json({
+   suppliers:parse(state?.suppliers_json),
+   deliveries:parse(state?.deliveries_json),
+   movements:parse(state?.movements_json)
+  });
+ });
+
+ app.put("/api/inventory/stock-snapshot",(req,res)=>{
+  seedInventory.run();
+  const stock=req.body?.stock;
+  const ingredients=Array.isArray(req.body?.ingredients)?req.body.ingredients:[];
+  if(!stock || typeof stock!=="object" || Array.isArray(stock)){
+   return res.status(400).json({error:"stock object is required"});
+  }
+
+  const save=db.transaction(()=>{
+   const updateStock=db.prepare(`
+    UPDATE inventory_items SET stock=?,updated_at=CURRENT_TIMESTAMP
+    WHERE ingredient_id=?
+   `);
+   Object.entries(stock).forEach(([ingredientId,value])=>{
+    const qty=Number(value);
+    if(!Number.isFinite(qty)||qty<0)return;
+    if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId)){
+     updateStock.run(qty,ingredientId);
+    }
+   });
+
+   const updateMeta=db.prepare(`
+    UPDATE inventory_items
+    SET tracked=?,low_stock_level=?,unit=?,updated_at=CURRENT_TIMESTAMP
+    WHERE ingredient_id=?
+   `);
+   ingredients.forEach(item=>{
+    if(!item?.id)return;
+    if(!db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(item.id))return;
+    updateMeta.run(
+     item.tracked?1:0,
+     Math.max(0,Number(item.lowStockLevel||0)),
+     String(item.unit||"unit"),
+     item.id
+    );
+   });
+  });
+
+  save();
+  io.emit("inventory-changed",{reason:"legacy-stock-save"});
+  res.json({ok:true});
+ });
+
+ app.put("/api/inventory/legacy-state",(req,res)=>{
+  const current=db.prepare("SELECT * FROM inventory_legacy_state WHERE id=1").get();
+  const suppliers=Array.isArray(req.body?.suppliers)?req.body.suppliers:JSON.parse(current.suppliers_json||"[]");
+  const deliveries=Array.isArray(req.body?.deliveries)?req.body.deliveries:JSON.parse(current.deliveries_json||"[]");
+  const movements=Array.isArray(req.body?.movements)?req.body.movements:JSON.parse(current.movements_json||"[]");
+
+  db.prepare(`
+   UPDATE inventory_legacy_state
+   SET suppliers_json=?,deliveries_json=?,movements_json=?,updated_at=CURRENT_TIMESTAMP
+   WHERE id=1
+  `).run(JSON.stringify(suppliers),JSON.stringify(deliveries),JSON.stringify(movements));
+
+  io.emit("inventory-changed",{reason:"legacy-state-save"});
+  res.json({ok:true});
  });
 };
