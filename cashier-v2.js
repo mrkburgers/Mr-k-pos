@@ -127,6 +127,18 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
 
   const created=await response.json();
 
+  const acceptResponse=await fetch(`/api/orders/${created.id}/status`,{
+   method:"PATCH",
+   headers:{
+    "Content-Type":"application/json"
+   },
+   body:JSON.stringify({status:"ACCEPTED"})
+  });
+
+  if(!acceptResponse.ok){
+   throw new Error("Unable to send cashier order to kitchen");
+  }
+
   if(currentDraftId){
    draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
   }
@@ -175,7 +187,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
      <h1>Order #${padOrder(created.order_number)}</h1>
 
      <div class="system-note">
-      Order saved to the restaurant server and added to Active Orders.
+      Order saved and sent directly to the kitchen.
      </div>
 
      <div class="info-row">
@@ -207,7 +219,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    </div>`;
 
  }catch(error){
-  alert("Unable to save this order to the restaurant server.");
+  alert("Unable to save or send this order to the restaurant server.");
  }
 
 };
@@ -304,6 +316,19 @@ window.showActiveOrders=async function showActiveOrders(){
      }
 
      ${
+      order.status==="NEW"
+      ?`
+       <button
+        class="primary"
+        style="width:100%;margin-top:14px"
+        onclick="event.stopPropagation();acceptBackendOrderFromList(${Number(order.id)})">
+        ACCEPT ORDER
+       </button>
+      `
+      :""
+     }
+
+     ${
       order.status==="READY"
       ?`
        <button
@@ -329,6 +354,31 @@ window.showActiveOrders=async function showActiveOrders(){
    </div>
   `;
 
+ }
+
+};
+
+window.acceptBackendOrderFromList=async function acceptBackendOrderFromList(id){
+
+ try{
+
+  const response=await fetch(`/api/orders/${id}/status`,{
+   method:"PATCH",
+   headers:{
+    "Content-Type":"application/json"
+   },
+   body:JSON.stringify({status:"ACCEPTED"})
+  });
+
+  if(!response.ok){
+   throw new Error("Unable to accept order");
+  }
+
+  await showActiveOrders();
+  refreshCashierDashboardCounts();
+
+ }catch(error){
+  alert("Unable to accept this order.");
  }
 
 };
