@@ -142,6 +142,15 @@ io.emit("order-created", {
     status: "NEW"
   });
 });
+app.get("/api/orders", (req, res) => {
+  const orders = db.prepare(`
+    SELECT *
+    FROM orders
+    ORDER BY id DESC
+  `).all();
+
+  res.json(orders);
+});
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
 
