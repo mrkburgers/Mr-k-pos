@@ -19,17 +19,6 @@ window.checkoutOrder=function checkoutOrder(){
   return alert("Add at least one item before checkout.");
  }
 
- const missingStock=checkOrderInventory({
-  cart:JSON.parse(JSON.stringify(cart))
- });
-
- if(missingStock.length){
-  return alert(
-   "NOT ENOUGH STOCK\n\n"+
-   missingStock.join("\n")
-  );
- }
-
  v2PendingCheckout={
   orderType,
   customer:{...customer},
@@ -104,7 +93,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
 
  try{
 
-  const response=await fetch("/api/orders",{
+  const response=await fetch("/api/orders-with-inventory",{
    method:"POST",
    headers:{
     "Content-Type":"application/json"
@@ -121,11 +110,21 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    })
   });
 
+  const responseData=await response.json().catch(()=>({}));
+
   if(!response.ok){
-   throw new Error("Unable to create backend order");
+   if(response.status===409 && responseData.error==="insufficient inventory"){
+    const shortages=Array.isArray(responseData.shortages)?responseData.shortages:[];
+    const lines=shortages.map(item=>
+     `${item.name}: need ${Number(item.required).toLocaleString()}, available ${Number(item.available).toLocaleString()}`
+    );
+    alert("NOT ENOUGH STOCK\n\n"+(lines.join("\n")||"One or more tracked ingredients are out of stock."));
+    return;
+   }
+   throw new Error(responseData.error||"Unable to create backend order");
   }
 
-  const created=await response.json();
+  const created=responseData;
 
   const acceptResponse=await fetch(`/api/orders/${created.id}/status`,{
    method:"PATCH",
@@ -143,7 +142,6 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
   }
 
-  deductOrderInventory({cart:pending.cart});
   addShiftSale(Number(pending.total||0),created.order_number,paymentMethod);
 
   if(paymentMethod==="CARD"){
@@ -187,7 +185,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
      <h1>Order #${padOrder(created.order_number)}</h1>
 
      <div class="system-note">
-      Order saved and sent directly to the kitchen.
+      Order saved, inventory updated, and sent directly to the kitchen.
      </div>
 
      <div class="info-row">
@@ -219,7 +217,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    </div>`;
 
  }catch(error){
-  alert("Unable to save or send this order to the restaurant server.");
+  alert(error.message||"Unable to save or send this order to the restaurant server.");
  }
 
 };
