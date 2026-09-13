@@ -23996,7 +23996,9 @@ async function showActiveOrders(){
 
    ?activeBackendOrders.map(order=>`
 
-     <div class="order-card">
+     <div
+ class="order-card clickable"
+ onclick="activeOrderDetail(${Number(order.id)})">
 
       <div class="order-top">
 
@@ -24074,228 +24076,114 @@ async function showActiveOrders(){
 
 }
 
-function activeOrderDetail(number){
-
- const o=
-
- activeOrders.find(
-
-   x=>
-
-   Number(x.number)===
-
-   Number(number)
-
- );
-
- if(!o){
-
-   return home();
-
- }
-
- const items=
-
- orderCart(o);
+async function activeOrderDetail(id){
 
  document.getElementById("root").innerHTML=`
 
  <div class="app">
 
   <button
-
    class="back"
-
    onclick="showActiveOrders()">
-
    ← BACK
-
   </button>
 
   <div class="logo">
-
    MR K BURGERS
-
    <span>ACTIVE ORDER</span>
-
   </div>
 
   <div class="panel">
+   <p class="muted">Loading order...</p>
+  </div>
+
+ </div>`;
+
+ try{
+
+  const response=await fetch(`/api/orders/${id}`);
+
+  if(!response.ok){
+   throw new Error("Unable to load order");
+  }
+
+  const order=await response.json();
+
+  document.querySelector(".panel").innerHTML=`
 
    <div class="order-top">
 
     <div>
 
      <div class="order-number">
-
-      #${padOrder(o.number)}
-
+      #${padOrder(order.order_number)}
      </div>
 
      <h2>
-
-      ${esc(orderLabel(o))}
-
+      ${esc(order.order_type||"")}
      </h2>
 
     </div>
 
-    <div>
-
-     <div
-
-      class="timer"
-
-      data-start="${o.startedAt||Date.now()}"
-
-      data-stop="${o.readyAt||""}">
-
-      ${
-
-       formatTimer(
-
-         o.startedAt||Date.now(),
-
-         o.readyAt
-
-       )
-
-      }
-
-     </div>
-
-     <span
-
-      class="status ${o.status==="READY"?"ready":""}">
-
-      ${esc(o.status||"NEW")}
-
-     </span>
-
-    </div>
+    <span class="status ${order.status==="READY"?"ready":""}">
+     ${esc(order.status||"NEW")}
+    </span>
 
    </div>
 
    <div class="info-row">
-
-    <span>Order Type</span>
-
-    <strong>${esc(o.type)}</strong>
-
+    <span>Payment</span>
+    <strong>${esc(order.payment_status||"PENDING")}</strong>
    </div>
-<div class="info-row">
 
-  <span>Order Value</span>
+   <div class="info-row">
+    <span>Total</span>
+    <strong>${Number(order.total_amount||0).toLocaleString()} CFA</strong>
+   </div>
 
-  <strong>${orderTotal(o).toLocaleString()} CFA</strong>
-
-</div>
    ${
-
-    o.type==="DINE IN"
-
+    order.customer_name
     ?`
-
      <div class="info-row">
-
-      <span>Table Number</span>
-
-      <strong>${esc(o.customer?.table)}</strong>
-
-     </div>
-
-    `
-
-    :`
-
-     <div class="info-row">
-
       <span>Customer</span>
-
-      <strong>${esc(o.customer?.name)}</strong>
-
+      <strong>${esc(order.customer_name)}</strong>
      </div>
-
-     ${
-
-      o.customer?.phone
-
-      ?`
-
-       <div class="info-row">
-
-        <span>Phone</span>
-
-        <strong>${esc(o.customer.phone)}</strong>
-
-       </div>
-
-      `
-
-      :""
-
-     }
-
-     ${
-
-      o.type==="DELIVERY"&&
-
-      o.customer?.address
-
-      ?`
-
-       <div class="info-row">
-
-        <span>Address</span>
-
-        <strong>${esc(o.customer.address)}</strong>
-
-       </div>
-
-      `
-
-      :""
-
-     }
-
     `
+    :""
+   }
 
+   ${
+    order.customer_phone
+    ?`
+     <div class="info-row">
+      <span>Phone</span>
+      <strong>${esc(order.customer_phone)}</strong>
+     </div>
+    `
+    :""
    }
 
    <h3>Items</h3>
 
    ${
+    Array.isArray(order.items) && order.items.length
 
-    items.length
-
-    ?items.map(i=>`
+    ?order.items.map(item=>`
 
      <div class="summary">
 
       <strong>
-
-       ${i.qty} × ${esc(i.name)}
-
+       ${Number(item.quantity||0)} × ${esc(item.item_name||"")}
       </strong>
 
-      ${removedHtml(i)}
-
       ${
-
-       (i.extras||[])
-
-       .map(e=>`
-
+       item.notes
+       ?`
         <div class="muted">
-
-         ${e.qty} × ${esc(e.name)}
-
+         ${esc(item.notes)}
         </div>
-
-       `)
-
-       .join("")
-
+       `
+       :""
       }
 
      </div>
@@ -24303,56 +24191,21 @@ function activeOrderDetail(number){
     `).join("")
 
     :`<p class="muted">No item details available.</p>`
-
    }
 
-   ${
+  `;
 
-    o.status==="READY"
+ }catch(error){
 
-    ?`
+  document.querySelector(".panel").innerHTML=`
 
-     <div class="system-note">
+   <div class="system-note">
+    Unable to load this order from the restaurant server.
+   </div>
 
-      ✅ Kitchen has marked this order READY.
+  `;
 
-      Hand it over, then complete it.
-
-     </div>
-
-               <button
-
-      class="green"
-
-      style="margin-top:18px;width:100%"
-
-      onclick="cashierFinishOrder(${Number(o.number)})">
-
-      COMPLETED
-
-     </button>
-
-    `
-
-    :`
-
-     <div class="system-note">
-
-      🔒 Checked-out orders are read-only until
-
-      the kitchen marks them READY.
-
-     </div>
-
-    `
-
-   }
-
-  </div>
-
- </div>`;
-
- startTimerRefresh();
+ }
 
 }
 function paymentMethodPage(number){
