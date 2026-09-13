@@ -24,7 +24,12 @@ function v2ApplyBackendMenu(data){
   category:item.category_id,
   price:Number(item.price||0),
   ingredientIds:(item.ingredients||[]).map(ingredient=>ingredient.id),
-  ingredientQuantities:{},
+  ingredientQuantities:Object.fromEntries(
+   (item.ingredients||[]).map(ingredient=>[
+    ingredient.id,
+    Number(ingredient.quantity||1)
+   ])
+  ),
   removableIngredientIds:(item.ingredients||[])
    .filter(ingredient=>ingredient.removable)
    .map(ingredient=>ingredient.id),
@@ -40,7 +45,7 @@ async function loadV2BackendMenu(force=false){
  }
 
  v2BackendMenuReady=(async()=>{
-  const response=await fetch("/api/menu",{cache:"no-store"});
+  const response=await fetch("/api/menu-v2",{cache:"no-store"});
   if(!response.ok){
    throw new Error("Unable to load backend menu");
   }
