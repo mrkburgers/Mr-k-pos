@@ -3,7 +3,7 @@ const Database = require("better-sqlite3");
 const db = new Database("mr-k-pos.db");
 
 db.pragma("journal_mode = WAL");
-
+db.pragma("foreign_keys = ON");
 db.exec(`
   CREATE TABLE IF NOT EXISTS system_settings (
     id INTEGER PRIMARY KEY CHECK (id = 1),
