@@ -82,7 +82,7 @@ app.patch("/api/settings/restaurant-status", (req, res) => {
     restaurant_status: status
   });
 });
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
 
