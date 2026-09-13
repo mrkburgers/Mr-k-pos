@@ -16,32 +16,6 @@ function makeId(prefix,name){
 module.exports=function registerMenuAdminV2(app,io,db){
   registerInventoryV2(app,io,db);
 
-  const ensureRecipeQuantities=db.transaction(()=>{
-    const bun=db.prepare("SELECT id FROM menu_ingredients WHERE name='Burger bun' COLLATE NOCASE LIMIT 1").get();
-    const burgers=db.prepare("SELECT id FROM menu_items WHERE category_id='burgers'").all();
-    if(bun){
-      const addBun=db.prepare(`
-        INSERT OR IGNORE INTO menu_item_ingredients
-        (menu_item_id,ingredient_id,removable,sort_order,quantity)
-        VALUES (?,?,0,99,1)
-      `);
-      burgers.forEach(item=>addBun.run(item.id,bun.id));
-    }
-
-    const brave=db.prepare("SELECT id FROM menu_items WHERE name='Only The Brave' COLLATE NOCASE LIMIT 1").get();
-    if(brave){
-      const setQty=db.prepare(`
-        UPDATE menu_item_ingredients SET quantity=?
-        WHERE menu_item_id=? AND ingredient_id=(
-          SELECT id FROM menu_ingredients WHERE name=? COLLATE NOCASE LIMIT 1
-        )
-      `);
-      setQty.run(3,brave.id,"Beef patty 120g");
-      setQty.run(3,brave.id,"Cheddar cheese");
-    }
-  });
-  ensureRecipeQuantities();
-
   app.get("/api/menu-v2",(req,res)=>{
     const categories=db.prepare(`
       SELECT id,name,icon,active,sort_order,created_at,updated_at
@@ -161,14 +135,20 @@ module.exports=function registerMenuAdminV2(app,io,db){
       `);
       ingredientIds.forEach((ingredientId,index)=>{
         if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId)){
-          const quantity=Math.max(0.01,Number(quantities[ingredientId]??1)||1);
+          const quantity=Number(quantities[ingredientId]);
+          if(!Number.isFinite(quantity)||quantity<=0)throw new Error("INVALID_INGREDIENT_QUANTITY");
           addIngredient.run(id,ingredientId,removableIds.has(ingredientId)?1:0,index+1,quantity);
         }
       });
       const addExtra=db.prepare(`INSERT OR IGNORE INTO menu_item_extras(menu_item_id,extra_item_id) VALUES(?,?)`);
       extraIds.forEach(extraId=>{if(extraId!==id&&db.prepare("SELECT id FROM menu_items WHERE id=?").get(extraId))addExtra.run(id,extraId);});
     });
-    try{save();}catch(error){if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"menu item name already exists"});throw error;}
+    try{save();}
+    catch(error){
+      if(error.message==="INVALID_INGREDIENT_QUANTITY")return res.status(400).json({error:"every selected ingredient needs a quantity greater than zero"});
+      if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"menu item name already exists"});
+      throw error;
+    }
     io.emit("menu-changed",{type:"item-created",id});
     res.status(201).json({id,name,category_id:categoryId,price:Math.round(price),active});
   });
@@ -188,13 +168,6 @@ module.exports=function registerMenuAdminV2(app,io,db){
     if(!name||!categoryId||!Number.isFinite(price)||price<0)return res.status(400).json({error:"invalid menu item data"});
     if(!db.prepare("SELECT id FROM menu_categories WHERE id=?").get(categoryId))return res.status(400).json({error:"invalid category"});
 
-    const existingQuantities=new Map(
-      db.prepare(`
-        SELECT ingredient_id,COALESCE(quantity,1) AS quantity
-        FROM menu_item_ingredients WHERE menu_item_id=?
-      `).all(id).map(row=>[row.ingredient_id,Number(row.quantity||1)])
-    );
-
     const save=db.transaction(()=>{
       db.prepare(`UPDATE menu_items SET name=?,category_id=?,price=?,active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(name,categoryId,Math.round(price),active?1:0,id);
       db.prepare("DELETE FROM menu_item_ingredients WHERE menu_item_id=?").run(id);
@@ -204,9 +177,8 @@ module.exports=function registerMenuAdminV2(app,io,db){
       `);
       ingredientIds.forEach((ingredientId,index)=>{
         if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId)){
-          const requested=quantities[ingredientId];
-          const preserved=existingQuantities.get(ingredientId);
-          const quantity=Math.max(0.01,Number(requested??preserved??1)||1);
+          const quantity=Number(quantities[ingredientId]);
+          if(!Number.isFinite(quantity)||quantity<=0)throw new Error("INVALID_INGREDIENT_QUANTITY");
           addIngredient.run(id,ingredientId,removableIds.has(ingredientId)?1:0,index+1,quantity);
         }
       });
@@ -214,7 +186,12 @@ module.exports=function registerMenuAdminV2(app,io,db){
       const addExtra=db.prepare(`INSERT OR IGNORE INTO menu_item_extras(menu_item_id,extra_item_id) VALUES(?,?)`);
       extraIds.forEach(extraId=>{if(extraId!==id&&db.prepare("SELECT id FROM menu_items WHERE id=?").get(extraId))addExtra.run(id,extraId);});
     });
-    try{save();}catch(error){if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"menu item name already exists"});throw error;}
+    try{save();}
+    catch(error){
+      if(error.message==="INVALID_INGREDIENT_QUANTITY")return res.status(400).json({error:"every selected ingredient needs a quantity greater than zero"});
+      if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"menu item name already exists"});
+      throw error;
+    }
     io.emit("menu-changed",{type:"item-updated",id});
     res.json({id,name,category_id:categoryId,price:Math.round(price),active});
   });
