@@ -1,5 +1,51 @@
-window.login=function login(){
+let v2BackendStaff=[];
 
+async function loadV2BackendStaff(){
+ try{
+  const response=await fetch("/api/staff");
+  if(!response.ok){
+   throw new Error("Unable to load staff accounts");
+  }
+  v2BackendStaff=await response.json();
+ }catch(error){
+  v2BackendStaff=[];
+ }
+}
+
+window.loginScreen=async function loginScreen(){
+ await loadV2BackendStaff();
+
+ const activeAccounts=v2BackendStaff.filter(account=>account.active);
+
+ document.getElementById("root").innerHTML=`
+ <div class="login">
+  <div class="loginbox">
+   <div class="logo">MR K BURGERS<span>POS SYSTEM</span></div>
+
+   <div class="form" style="margin-top:30px">
+    <label>Staff ID</label>
+    <input id="user" placeholder="Staff ID">
+
+    <label>PIN</label>
+    <input id="pin" type="password" placeholder="PIN">
+
+    <button class="primary" onclick="login()">LOGIN</button>
+   </div>
+
+   <p class="muted" style="margin-top:20px">
+    ${
+     activeAccounts.length
+     ?activeAccounts.map(account=>
+       `${esc(account.name)}: ${esc(account.staff_id)}`
+      ).join("<br>")
+     :"Unable to load staff accounts from the restaurant server."
+    }
+   </p>
+  </div>
+ </div>`;
+};
+
+window.login=async function login(){
  const u=document
   .getElementById("user")
   .value.trim();
@@ -8,65 +54,65 @@ window.login=function login(){
   .getElementById("pin")
   .value.trim();
 
- const ownerStaffId=String(ownerAccount?.staffId ?? "").trim();
- const ownerPin=String(ownerAccount?.pin ?? "").trim();
+ if(!u || !p){
+  alert("Enter Staff ID and PIN.");
+  return;
+ }
 
- if(
-  u.toLowerCase()===ownerStaffId.toLowerCase() &&
-  p===ownerPin
- ){
+ try{
+  const response=await fetch("/api/login",{
+   method:"POST",
+   headers:{
+    "Content-Type":"application/json"
+   },
+   body:JSON.stringify({
+    staff_id:u,
+    pin:p
+   })
+  });
+
+  const result=await response.json();
+
+  if(!response.ok){
+   alert(result.error || "Invalid Staff ID or PIN.");
+   return;
+  }
 
   loggedIn=true;
-  role="owner";
-  currentStaffName=ownerAccount.name;
-  currentStaffId=ownerStaffId;
+  role=result.role;
+  currentStaffName=result.name;
+  currentStaffId=result.staff_id;
 
-  getActiveShift();
-  getShiftHistory();
-  showStorageIntegrityWarning();
-  ownerHome();
-  return;
+  if(role==="owner"){
+   getActiveShift();
+   getShiftHistory();
+   showStorageIntegrityWarning();
+   ownerHome();
+   return;
+  }
+
+  if(role==="manager"){
+   managerHome();
+   return;
+  }
+
+  if(role==="kitchen"){
+   kitchenHome();
+   return;
+  }
+
+  if(role==="cashier"){
+   home();
+   return;
+  }
+
+  alert("Invalid staff role.");
+
+ }catch(error){
+  alert("Unable to connect to the restaurant server.");
  }
-
- const staff=staffAccounts.find(s=>{
-  const staffId=String(s?.staffId ?? "").trim();
-  const pin=String(s?.pin ?? "").trim();
-
-  return (
-   staffId.toLowerCase()===u.toLowerCase() &&
-   pin===p
-  );
- });
-
- if(!staff){
-  alert("Invalid Staff ID or PIN.");
-  return;
- }
-
- if(!staff.active){
-  alert("This staff account is inactive.");
-  return;
- }
-
- loggedIn=true;
- role=staff.role;
- currentStaffName=staff.name;
- currentStaffId=String(staff.staffId ?? "").trim();
-
- if(role==="manager"){
-  managerHome();
-  return;
- }
-
- if(role==="kitchen"){
-  kitchenHome();
-  return;
- }
-
- if(role==="cashier"){
-  home();
-  return;
- }
-
- alert("Invalid staff role.");
 };
+
+if(!loggedIn){
+ loginScreen();
+}
