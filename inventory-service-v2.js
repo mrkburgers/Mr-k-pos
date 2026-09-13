@@ -27,25 +27,15 @@ function buildNeeds(db,items){
   needs.set(ingredientId,(needs.get(ingredientId)||0)+qty);
  };
 
- const ingredientByName=new Map(
-  db.prepare("SELECT id,name FROM menu_ingredients").all().map(row=>[row.name,row.id])
- );
  const menuItemByName=new Map(
   db.prepare("SELECT id,name,category_id FROM menu_items").all().map(row=>[row.name,row])
  );
-
- const extraIngredientMap={
-  "Extra beef patty":"Beef patty 120g",
-  "Extra chicken steak":"Grilled chicken breast 120g",
-  "Extra cheddar cheese":"Cheddar cheese",
-  "Extra emmental cheese":"Emmental cheese",
-  "Extra mozzarella cheese":"Mozzarella cheese",
-  "Extra Swiss cheese":"Swiss cheese",
-  "Extra mushroom":"Sautéed mushrooms",
-  "Extra onion rings":"Onion rings",
-  "Extra bacon":"Bacon",
-  "Extra grated cheese":"Grated cheese"
- };
+ const recipeForItem=db.prepare(`
+  SELECT i.id,i.name,COALESCE(mii.quantity,1) AS quantity
+  FROM menu_item_ingredients mii
+  JOIN menu_ingredients i ON i.id=mii.ingredient_id
+  WHERE mii.menu_item_id=?
+ `);
 
  for(const orderItem of items||[]){
   const itemName=String(orderItem.item_name||"");
@@ -56,23 +46,21 @@ function buildNeeds(db,items){
   const {removed,extras}=parseOrderNotes(orderItem.notes);
   const removedSet=new Set(removed);
 
-  const recipe=db.prepare(`
-   SELECT i.id,i.name,COALESCE(mii.quantity,1) AS quantity
-   FROM menu_item_ingredients mii
-   JOIN menu_ingredients i ON i.id=mii.ingredient_id
-   WHERE mii.menu_item_id=?
-  `).all(menuItem.id);
-
-  recipe.forEach(ingredient=>{
+  recipeForItem.all(menuItem.id).forEach(ingredient=>{
    if(!removedSet.has(ingredient.name)){
     add(ingredient.id,Number(ingredient.quantity||1)*orderQty);
    }
   });
 
   extras.forEach(extra=>{
-   const ingredientName=extraIngredientMap[extra.name];
-   const ingredientId=ingredientByName.get(ingredientName);
-   add(ingredientId,Number(extra.quantity||1)*orderQty);
+   const extraItem=menuItemByName.get(extra.name);
+   if(!extraItem)return;
+   recipeForItem.all(extraItem.id).forEach(ingredient=>{
+    add(
+     ingredient.id,
+     Number(ingredient.quantity||1)*Number(extra.quantity||1)*orderQty
+    );
+   });
   });
  }
 
