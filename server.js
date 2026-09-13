@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const fs = require("fs");
 const db = require("./database");
 
 const app = express();
@@ -10,7 +11,15 @@ const io = new Server(server);
 app.use(express.json());
 const PORT = 3000;
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  const indexPath = path.join(__dirname, "index.html");
+  const html = fs.readFileSync(indexPath, "utf8").replace(
+    "</body>",
+    '<script src="/kitchen-v2.js"></script>\n</body>'
+  );
+  res.type("html").send(html);
+});
+app.get("/kitchen-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "kitchen-v2.js"));
 });
 app.get("/api/health", (req, res) => {
   const databaseCheck = db
