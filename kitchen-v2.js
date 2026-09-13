@@ -258,6 +258,201 @@ async function refreshCashierDashboardCounts(){
 
 }
 
+window.showOrderHistory=async function showOrderHistory(){
+
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="home()">
+   ← BACK
+  </button>
+
+  <div class="logo">
+   MR K BURGERS
+   <span>ORDER HISTORY</span>
+  </div>
+
+  <div class="panel">
+   <p class="muted">Loading completed orders...</p>
+  </div>
+
+ </div>`;
+
+ try{
+
+  const response=await fetch("/api/orders?status=COMPLETED");
+
+  if(!response.ok){
+   throw new Error("Unable to load order history");
+  }
+
+  const orders=await response.json();
+
+  orders.sort((a,b)=>Number(b.id)-Number(a.id));
+
+  document.querySelector(".panel").innerHTML=`
+
+   ${
+    orders.length
+    ?orders.map(order=>`
+
+     <div
+      class="order-card clickable"
+      onclick="backendOrderHistoryDetail(${Number(order.id)})">
+
+      <div class="order-top">
+
+       <div>
+        <div class="order-number">
+         #${padOrder(order.order_number)}
+        </div>
+        <div class="muted">
+         ${esc(order.order_type||"")}
+        </div>
+       </div>
+
+       <span class="status completed">
+        COMPLETED
+       </span>
+
+      </div>
+
+      <div class="info-row">
+       <span>Payment</span>
+       <strong>${esc(order.payment_status||"PENDING")}</strong>
+      </div>
+
+      <div class="info-row">
+       <span>Total</span>
+       <strong>${Number(order.total_amount||0).toLocaleString()} CFA</strong>
+      </div>
+
+     </div>
+
+    `).join("")
+    :`<p class="muted">No completed orders.</p>`
+   }
+
+  `;
+
+ }catch(error){
+
+  document.querySelector(".panel").innerHTML=`
+   <div class="system-note">
+    Unable to load order history from the restaurant server.
+   </div>
+  `;
+
+ }
+
+};
+
+window.backendOrderHistoryDetail=async function backendOrderHistoryDetail(id){
+
+ document.getElementById("root").innerHTML=`
+
+ <div class="app">
+
+  <button class="back" onclick="showOrderHistory()">
+   ← BACK
+  </button>
+
+  <div class="logo">
+   MR K BURGERS
+   <span>COMPLETED ORDER</span>
+  </div>
+
+  <div class="panel">
+   <p class="muted">Loading order...</p>
+  </div>
+
+ </div>`;
+
+ try{
+
+  const response=await fetch(`/api/orders/${id}`);
+
+  if(!response.ok){
+   throw new Error("Unable to load completed order");
+  }
+
+  const order=await response.json();
+
+  document.querySelector(".panel").innerHTML=`
+
+   <div class="order-top">
+    <div>
+     <div class="order-number">
+      #${padOrder(order.order_number)}
+     </div>
+     <h2>${esc(order.order_type||"")}</h2>
+    </div>
+    <span class="status completed">COMPLETED</span>
+   </div>
+
+   <div class="info-row">
+    <span>Payment</span>
+    <strong>${esc(order.payment_status||"PENDING")}</strong>
+   </div>
+
+   <div class="info-row">
+    <span>Method</span>
+    <strong>${esc(order.payment_method||"—")}</strong>
+   </div>
+
+   <div class="info-row">
+    <span>Total</span>
+    <strong>${Number(order.total_amount||0).toLocaleString()} CFA</strong>
+   </div>
+
+   ${order.customer_name?`
+    <div class="info-row">
+     <span>Customer</span>
+     <strong>${esc(order.customer_name)}</strong>
+    </div>
+   `:""}
+
+   ${order.customer_phone?`
+    <div class="info-row">
+     <span>Phone</span>
+     <strong>${esc(order.customer_phone)}</strong>
+    </div>
+   `:""}
+
+   <h3>Items</h3>
+
+   ${
+    Array.isArray(order.items) && order.items.length
+    ?order.items.map(item=>`
+     <div class="summary">
+      <strong>
+       ${Number(item.quantity||0)} × ${esc(item.item_name||"")}
+      </strong>
+      ${item.notes?`
+       <div class="muted">${esc(item.notes)}</div>
+      `:""}
+     </div>
+    `).join("")
+    :`<p class="muted">No item details available.</p>`
+   }
+
+  `;
+
+ }catch(error){
+
+  document.querySelector(".panel").innerHTML=`
+   <div class="system-note">
+    Unable to load this completed order from the restaurant server.
+   </div>
+  `;
+
+ }
+
+};
+
 const legacyCashierHome=window.home;
 
 window.home=function home(){
