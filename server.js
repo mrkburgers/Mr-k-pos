@@ -129,7 +129,13 @@ app.post("/api/orders", (req, res) => {
     customer_phone,
     total_amount
   );
-
+io.emit("order-created", {
+  id: result.lastInsertRowid,
+  order_uuid,
+  status: "NEW",
+  order_type,
+  total_amount
+});
   res.status(201).json({
     id: result.lastInsertRowid,
     order_uuid,
