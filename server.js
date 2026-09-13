@@ -92,6 +92,50 @@ io.emit("settings-changed", {
     restaurant_status: status
   });
 });
+app.post("/api/orders", (req, res) => {
+  const {
+    order_uuid,
+    order_type,
+    payment_status = "PENDING",
+    payment_method = null,
+    customer_name = null,
+    customer_phone = null,
+    total_amount = 0
+  } = req.body;
+
+  if (!order_uuid || !order_type) {
+    return res.status(400).json({
+      error: "order_uuid and order_type are required"
+    });
+  }
+
+  const result = db.prepare(`
+    INSERT INTO orders (
+      order_uuid,
+      order_type,
+      payment_status,
+      payment_method,
+      customer_name,
+      customer_phone,
+      total_amount
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    order_uuid,
+    order_type,
+    payment_status,
+    payment_method,
+    customer_name,
+    customer_phone,
+    total_amount
+  );
+
+  res.status(201).json({
+    id: result.lastInsertRowid,
+    order_uuid,
+    status: "NEW"
+  });
+});
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
 
