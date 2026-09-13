@@ -200,6 +200,57 @@ for (const order of orders) {
 
   res.json(orders);
 });
+app.patch("/api/orders/:id/status", (req, res) => {
+  const orderId = Number(req.params.id);
+  const { status } = req.body;
+
+  const allowedStatuses = [
+    "NEW",
+    "ACCEPTED",
+    "PREPARING",
+    "READY",
+    "COMPLETED",
+    "CANCELLED"
+  ];
+
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({
+      error: "invalid order status"
+    });
+  }
+
+  const order = db.prepare(`
+    SELECT *
+    FROM orders
+    WHERE id = ?
+  `).get(orderId);
+
+  if (!order) {
+    return res.status(404).json({
+      error: "order not found"
+    });
+  }
+
+  db.prepare(`
+    UPDATE orders
+    SET
+      status = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(status, orderId);
+
+  io.emit("order-status-changed", {
+    id: orderId,
+    order_uuid: order.order_uuid,
+    status
+  });
+
+  res.json({
+    id: orderId,
+    order_uuid: order.order_uuid,
+    status
+  });
+});
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
 
