@@ -41,8 +41,8 @@ window.kitchenHome=async function kitchenHome(){
    )
    .sort(
     (a,b)=>
-    Number(a.order_number)-
-    Number(b.order_number)
+    Number(b.order_number)-
+    Number(a.order_number)
    );
 
   document.querySelector(".panel").innerHTML=`
@@ -209,10 +209,76 @@ function isBackendKitchenScreen(){
 
 }
 
+async function refreshCashierDashboardCounts(){
+
+ if(role!=="cashier")return;
+
+ try{
+
+  const response=await fetch("/api/orders");
+
+  if(!response.ok)return;
+
+  const orders=await response.json();
+
+  const activeCount=orders.filter(order=>
+   ["NEW","ACCEPTED","PREPARING","READY"].includes(order.status)
+  ).length;
+
+  const today=new Date();
+
+  const completedToday=orders.filter(order=>{
+   if(order.status!=="COMPLETED" || !order.updated_at)return false;
+   const date=new Date(`${order.updated_at}Z`);
+   return (
+    date.getFullYear()===today.getFullYear() &&
+    date.getMonth()===today.getMonth() &&
+    date.getDate()===today.getDate()
+   );
+  }).length;
+
+  document.querySelectorAll(".card").forEach(card=>{
+   const title=card.querySelector("h3")?.textContent.trim();
+   const count=card.querySelector("strong");
+
+   if(!count)return;
+
+   if(title==="ACTIVE ORDERS"){
+    count.textContent=activeCount;
+   }
+
+   if(title==="ORDER HISTORY"){
+    count.textContent=completedToday;
+   }
+  });
+
+ }catch(error){
+  console.error("Unable to refresh cashier dashboard counts",error);
+ }
+
+}
+
+const legacyCashierHome=window.home;
+
+window.home=function home(){
+ legacyCashierHome();
+ refreshCashierDashboardCounts();
+};
+
+socket.on("order-created",()=>{
+ refreshCashierDashboardCounts();
+});
+
 socket.on("order-status-changed",()=>{
 
  if(isBackendKitchenScreen()){
   kitchenHome();
  }
 
+ refreshCashierDashboardCounts();
+
+});
+
+socket.on("order-payment-status-changed",()=>{
+ refreshCashierDashboardCounts();
 });
