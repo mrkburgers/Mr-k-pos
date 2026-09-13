@@ -194,20 +194,38 @@ try {
   });
 });
 app.get("/api/orders", (req, res) => {
-  const orders = db.prepare(`
-  SELECT *
-  FROM orders
-  ORDER BY id DESC
-`).all();
+  const { status, payment_status } = req.query;
 
-for (const order of orders) {
-  order.items = db.prepare(`
+  let query = `
     SELECT *
-    FROM order_items
-    WHERE order_id = ?
-    ORDER BY id ASC
-  `).all(order.id);
-}
+    FROM orders
+    WHERE 1 = 1
+  `;
+
+  const params = [];
+
+  if (status) {
+    query += ` AND status = ?`;
+    params.push(status);
+  }
+
+  if (payment_status) {
+    query += ` AND payment_status = ?`;
+    params.push(payment_status);
+  }
+
+  query += ` ORDER BY id DESC`;
+
+  const orders = db.prepare(query).all(...params);
+
+  for (const order of orders) {
+    order.items = db.prepare(`
+      SELECT *
+      FROM order_items
+      WHERE order_id = ?
+      ORDER BY id ASC
+    `).all(order.id);
+  }
 
   res.json(orders);
 });
