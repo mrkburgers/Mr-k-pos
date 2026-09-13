@@ -56,7 +56,9 @@ app.patch("/api/settings/online-ordering", (req, res) => {
       updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run(enabled ? 1 : 0);
-
+ io.emit("online-ordering-changed", {
+    online_ordering_enabled: enabled
+  });
   res.json({
     online_ordering_enabled: enabled
   });
