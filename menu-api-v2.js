@@ -1,4 +1,6 @@
 const crypto = require("crypto");
+const registerInventoryV2 = require("./inventory-api-v2");
+const { consumeOrderInventory } = require("./inventory-service-v2");
 
 function makeId(prefix,name){
   const slug=String(name||"")
@@ -12,6 +14,105 @@ function makeId(prefix,name){
 }
 
 module.exports=function registerMenuAdminV2(app,io,db){
+  registerInventoryV2(app,io,db);
+
+  app.post("/api/orders-with-inventory",(req,res)=>{
+    const {
+      order_uuid,
+      order_type,
+      payment_status = "PENDING",
+      payment_method = null,
+      customer_name = null,
+      customer_phone = null,
+      total_amount = 0,
+      items = []
+    } = req.body;
+
+    if(!order_uuid || !order_type){
+      return res.status(400).json({error:"order_uuid and order_type are required"});
+    }
+    if(!Array.isArray(items)){
+      return res.status(400).json({error:"items must be an array"});
+    }
+
+    const createOrder=db.transaction(()=>{
+      const nextOrderNumber=db.prepare(`
+        SELECT COALESCE(MAX(order_number),0)+1 AS next_number
+        FROM orders
+        WHERE date(created_at,'localtime')=date('now','localtime')
+      `).get().next_number;
+
+      const result=db.prepare(`
+        INSERT INTO orders (
+          order_uuid,order_number,order_type,payment_status,payment_method,
+          customer_name,customer_phone,total_amount
+        ) VALUES (?,?,?,?,?,?,?,?)
+      `).run(
+        order_uuid,nextOrderNumber,order_type,payment_status,payment_method,
+        customer_name,customer_phone,total_amount
+      );
+
+      const orderId=result.lastInsertRowid;
+      const insertItem=db.prepare(`
+        INSERT INTO order_items (order_id,item_name,quantity,unit_price,notes)
+        VALUES (?,?,?,?,?)
+      `);
+      items.forEach(item=>{
+        insertItem.run(
+          orderId,
+          item.item_name,
+          item.quantity??1,
+          item.unit_price??0,
+          item.notes??null
+        );
+      });
+
+      const consumed=payment_status==="PAID"
+        ?consumeOrderInventory(db,items,`#${String(nextOrderNumber).padStart(3,"0")}`,"cashier")
+        :[];
+
+      return {orderId,orderNumber:nextOrderNumber,consumed};
+    });
+
+    let created;
+    try{
+      created=createOrder();
+    }catch(error){
+      if(error.code==="SQLITE_CONSTRAINT_UNIQUE"){
+        return res.status(409).json({error:"order_uuid already exists"});
+      }
+      if(error.message==="INSUFFICIENT_INVENTORY"){
+        return res.status(409).json({
+          error:"insufficient inventory",
+          shortages:error.shortages||[]
+        });
+      }
+      throw error;
+    }
+
+    io.emit("order-created",{
+      id:created.orderId,
+      order_number:created.orderNumber,
+      order_uuid,
+      status:"NEW",
+      order_type,
+      total_amount,
+      items
+    });
+    if(created.consumed.length){
+      io.emit("inventory-changed",{reason:"sale",order_number:created.orderNumber});
+    }
+
+    res.status(201).json({
+      id:created.orderId,
+      order_number:created.orderNumber,
+      order_uuid,
+      status:"NEW",
+      items,
+      inventory_consumed:created.consumed
+    });
+  });
+
   app.patch("/api/menu/categories/:id",(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT * FROM menu_categories WHERE id=?").get(id);
@@ -128,11 +229,13 @@ module.exports=function registerMenuAdminV2(app,io,db){
     const id=makeId("ingredient",name);
     try{
       db.prepare("INSERT INTO menu_ingredients(id,name,active) VALUES(?,?,1)").run(id,name);
+      db.prepare("INSERT OR IGNORE INTO inventory_items(ingredient_id) VALUES(?)").run(id);
     }catch(error){
       if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"ingredient name already exists"});
       throw error;
     }
     io.emit("menu-changed",{type:"ingredient-created",id});
+    io.emit("inventory-changed",{ingredient_id:id});
     res.status(201).json({id,name,active:true});
   });
 
@@ -150,6 +253,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
       throw error;
     }
     io.emit("menu-changed",{type:"ingredient-updated",id});
+    io.emit("inventory-changed",{ingredient_id:id});
     res.json({id,name,active});
   });
 };
