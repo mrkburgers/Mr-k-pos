@@ -43,6 +43,24 @@ module.exports=function registerInventoryV2(app,io,db){
   VALUES (1);
  `);
 
+ const legacyTrackedIngredients=[
+  ["beef120","Beef patty 120g"],
+  ["chicken120","Grilled chicken breast 120g"],
+  ["bun","Burger bun"],
+  ["mushroom","Sautéed mushrooms"],
+  ["beefTenderloin100","Sautéed beef tenderloin 100g"],
+  ["bacon","Bacon"],
+  ["smokedTurkey","Smoked turkey"],
+  ["cheddar","Cheddar cheese"],
+  ["mozzarella","Mozzarella cheese"],
+  ["emmental","Emmental cheese"],
+  ["gratedCheese","Grated cheese"],
+  ["potatoes","Potatoes"],
+  ["plantain","Plantain Tostones"],
+  ["fajitaChicken100","100g Fajita Chicken"],
+  ["coleslaw","Coleslaw"]
+ ];
+
  const stockMenuProducts=[
   ["drink-small-water","stock-small-water","Small Water"],
   ["drink-big-water","stock-big-water","Big Water"],
@@ -57,24 +75,29 @@ module.exports=function registerInventoryV2(app,io,db){
   ["sauce-honey-bbq","stock-honey-bbq","Honey BBQ"]
  ];
 
- const ensureStockProduct=db.transaction(()=>{
+ const ensureTrackedInventory=db.transaction(()=>{
   const findIngredient=db.prepare("SELECT id FROM menu_ingredients WHERE name=? COLLATE NOCASE LIMIT 1");
-  const insertIngredient=db.prepare(`
-   INSERT OR IGNORE INTO menu_ingredients (id,name,active)
-   VALUES (?,?,1)
-  `);
+  const insertIngredient=db.prepare(`INSERT OR IGNORE INTO menu_ingredients (id,name,active) VALUES (?,?,1)`);
   const insertInventory=db.prepare(`
    INSERT OR IGNORE INTO inventory_items (ingredient_id,tracked,unit,stock,low_stock_level)
    VALUES (?,1,'unit',0,0)
   `);
-  const trackInventory=db.prepare(`
-   UPDATE inventory_items SET tracked=1,unit='unit' WHERE ingredient_id=?
-  `);
+  const trackInventory=db.prepare(`UPDATE inventory_items SET tracked=1,unit='unit' WHERE ingredient_id=?`);
   const addRecipe=db.prepare(`
    INSERT OR IGNORE INTO menu_item_ingredients (
     menu_item_id,ingredient_id,removable,sort_order,quantity
    ) VALUES (?,?,0,1,1)
   `);
+
+  legacyTrackedIngredients.forEach(([preferredId,name])=>{
+   let ingredient=findIngredient.get(name);
+   if(!ingredient){
+    insertIngredient.run(preferredId,name);
+    ingredient={id:preferredId};
+   }
+   insertInventory.run(ingredient.id);
+   trackInventory.run(ingredient.id);
+  });
 
   stockMenuProducts.forEach(([menuItemId,preferredIngredientId,name])=>{
    if(!db.prepare("SELECT id FROM menu_items WHERE id=?").get(menuItemId))return;
@@ -89,7 +112,7 @@ module.exports=function registerInventoryV2(app,io,db){
    addRecipe.run(menuItemId,ingredient.id);
   });
  });
- ensureStockProduct();
+ ensureTrackedInventory();
 
  const seedInventory=db.prepare(`
   INSERT OR IGNORE INTO inventory_items (ingredient_id)
@@ -170,27 +193,19 @@ module.exports=function registerInventoryV2(app,io,db){
    const after=before+amount;
    if(after<0)throw new Error("INSUFFICIENT_STOCK");
 
-   db.prepare(`
-    UPDATE inventory_items
-    SET stock=?,updated_at=CURRENT_TIMESTAMP
-    WHERE ingredient_id=?
-   `).run(after,id);
-
+   db.prepare(`UPDATE inventory_items SET stock=?,updated_at=CURRENT_TIMESTAMP WHERE ingredient_id=?`).run(after,id);
    db.prepare(`
     INSERT INTO inventory_movements (
      ingredient_id,movement_type,quantity,stock_before,stock_after,note,created_by
     ) VALUES (?,?,?,?,?,?,?)
    `).run(id,movementType,amount,before,after,note,createdBy);
-
    return {before,after};
   });
 
   let result;
   try{result=changeStock();}
   catch(error){
-   if(error.message==="INSUFFICIENT_STOCK"){
-    return res.status(409).json({error:"stock cannot go below zero"});
-   }
+   if(error.message==="INSUFFICIENT_STOCK")return res.status(409).json({error:"stock cannot go below zero"});
    throw error;
   }
 
@@ -212,37 +227,23 @@ module.exports=function registerInventoryV2(app,io,db){
  });
 
  app.get("/api/inventory/legacy-state",(req,res)=>{
-  const state=db.prepare(`
-   SELECT suppliers_json,deliveries_json,movements_json
-   FROM inventory_legacy_state WHERE id=1
-  `).get();
+  const state=db.prepare(`SELECT suppliers_json,deliveries_json,movements_json FROM inventory_legacy_state WHERE id=1`).get();
   const parse=(value)=>{try{return JSON.parse(value||"[]");}catch{return [];}};
-  res.json({
-   suppliers:parse(state?.suppliers_json),
-   deliveries:parse(state?.deliveries_json),
-   movements:parse(state?.movements_json)
-  });
+  res.json({suppliers:parse(state?.suppliers_json),deliveries:parse(state?.deliveries_json),movements:parse(state?.movements_json)});
  });
 
  app.put("/api/inventory/stock-snapshot",(req,res)=>{
   seedInventory.run();
   const stock=req.body?.stock;
   const ingredients=Array.isArray(req.body?.ingredients)?req.body.ingredients:[];
-  if(!stock || typeof stock!=="object" || Array.isArray(stock)){
-   return res.status(400).json({error:"stock object is required"});
-  }
+  if(!stock || typeof stock!=="object" || Array.isArray(stock))return res.status(400).json({error:"stock object is required"});
 
   const save=db.transaction(()=>{
-   const updateStock=db.prepare(`
-    UPDATE inventory_items SET stock=?,updated_at=CURRENT_TIMESTAMP
-    WHERE ingredient_id=?
-   `);
+   const updateStock=db.prepare(`UPDATE inventory_items SET stock=?,updated_at=CURRENT_TIMESTAMP WHERE ingredient_id=?`);
    Object.entries(stock).forEach(([ingredientId,value])=>{
     const qty=Number(value);
     if(!Number.isFinite(qty)||qty<0)return;
-    if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId)){
-     updateStock.run(qty,ingredientId);
-    }
+    if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId))updateStock.run(qty,ingredientId);
    });
 
    const updateMeta=db.prepare(`
@@ -253,12 +254,7 @@ module.exports=function registerInventoryV2(app,io,db){
    ingredients.forEach(item=>{
     if(!item?.id)return;
     if(!db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(item.id))return;
-    updateMeta.run(
-     item.tracked?1:0,
-     Math.max(0,Number(item.lowStockLevel||0)),
-     String(item.unit||"unit"),
-     item.id
-    );
+    updateMeta.run(item.tracked?1:0,Math.max(0,Number(item.lowStockLevel||0)),String(item.unit||"unit"),item.id);
    });
   });
 
