@@ -24192,7 +24192,59 @@ async function activeOrderDetail(id){
 
     :`<p class="muted">No item details available.</p>`
    }
+${
+    order.status==="NEW"
+    ?`
+     <div class="system-note">
+      This order is waiting for cashier acceptance.
+     </div>
 
+     <button
+      class="primary"
+      style="width:100%;margin-top:18px"
+      onclick="updateBackendOrderStatus(${Number(order.id)},'ACCEPTED')">
+      ACCEPT ORDER
+     </button>
+    `
+    :""
+   }
+
+   ${
+    order.status==="ACCEPTED"
+    ?`
+     <div class="system-note">
+      Order accepted. Waiting for kitchen preparation.
+     </div>
+    `
+    :""
+   }
+
+   ${
+    order.status==="PREPARING"
+    ?`
+     <div class="system-note">
+      Kitchen is preparing this order.
+     </div>
+    `
+    :""
+   }
+
+   ${
+    order.status==="READY"
+    ?`
+     <div class="system-note">
+      ✅ Order is ready for handover.
+     </div>
+
+     <button
+      class="green"
+      style="width:100%;margin-top:18px"
+      onclick="updateBackendOrderStatus(${Number(order.id)},'COMPLETED')">
+      COMPLETE ORDER
+     </button>
+    `
+    :""
+   }
   `;
 
  }catch(error){
@@ -24204,6 +24256,36 @@ async function activeOrderDetail(id){
    </div>
 
   `;
+
+ }
+
+}
+async function updateBackendOrderStatus(id,status){
+
+ try{
+
+  const response=await fetch(
+   `/api/orders/${id}/status`,
+   {
+    method:"PATCH",
+    headers:{
+     "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+     status
+    })
+   }
+  );
+
+  if(!response.ok){
+   throw new Error("Unable to update order status");
+  }
+
+  await activeOrderDetail(id);
+
+ }catch(error){
+
+  alert("Unable to update order status.");
 
  }
 
