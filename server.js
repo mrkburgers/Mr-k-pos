@@ -79,7 +79,9 @@ app.patch("/api/settings/restaurant-status", (req, res) => {
       updated_at = CURRENT_TIMESTAMP
     WHERE id = 1
   `).run(status);
-
+io.emit("restaurant-status-changed", {
+  restaurant_status: status
+});
   res.json({
     restaurant_status: status
   });
