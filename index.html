@@ -182,8 +182,12 @@ input{width:100%;max-width:100%;min-width:0;padding:14px;border-radius:10px;bord
 
 <div id="root"></div>
 
-<script>
+<script src="/socket.io/socket.io.js"></script>
 
+<script>
+const socket=io();
+
+let currentBackendOrderDetailId=null;
 let loggedIn=false;
 
 let role="";
@@ -23953,7 +23957,7 @@ if(missingStock.length){
 /* ACTIVE ORDERS */
 
 async function showActiveOrders(){
-
+currentBackendOrderDetailId=null;
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -24077,7 +24081,7 @@ async function showActiveOrders(){
 }
 
 async function activeOrderDetail(id){
-
+currentBackendOrderDetailId=Number(id);
  document.getElementById("root").innerHTML=`
 
  <div class="app">
@@ -24290,6 +24294,75 @@ async function updateBackendOrderStatus(id,status){
  }
 
 }
+function isBackendActiveOrdersScreen(){
+
+ const label=document.querySelector(".logo span");
+
+ return Boolean(
+  label &&
+  label.textContent.trim()==="ACTIVE ORDERS"
+ );
+
+}
+
+function isBackendOrderDetailScreen(){
+
+ const label=document.querySelector(".logo span");
+
+ return Boolean(
+  label &&
+  label.textContent.trim()==="ACTIVE ORDER"
+ );
+
+}
+
+socket.on("order-created",()=>{
+
+ if(isBackendActiveOrdersScreen()){
+  showActiveOrders();
+ }
+
+});
+
+socket.on("order-status-changed",(data)=>{
+
+ if(isBackendActiveOrdersScreen()){
+
+  showActiveOrders();
+  return;
+
+ }
+
+ if(
+  isBackendOrderDetailScreen() &&
+  Number(data.id)===Number(currentBackendOrderDetailId)
+ ){
+
+  activeOrderDetail(currentBackendOrderDetailId);
+
+ }
+
+});
+
+socket.on("order-payment-status-changed",(data)=>{
+
+ if(isBackendActiveOrdersScreen()){
+
+  showActiveOrders();
+  return;
+
+ }
+
+ if(
+  isBackendOrderDetailScreen() &&
+  Number(data.id)===Number(currentBackendOrderDetailId)
+ ){
+
+  activeOrderDetail(currentBackendOrderDetailId);
+
+ }
+
+});
 function paymentMethodPage(number){
 
   const o=activeOrders.find(
