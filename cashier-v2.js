@@ -357,3 +357,74 @@ window.completeBackendOrderFromList=async function completeBackendOrderFromList(
  }
 
 };
+
+/* V2 MENU RECOVERY FALLBACK */
+
+const v2RecoveredMenu=[
+ ["Mr K Classic","burgers",3000],
+ ["Mushroom & Swiss","burgers",5500],
+ ["Honky Tonk","burgers",5000],
+ ["Philly Cheesesteak","burgers",5500],
+ ["Only The Brave","burgers",9000],
+ ["Bohemian","burgers",5000],
+ ["Chicken Chimichurri","burgers",5500],
+ ["French Fries","sides",1000],
+ ["Plantain Tostones","sides",1000],
+ ["Onion Rings","sides",1000],
+ ["Cheese Fries","sides",3500],
+ ["Fajita Cheese Fries","sides",4500],
+ ["Dirty Fries","sides",4500],
+ ["Mr K Coleslaw","salads",1000],
+ ["Cheeseburger Salad","salads",3500],
+ ["Small Water","softDrinks",500],
+ ["Big Water","softDrinks",1000],
+ ["Coca Cola","softDrinks",1000],
+ ["Sprite","softDrinks",1000],
+ ["Fanta","softDrinks",1000],
+ ["Mr K Sauce","sauces",500],
+ ["Chimichurri","sauces",500],
+ ["Ketchup","sauces",0],
+ ["Mayonnaise","sauces",0],
+ ["Honey Mustard","sauces",500],
+ ["Honey BBQ","sauces",500]
+];
+
+const v2RecoveredCategoryIcons={
+ burgers:"🍔",
+ sides:"🍟",
+ salads:"🥗",
+ softDrinks:"🥤",
+ sauces:"🥣"
+};
+
+function recoverV2MenuIfNeeded(){
+
+ if(!Array.isArray(ownerMenuData) || ownerMenuData.length===0){
+  ownerMenuData=v2RecoveredMenu.map(([name,category,price],index)=>({
+   id:`v2-recovered-${index+1}`,
+   name,
+   category,
+   price,
+   ingredientIds:[],
+   ingredientQuantities:{},
+   removableIngredientIds:[],
+   allowedExtraIds:[],
+   active:true,
+   createdAt:Date.now()+index
+  }));
+  saveOwnerMenuData();
+ }
+
+ if(Array.isArray(menuCategoryData)){
+  menuCategoryData.forEach(category=>{
+   if(v2RecoveredCategoryIcons[category.id]){
+    category.icon=v2RecoveredCategoryIcons[category.id];
+    category.active=true;
+   }
+  });
+  saveMenuCategories();
+ }
+
+}
+
+recoverV2MenuIfNeeded();
