@@ -82,6 +82,13 @@ app.patch("/api/settings/restaurant-status", (req, res) => {
     restaurant_status: status
   });
 });
+io.on("connection", (socket) => {
+  console.log(`Device connected: ${socket.id}`);
+
+  socket.on("disconnect", () => {
+    console.log(`Device disconnected: ${socket.id}`);
+  });
+});
 server.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
