@@ -56,6 +56,27 @@ app.patch("/api/settings/online-ordering", (req, res) => {
     online_ordering_enabled: enabled
   });
 });
+app.patch("/api/settings/restaurant-status", (req, res) => {
+  const { status } = req.body;
+
+  if (!["OPEN", "CLOSED"].includes(status)) {
+    return res.status(400).json({
+      error: "status must be OPEN or CLOSED"
+    });
+  }
+
+  db.prepare(`
+    UPDATE system_settings
+    SET
+      restaurant_status = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = 1
+  `).run(status);
+
+  res.json({
+    restaurant_status: status
+  });
+});
 app.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
