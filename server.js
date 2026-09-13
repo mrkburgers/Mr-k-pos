@@ -117,26 +117,33 @@ app.post("/api/orders", (req, res) => {
   }
 
   const createOrder = db.transaction(() => {
+    const nextOrderNumber = db.prepare(`
+  SELECT COALESCE(MAX(order_number), 0) + 1 AS next_number
+  FROM orders
+  WHERE date(created_at, 'localtime') = date('now', 'localtime')
+`).get().next_number;
     const result = db.prepare(`
       INSERT INTO orders (
-        order_uuid,
-        order_type,
-        payment_status,
-        payment_method,
-        customer_name,
-        customer_phone,
-        total_amount
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+  order_uuid,
+  order_number,
+  order_type,
+  payment_status,
+  payment_method,
+  customer_name,
+  customer_phone,
+  total_amount
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      order_uuid,
-      order_type,
-      payment_status,
-      payment_method,
-      customer_name,
-      customer_phone,
-      total_amount
-    );
+  order_uuid,
+  nextOrderNumber,
+  order_type,
+  payment_status,
+  payment_method,
+  customer_name,
+  customer_phone,
+  total_amount
+);
 
     const orderId = result.lastInsertRowid;
 
@@ -161,13 +168,19 @@ app.post("/api/orders", (req, res) => {
       );
     }
 
-    return orderId;
+    return {
+  orderId,
+  orderNumber: nextOrderNumber
+};
   });
 
   let orderId;
+let orderNumber;
 
 try {
-  orderId = createOrder();
+  const createdOrder = createOrder();
+  orderId = createdOrder.orderId;
+  orderNumber = createdOrder.orderNumber;
 } catch (error) {
   if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
     return res.status(409).json({
@@ -178,20 +191,22 @@ try {
   throw error;
 }
   io.emit("order-created", {
-    id: orderId,
-    order_uuid,
-    status: "NEW",
-    order_type,
-    total_amount,
-    items
-  });
+  id: orderId,
+  order_number: orderNumber,
+  order_uuid,
+  status: "NEW",
+  order_type,
+  total_amount,
+  items
+});
 
   res.status(201).json({
-    id: orderId,
-    order_uuid,
-    status: "NEW",
-    items
-  });
+  id: orderId,
+  order_number: orderNumber,
+  order_uuid,
+  status: "NEW",
+  items
+});
 });
 app.get("/api/orders", (req, res) => {
   const { status, payment_status } = req.query;
