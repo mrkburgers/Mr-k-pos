@@ -16,6 +16,20 @@ db.exec(`
 
   INSERT OR IGNORE INTO system_settings (id)
   VALUES (1);
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_uuid TEXT NOT NULL UNIQUE,
+    order_number INTEGER,
+    order_type TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'NEW',
+    payment_status TEXT NOT NULL DEFAULT 'PENDING',
+    payment_method TEXT,
+    customer_name TEXT,
+    customer_phone TEXT,
+    total_amount INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 module.exports = db;
