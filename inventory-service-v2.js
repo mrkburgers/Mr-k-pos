@@ -39,10 +39,12 @@ function buildNeeds(db,items){
   "Extra chicken steak":"Grilled chicken breast 120g",
   "Extra cheddar cheese":"Cheddar cheese",
   "Extra emmental cheese":"Emmental cheese",
+  "Extra mozzarella cheese":"Mozzarella cheese",
   "Extra Swiss cheese":"Swiss cheese",
   "Extra mushroom":"Sautéed mushrooms",
   "Extra onion rings":"Onion rings",
-  "Extra bacon":"Bacon"
+  "Extra bacon":"Bacon",
+  "Extra grated cheese":"Grated cheese"
  };
 
  for(const orderItem of items||[]){
