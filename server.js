@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -39,6 +39,9 @@ app.get("/menu-v2.js", (req, res) => {
 });
 app.get("/menu-admin-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "menu-admin-v2.js"));
+});
+app.get("/inventory-legacy-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "inventory-legacy-v2.js"));
 });
 app.get("/cashier-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "cashier-v2.js"));
