@@ -199,8 +199,6 @@ function v2WrapInventoryScreen(functionName){
 }
 
 [
- "ownerInventory",
- "managerInventory",
  "managerCurrentStock",
  "managerStockIn",
  "managerStockOut",
@@ -209,6 +207,79 @@ function v2WrapInventoryScreen(functionName){
  "managerStockHistory",
  "ownerSuppliers"
 ].forEach(v2WrapInventoryScreen);
+
+async function v2RenderInventoryDashboard(isOwner){
+ try{
+  await v2SyncLegacyInventory(true);
+ }catch(error){
+  console.error(error);
+  alert("Unable to load inventory from the restaurant server.");
+  return;
+ }
+
+ clearInterval(timerInterval);
+ const backAction=isOwner?"ownerHome()":"managerHome()";
+ const roleLabel=isOwner?"OWNER":"MANAGER";
+
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="${backAction}">← BACK</button>
+  <div class="logo">
+   MR K BURGERS
+   <span>${roleLabel} — INVENTORY</span>
+  </div>
+  <div class="panel">
+   <span class="badge">📦 INVENTORY</span>
+   <h1>Inventory</h1>
+   <div class="grid">
+    <div class="card" onclick="managerCurrentStock()" style="cursor:pointer">
+     <div class="category-icon">📋</div>
+     <h3>CURRENT STOCK</h3>
+     <p class="muted">View inventory levels</p>
+    </div>
+    <div class="card" onclick="managerStockIn()" style="cursor:pointer">
+     <div class="category-icon">📥</div>
+     <h3>STOCK IN</h3>
+     <p class="muted">Record deliveries</p>
+    </div>
+    <div class="card" onclick="managerStockOut()" style="cursor:pointer">
+     <div class="category-icon">📤</div>
+     <h3>STOCK OUT</h3>
+     <p class="muted">Record stock usage</p>
+    </div>
+    <div class="card" onclick="managerWasteAdjustment()" style="cursor:pointer">
+     <div class="category-icon">🗑️</div>
+     <h3>WASTE / ADJUSTMENT</h3>
+     <p class="muted">Record waste or corrections</p>
+    </div>
+    <div class="card" onclick="managerDeliveryHistory()" style="cursor:pointer">
+     <div class="category-icon">🚚</div>
+     <h3>DELIVERY HISTORY</h3>
+     <p class="muted">View supplier deliveries</p>
+    </div>
+    <div class="card" onclick="managerStockHistory()" style="cursor:pointer">
+     <div class="category-icon">📜</div>
+     <h3>STOCK HISTORY</h3>
+     <p class="muted">View inventory movements</p>
+    </div>
+    ${isOwner?`
+    <div class="card clickable" onclick="ownerSuppliers()">
+     <div class="category-icon">🏢</div>
+     <h3>SUPPLIERS</h3>
+     <p class="muted">Create and manage suppliers</p>
+    </div>`:""}
+   </div>
+  </div>
+ </div>`;
+}
+
+window.ownerInventory=function ownerInventory(){
+ return v2RenderInventoryDashboard(true);
+};
+
+window.managerInventory=function managerInventory(){
+ return v2RenderInventoryDashboard(false);
+};
 
 if(typeof socket!=="undefined"&&socket?.on){
  socket.on("inventory-changed",async()=>{
