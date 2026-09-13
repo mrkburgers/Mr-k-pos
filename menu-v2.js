@@ -136,3 +136,35 @@ window.burgerCustomize=function burgerCustomize(name){
   </div>
  </div>`;
 };
+
+async function v2HandleLiveMenuChange(){
+ try{
+  await loadV2BackendMenu(true);
+
+  const root=document.getElementById("root");
+  if(!root)return;
+
+  const screenText=root.innerText||"";
+
+  if(screenText.includes("CUSTOMIZE")){
+   return;
+  }
+
+  if(role==="cashier"){
+   if(currentCategory && menuCategoryData.some(category=>category.id===currentCategory)){
+    legacyV2OpenCategory(currentCategory);
+    return;
+   }
+
+   if(screenText.includes("MENU")){
+    legacyV2MenuCategories();
+   }
+  }
+ }catch(error){
+  console.error("Live menu refresh failed",error);
+ }
+}
+
+if(typeof socket!=="undefined" && socket?.on){
+ socket.on("menu-changed",v2HandleLiveMenuChange);
+}
