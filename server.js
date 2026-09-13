@@ -200,6 +200,30 @@ for (const order of orders) {
 
   res.json(orders);
 });
+app.get("/api/orders/:id", (req, res) => {
+  const orderId = Number(req.params.id);
+
+  const order = db.prepare(`
+    SELECT *
+    FROM orders
+    WHERE id = ?
+  `).get(orderId);
+
+  if (!order) {
+    return res.status(404).json({
+      error: "order not found"
+    });
+  }
+
+  order.items = db.prepare(`
+    SELECT *
+    FROM order_items
+    WHERE order_id = ?
+    ORDER BY id ASC
+  `).all(orderId);
+
+  res.json(order);
+});
 app.patch("/api/orders/:id/status", (req, res) => {
   const orderId = Number(req.params.id);
   const { status } = req.body;
