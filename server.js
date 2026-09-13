@@ -85,6 +85,9 @@ app.patch("/api/settings/restaurant-status", (req, res) => {
 io.emit("restaurant-status-changed", {
   restaurant_status: status
 });
+io.emit("settings-changed", {
+  restaurant_status: status
+});
   res.json({
     restaurant_status: status
   });
