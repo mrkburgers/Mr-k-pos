@@ -100,7 +100,8 @@ app.post("/api/orders", (req, res) => {
     payment_method = null,
     customer_name = null,
     customer_phone = null,
-    total_amount = 0
+    total_amount = 0,
+    items = []
   } = req.body;
 
   if (!order_uuid || !order_type) {
@@ -109,8 +110,25 @@ app.post("/api/orders", (req, res) => {
     });
   }
 
-  const result = db.prepare(`
-    INSERT INTO orders (
+  if (!Array.isArray(items)) {
+    return res.status(400).json({
+      error: "items must be an array"
+    });
+  }
+
+  const createOrder = db.transaction(() => {
+    const result = db.prepare(`
+      INSERT INTO orders (
+        order_uuid,
+        order_type,
+        payment_status,
+        payment_method,
+        customer_name,
+        customer_phone,
+        total_amount
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
       order_uuid,
       order_type,
       payment_status,
@@ -118,28 +136,50 @@ app.post("/api/orders", (req, res) => {
       customer_name,
       customer_phone,
       total_amount
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
+    );
+
+    const orderId = result.lastInsertRowid;
+
+    const insertItem = db.prepare(`
+      INSERT INTO order_items (
+        order_id,
+        item_name,
+        quantity,
+        unit_price,
+        notes
+      )
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    for (const item of items) {
+      insertItem.run(
+        orderId,
+        item.item_name,
+        item.quantity ?? 1,
+        item.unit_price ?? 0,
+        item.notes ?? null
+      );
+    }
+
+    return orderId;
+  });
+
+  const orderId = createOrder();
+
+  io.emit("order-created", {
+    id: orderId,
     order_uuid,
+    status: "NEW",
     order_type,
-    payment_status,
-    payment_method,
-    customer_name,
-    customer_phone,
-    total_amount
-  );
-io.emit("order-created", {
-  id: result.lastInsertRowid,
-  order_uuid,
-  status: "NEW",
-  order_type,
-  total_amount
-});
+    total_amount,
+    items
+  });
+
   res.status(201).json({
-    id: result.lastInsertRowid,
+    id: orderId,
     order_uuid,
-    status: "NEW"
+    status: "NEW",
+    items
   });
 });
 app.get("/api/orders", (req, res) => {
