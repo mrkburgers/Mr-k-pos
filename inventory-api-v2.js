@@ -43,6 +43,54 @@ module.exports=function registerInventoryV2(app,io,db){
   VALUES (1);
  `);
 
+ const stockMenuProducts=[
+  ["drink-small-water","stock-small-water","Small Water"],
+  ["drink-big-water","stock-big-water","Big Water"],
+  ["drink-coke","stock-coca-cola","Coca Cola"],
+  ["drink-sprite","stock-sprite","Sprite"],
+  ["drink-fanta","stock-fanta","Fanta"],
+  ["sauce-mrk",null,"Mr K Sauce"],
+  ["sauce-chimichurri","stock-chimichurri","Chimichurri"],
+  ["sauce-ketchup","stock-ketchup","Ketchup"],
+  ["sauce-mayo",null,"Mayonnaise"],
+  ["sauce-honey-mustard","stock-honey-mustard","Honey Mustard"],
+  ["sauce-honey-bbq","stock-honey-bbq","Honey BBQ"]
+ ];
+
+ const ensureStockProduct=db.transaction(()=>{
+  const findIngredient=db.prepare("SELECT id FROM menu_ingredients WHERE name=? COLLATE NOCASE LIMIT 1");
+  const insertIngredient=db.prepare(`
+   INSERT OR IGNORE INTO menu_ingredients (id,name,active)
+   VALUES (?,?,1)
+  `);
+  const insertInventory=db.prepare(`
+   INSERT OR IGNORE INTO inventory_items (ingredient_id,tracked,unit,stock,low_stock_level)
+   VALUES (?,1,'unit',0,0)
+  `);
+  const trackInventory=db.prepare(`
+   UPDATE inventory_items SET tracked=1,unit='unit' WHERE ingredient_id=?
+  `);
+  const addRecipe=db.prepare(`
+   INSERT OR IGNORE INTO menu_item_ingredients (
+    menu_item_id,ingredient_id,removable,sort_order,quantity
+   ) VALUES (?,?,0,1,1)
+  `);
+
+  stockMenuProducts.forEach(([menuItemId,preferredIngredientId,name])=>{
+   if(!db.prepare("SELECT id FROM menu_items WHERE id=?").get(menuItemId))return;
+   let ingredient=findIngredient.get(name);
+   if(!ingredient && preferredIngredientId){
+    insertIngredient.run(preferredIngredientId,name);
+    ingredient={id:preferredIngredientId};
+   }
+   if(!ingredient)return;
+   insertInventory.run(ingredient.id);
+   trackInventory.run(ingredient.id);
+   addRecipe.run(menuItemId,ingredient.id);
+  });
+ });
+ ensureStockProduct();
+
  const seedInventory=db.prepare(`
   INSERT OR IGNORE INTO inventory_items (ingredient_id)
   SELECT id FROM menu_ingredients
