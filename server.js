@@ -144,10 +144,19 @@ io.emit("order-created", {
 });
 app.get("/api/orders", (req, res) => {
   const orders = db.prepare(`
+  SELECT *
+  FROM orders
+  ORDER BY id DESC
+`).all();
+
+for (const order of orders) {
+  order.items = db.prepare(`
     SELECT *
-    FROM orders
-    ORDER BY id DESC
-  `).all();
+    FROM order_items
+    WHERE order_id = ?
+    ORDER BY id ASC
+  `).all(order.id);
+}
 
   res.json(orders);
 });
