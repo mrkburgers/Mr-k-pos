@@ -236,7 +236,34 @@ window.managerStockHistory=async function managerStockHistory(selectedDate,selec
   }
   v2RebuildLegacyInventoryItems();
  }
- return v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
+
+ v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
+
+ const panel=document.querySelector("#root .panel");
+ if(!panel)return;
+
+ const dateInput=panel.querySelector('input[type="date"]');
+ const supplierSelect=document.getElementById("stockHistorySupplier");
+ if(!dateInput)return;
+
+ dateInput.removeAttribute("onchange");
+ dateInput.onchange=null;
+
+ [...panel.querySelectorAll("button")].forEach(button=>{
+  if(button.textContent.trim().toUpperCase()==="ALL DATES"){
+   button.remove();
+  }
+ });
+
+ const applyButton=document.createElement("button");
+ applyButton.id="stockHistoryApplyDate";
+ applyButton.className="primary";
+ applyButton.style.margin="10px 0 20px 0";
+ applyButton.textContent="APPLY DATE";
+ applyButton.onclick=()=>{
+  window.managerStockHistory(dateInput.value,supplierSelect?.value||"");
+ };
+ dateInput.insertAdjacentElement("afterend",applyButton);
 };
 
 async function v2RenderInventoryDashboard(isOwner){
