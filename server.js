@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -39,6 +39,9 @@ app.get("/menu-v2.js", (req, res) => {
 });
 app.get("/menu-admin-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "menu-admin-v2.js"));
+});
+app.get("/menu-recipe-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "menu-recipe-v2.js"));
 });
 app.get("/inventory-legacy-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "inventory-legacy-v2.js"));
@@ -165,7 +168,8 @@ app.get("/api/menu", (req, res) => {
         i.id,
         i.name,
         mii.removable,
-        mii.sort_order
+        mii.sort_order,
+        COALESCE(mii.quantity,1) AS quantity
       FROM menu_item_ingredients mii
       JOIN menu_ingredients i
         ON i.id = mii.ingredient_id
@@ -173,7 +177,8 @@ app.get("/api/menu", (req, res) => {
       ORDER BY mii.sort_order ASC, i.name ASC
     `).all(item.id).map(ingredient => ({
       ...ingredient,
-      removable: Boolean(ingredient.removable)
+      removable: Boolean(ingredient.removable),
+      quantity: Number(ingredient.quantity||1)
     }));
 
     const extras = db.prepare(`
@@ -196,11 +201,7 @@ app.get("/api/menu", (req, res) => {
     };
   });
 
-  res.json({
-    categories,
-    items,
-    ingredients
-  });
+  res.json({categories,items,ingredients});
 });
 
 app.get("/api/settings", (req, res) => {
