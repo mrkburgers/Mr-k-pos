@@ -188,6 +188,13 @@ module.exports=function registerMenuAdminV2(app,io,db){
     if(!name||!categoryId||!Number.isFinite(price)||price<0)return res.status(400).json({error:"invalid menu item data"});
     if(!db.prepare("SELECT id FROM menu_categories WHERE id=?").get(categoryId))return res.status(400).json({error:"invalid category"});
 
+    const existingQuantities=new Map(
+      db.prepare(`
+        SELECT ingredient_id,COALESCE(quantity,1) AS quantity
+        FROM menu_item_ingredients WHERE menu_item_id=?
+      `).all(id).map(row=>[row.ingredient_id,Number(row.quantity||1)])
+    );
+
     const save=db.transaction(()=>{
       db.prepare(`UPDATE menu_items SET name=?,category_id=?,price=?,active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(name,categoryId,Math.round(price),active?1:0,id);
       db.prepare("DELETE FROM menu_item_ingredients WHERE menu_item_id=?").run(id);
@@ -197,7 +204,9 @@ module.exports=function registerMenuAdminV2(app,io,db){
       `);
       ingredientIds.forEach((ingredientId,index)=>{
         if(db.prepare("SELECT id FROM menu_ingredients WHERE id=?").get(ingredientId)){
-          const quantity=Math.max(0.01,Number(quantities[ingredientId]??1)||1);
+          const requested=quantities[ingredientId];
+          const preserved=existingQuantities.get(ingredientId);
+          const quantity=Math.max(0.01,Number(requested??preserved??1)||1);
           addIngredient.run(id,ingredientId,removableIds.has(ingredientId)?1:0,index+1,quantity);
         }
       });
