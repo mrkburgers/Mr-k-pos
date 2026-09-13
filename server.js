@@ -3,6 +3,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const db = require("./database");
 
 const app = express();
@@ -10,6 +11,14 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json());
 const PORT = 3000;
+
+function hashPin(pin){
+  return crypto
+    .createHash("sha256")
+    .update(String(pin))
+    .digest("hex");
+}
+
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
@@ -27,6 +36,7 @@ app.get("/cashier-v2.js", (req, res) => {
 app.get("/auth-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "auth-v2.js"));
 });
+
 app.get("/api/health", (req, res) => {
   const databaseCheck = db
     .prepare("SELECT restaurant_name FROM system_settings WHERE id = 1")
@@ -40,6 +50,79 @@ app.get("/api/health", (req, res) => {
     restaurant: databaseCheck.restaurant_name
   });
 });
+
+app.get("/api/staff", (req, res) => {
+  const accounts = db.prepare(`
+    SELECT
+      id,
+      name,
+      staff_id,
+      role,
+      active,
+      created_at,
+      updated_at
+    FROM staff_accounts
+    ORDER BY
+      CASE role
+        WHEN 'owner' THEN 1
+        WHEN 'manager' THEN 2
+        WHEN 'cashier' THEN 3
+        WHEN 'kitchen' THEN 4
+        ELSE 5
+      END,
+      id ASC
+  `).all();
+
+  res.json(accounts.map(account => ({
+    ...account,
+    active: Boolean(account.active)
+  })));
+});
+
+app.post("/api/login", (req, res) => {
+  const staffId = String(req.body?.staff_id ?? "").trim();
+  const pin = String(req.body?.pin ?? "").trim();
+
+  if (!staffId || !pin) {
+    return res.status(400).json({
+      error: "staff_id and pin are required"
+    });
+  }
+
+  const account = db.prepare(`
+    SELECT
+      id,
+      name,
+      staff_id,
+      role,
+      active,
+      pin_hash
+    FROM staff_accounts
+    WHERE staff_id = ? COLLATE NOCASE
+    LIMIT 1
+  `).get(staffId);
+
+  if (!account || account.pin_hash !== hashPin(pin)) {
+    return res.status(401).json({
+      error: "Invalid Staff ID or PIN."
+    });
+  }
+
+  if (!account.active) {
+    return res.status(403).json({
+      error: "This staff account is inactive."
+    });
+  }
+
+  res.json({
+    id: account.id,
+    name: account.name,
+    staff_id: account.staff_id,
+    role: account.role,
+    active: true
+  });
+});
+
 app.get("/api/settings", (req, res) => {
   const settings = db
     .prepare(`
