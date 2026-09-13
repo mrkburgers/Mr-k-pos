@@ -225,29 +225,18 @@ function v2WrapInventoryScreen(functionName){
 
 const v2OriginalManagerStockHistory=window.managerStockHistory;
 window.managerStockHistory=async function managerStockHistory(selectedDate,selectedSupplierId){
- try{
-  await v2SyncLegacyInventory(true);
- }catch(error){
-  console.error(error);
-  alert("Unable to load inventory from the restaurant server.");
-  return;
+ const firstOpen=selectedDate===undefined && selectedSupplierId===undefined;
+ if(firstOpen){
+  try{
+   await v2SyncLegacyInventory(true);
+  }catch(error){
+   console.error(error);
+   alert("Unable to load inventory from the restaurant server.");
+   return;
+  }
+  v2RebuildLegacyInventoryItems();
  }
- v2RebuildLegacyInventoryItems();
- v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
-
- const dateInput=[...document.querySelectorAll('input[type="date"]')]
-  .find(input=>input.closest('.panel'));
- const supplierSelect=document.getElementById('stockHistorySupplier');
- if(dateInput){
-  dateInput.onchange=function(){
-   window.managerStockHistory(this.value,supplierSelect?.value||"");
-  };
- }
- if(supplierSelect){
-  supplierSelect.onchange=function(){
-   window.managerStockHistory(dateInput?.value||"",this.value);
-  };
- }
+ return v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
 };
 
 async function v2RenderInventoryDashboard(isOwner){
