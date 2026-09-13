@@ -164,8 +164,19 @@ app.post("/api/orders", (req, res) => {
     return orderId;
   });
 
-  const orderId = createOrder();
+  let orderId;
 
+try {
+  orderId = createOrder();
+} catch (error) {
+  if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+    return res.status(409).json({
+      error: "order_uuid already exists"
+    });
+  }
+
+  throw error;
+}
   io.emit("order-created", {
     id: orderId,
     order_uuid,
