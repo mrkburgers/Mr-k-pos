@@ -35,6 +35,27 @@ app.get("/api/settings", (req, res) => {
     online_ordering_enabled: Boolean(settings.online_ordering_enabled)
   });
 });
+app.patch("/api/settings/online-ordering", (req, res) => {
+  const { enabled } = req.body;
+
+  if (typeof enabled !== "boolean") {
+    return res.status(400).json({
+      error: "enabled must be true or false"
+    });
+  }
+
+  db.prepare(`
+    UPDATE system_settings
+    SET
+      online_ordering_enabled = ?,
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = 1
+  `).run(enabled ? 1 : 0);
+
+  res.json({
+    online_ordering_enabled: enabled
+  });
+});
 app.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
