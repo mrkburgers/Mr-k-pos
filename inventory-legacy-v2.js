@@ -34,6 +34,18 @@ function v2InventoryIngredientSnapshot(){
  }));
 }
 
+function v2RebuildLegacyInventoryItems(){
+ if(typeof syncTrackedIngredientsToInventory==="function"){
+  syncTrackedIngredientsToInventory();
+ }
+ if(Array.isArray(inventoryItems)){
+  inventoryItems.forEach(item=>{
+   const value=Number(inventoryStock?.[item.id]);
+   inventoryStock[item.id]=Number.isFinite(value)?value:0;
+  });
+ }
+}
+
 async function v2PushInventoryStock(){
  if(v2LegacyInventoryApplying)return;
  try{
@@ -79,6 +91,8 @@ function v2ApplyInventoryPayload(inventoryPayload,statePayload){
   suppliers=Array.isArray(statePayload?.suppliers)?statePayload.suppliers:[];
   inventoryDeliveries=Array.isArray(statePayload?.deliveries)?statePayload.deliveries:[];
   inventoryMovements=Array.isArray(statePayload?.movements)?statePayload.movements:[];
+
+  v2RebuildLegacyInventoryItems();
 
   localStorage.setItem("mrkInventoryStock",JSON.stringify(inventoryStock));
   localStorage.setItem("mrkSuppliers",JSON.stringify(suppliers));
@@ -161,6 +175,7 @@ async function v2SyncLegacyInventory(force=false){
 
 const v2OriginalSaveInventory=saveInventory;
 saveInventory=function saveInventory(){
+ v2RebuildLegacyInventoryItems();
  v2OriginalSaveInventory();
  v2PushInventoryStock();
 };
@@ -194,6 +209,7 @@ function v2WrapInventoryScreen(functionName){
    alert("Unable to load inventory from the restaurant server.");
    return;
   }
+  v2RebuildLegacyInventoryItems();
   return original.apply(this,args);
  };
 }
@@ -204,9 +220,35 @@ function v2WrapInventoryScreen(functionName){
  "managerStockOut",
  "managerWasteAdjustment",
  "managerDeliveryHistory",
- "managerStockHistory",
  "ownerSuppliers"
 ].forEach(v2WrapInventoryScreen);
+
+const v2OriginalManagerStockHistory=window.managerStockHistory;
+window.managerStockHistory=async function managerStockHistory(selectedDate,selectedSupplierId){
+ try{
+  await v2SyncLegacyInventory(true);
+ }catch(error){
+  console.error(error);
+  alert("Unable to load inventory from the restaurant server.");
+  return;
+ }
+ v2RebuildLegacyInventoryItems();
+ v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
+
+ const dateInput=[...document.querySelectorAll('input[type="date"]')]
+  .find(input=>input.closest('.panel'));
+ const supplierSelect=document.getElementById('stockHistorySupplier');
+ if(dateInput){
+  dateInput.onchange=function(){
+   window.managerStockHistory(this.value,supplierSelect?.value||"");
+  };
+ }
+ if(supplierSelect){
+  supplierSelect.onchange=function(){
+   window.managerStockHistory(dateInput?.value||"",this.value);
+  };
+ }
+};
 
 async function v2RenderInventoryDashboard(isOwner){
  try{
