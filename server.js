@@ -307,17 +307,19 @@ app.patch("/api/orders/:id/status", (req, res) => {
     WHERE id = ?
   `).run(status, orderId);
 
-  io.emit("order-status-changed", {
-    id: orderId,
-    order_uuid: order.order_uuid,
-    status
-  });
+ io.emit("order-status-changed", {
+  id: orderId,
+  order_number: order.order_number,
+  order_uuid: order.order_uuid,
+  status
+});
 
   res.json({
-    id: orderId,
-    order_uuid: order.order_uuid,
-    status
-  });
+  id: orderId,
+  order_number: order.order_number,
+  order_uuid: order.order_uuid,
+  status
+});
 });
 app.patch("/api/orders/:id/payment-status", (req, res) => {
   const orderId = Number(req.params.id);
@@ -357,16 +359,18 @@ app.patch("/api/orders/:id/payment-status", (req, res) => {
   `).run(payment_status, orderId);
 
   io.emit("order-payment-status-changed", {
-    id: orderId,
-    order_uuid: order.order_uuid,
-    payment_status
-  });
+  id: orderId,
+  order_number: order.order_number,
+  order_uuid: order.order_uuid,
+  payment_status
+});
 
   res.json({
-    id: orderId,
-    order_uuid: order.order_uuid,
-    payment_status
-  });
+  id: orderId,
+  order_number: order.order_number,
+  order_uuid: order.order_uuid,
+  payment_status
+});
 });
 io.on("connection", (socket) => {
   console.log(`Device connected: ${socket.id}`);
