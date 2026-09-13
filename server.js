@@ -17,7 +17,24 @@ app.get("/api/health", (req, res) => {
     restaurant: databaseCheck.restaurant_name
   });
 });
+app.get("/api/settings", (req, res) => {
+  const settings = db
+    .prepare(`
+      SELECT
+        restaurant_name,
+        restaurant_status,
+        online_ordering_enabled
+      FROM system_settings
+      WHERE id = 1
+    `)
+    .get();
 
+  res.json({
+    restaurant_name: settings.restaurant_name,
+    restaurant_status: settings.restaurant_status,
+    online_ordering_enabled: Boolean(settings.online_ordering_enabled)
+  });
+});
 app.listen(PORT, () => {
 
   console.log(`Mr K POS v2 server running on port ${PORT}`);
