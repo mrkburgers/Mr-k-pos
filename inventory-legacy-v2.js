@@ -220,6 +220,8 @@ function v2WrapInventoryScreen(functionName){
  "managerStockOut",
  "managerWasteAdjustment",
  "managerDeliveryHistory",
+ "managerLowStock",
+ "managerProductAvailability",
  "ownerSuppliers"
 ].forEach(v2WrapInventoryScreen);
 
@@ -319,6 +321,16 @@ async function v2RenderInventoryDashboard(isOwner){
      <div class="category-icon">📜</div>
      <h3>STOCK HISTORY</h3>
      <p class="muted">View inventory movements</p>
+    </div>
+    <div class="card clickable" onclick="managerLowStock()">
+     <div class="category-icon">⚠️</div>
+     <h3>LOW STOCK</h3>
+     <p class="muted">View low-stock items</p>
+    </div>
+    <div class="card clickable" onclick="managerProductAvailability()">
+     <div class="category-icon">🟢</div>
+     <h3>PRODUCT AVAILABILITY</h3>
+     <p class="muted">View menu availability</p>
     </div>
     ${isOwner?`
     <div class="card clickable" onclick="ownerSuppliers()">
