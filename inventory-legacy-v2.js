@@ -1,29 +1,9 @@
+// V2 inventory compatibility bridge.
+// SQLite is authoritative. Local storage is only a display/cache mirror for the
+// finalized legacy inventory screens in index.html.
+
 let v2LegacyInventorySyncPromise=null;
 let v2LegacyInventoryApplying=false;
-
-function v2ReadLocalJson(key,fallback){
- try{
-  const raw=localStorage.getItem(key);
-  if(raw===null)return fallback;
-  const value=JSON.parse(raw);
-  return value??fallback;
- }catch(error){
-  return fallback;
- }
-}
-
-async function v2PutJson(url,body){
- const response=await fetch(url,{
-  method:"PUT",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify(body)
- });
- if(!response.ok){
-  const data=await response.json().catch(()=>({}));
-  throw new Error(data.error||"Inventory sync failed");
- }
- return response.json().catch(()=>({}));
-}
 
 async function v2PostJson(url,body){
  const response=await fetch(url,{
@@ -42,15 +22,6 @@ async function v2PostJson(url,body){
  return data;
 }
 
-function v2InventoryIngredientSnapshot(){
- return (Array.isArray(menuIngredients)?menuIngredients:[]).map(item=>({
-  id:item.id,
-  tracked:Boolean(item.tracked),
-  lowStockLevel:Number(item.lowStockLevel||0),
-  unit:item.unit||"unit"
- }));
-}
-
 function v2RebuildLegacyInventoryItems(){
  if(typeof syncTrackedIngredientsToInventory==="function"){
   syncTrackedIngredientsToInventory();
@@ -63,32 +34,7 @@ function v2RebuildLegacyInventoryItems(){
  }
 }
 
-async function v2PushInventoryStock(){
- if(v2LegacyInventoryApplying)return;
- try{
-  await v2PutJson("/api/inventory/stock-snapshot",{
-   stock:inventoryStock&&typeof inventoryStock==="object"?inventoryStock:{},
-   ingredients:v2InventoryIngredientSnapshot()
-  });
- }catch(error){
-  console.error("Backend inventory stock save failed",error);
- }
-}
-
-async function v2PushInventoryLegacyState(){
- if(v2LegacyInventoryApplying)return;
- try{
-  await v2PutJson("/api/inventory/legacy-state",{
-   suppliers:Array.isArray(suppliers)?suppliers:[],
-   deliveries:Array.isArray(inventoryDeliveries)?inventoryDeliveries:[],
-   movements:Array.isArray(inventoryMovements)?inventoryMovements:[]
-  });
- }catch(error){
-  console.error("Backend inventory history save failed",error);
- }
-}
-
-function v2ApplyInventoryPayload(inventoryPayload,statePayload){
+function v2ApplyNormalizedInventory(inventoryPayload,supplierRows,deliveryRows){
  v2LegacyInventoryApplying=true;
  try{
   const items=Array.isArray(inventoryPayload?.items)?inventoryPayload.items:[];
@@ -105,82 +51,40 @@ function v2ApplyInventoryPayload(inventoryPayload,statePayload){
    }
   });
 
-  suppliers=Array.isArray(statePayload?.suppliers)?statePayload.suppliers:[];
-  inventoryDeliveries=Array.isArray(statePayload?.deliveries)?statePayload.deliveries:[];
-  inventoryMovements=Array.isArray(statePayload?.movements)?statePayload.movements:[];
+  suppliers=Array.isArray(supplierRows)?supplierRows:[];
+  inventoryDeliveries=Array.isArray(deliveryRows)?deliveryRows:[];
 
   v2RebuildLegacyInventoryItems();
 
+  // Cache only. These values never write back over SQLite.
   localStorage.setItem("mrkInventoryStock",JSON.stringify(inventoryStock));
   localStorage.setItem("mrkSuppliers",JSON.stringify(suppliers));
   localStorage.setItem("mrkInventoryDeliveries",JSON.stringify(inventoryDeliveries));
-  localStorage.setItem("mrkInventoryMovements",JSON.stringify(inventoryMovements));
  }finally{
   v2LegacyInventoryApplying=false;
  }
 }
 
 async function v2SyncLegacyInventory(force=false){
- if(v2LegacyInventorySyncPromise && !force)return v2LegacyInventorySyncPromise;
+ if(v2LegacyInventorySyncPromise&&!force)return v2LegacyInventorySyncPromise;
 
  v2LegacyInventorySyncPromise=(async()=>{
-  let [inventoryResponse,stateResponse]=await Promise.all([
+  const [inventoryResponse,suppliersResponse,deliveriesResponse]=await Promise.all([
    fetch("/api/inventory",{cache:"no-store"}),
-   fetch("/api/inventory/legacy-state",{cache:"no-store"})
+   fetch("/api/suppliers",{cache:"no-store"}),
+   fetch("/api/deliveries",{cache:"no-store"})
   ]);
-  if(!inventoryResponse.ok||!stateResponse.ok){
+
+  if(!inventoryResponse.ok||!suppliersResponse.ok||!deliveriesResponse.ok){
    throw new Error("Unable to load inventory from restaurant server");
   }
 
-  let inventoryPayload=await inventoryResponse.json();
-  let statePayload=await stateResponse.json();
+  const inventoryPayload=await inventoryResponse.json();
+  const supplierRows=await suppliersResponse.json();
+  const deliveryRows=await deliveriesResponse.json();
 
-  const localStock=v2ReadLocalJson("mrkInventoryStock",{});
-  const localIngredients=v2ReadLocalJson("mrkMenuIngredients",[]);
-  const localSuppliers=v2ReadLocalJson("mrkSuppliers",[]);
-  const localDeliveries=v2ReadLocalJson("mrkInventoryDeliveries",[]);
-  const localMovements=v2ReadLocalJson("mrkInventoryMovements",[]);
-
-  const backendInventoryPristine=(inventoryPayload.items||[]).every(item=>
-   Number(item.stock||0)===0 && !item.tracked && Number(item.low_stock_level||0)===0
-  );
-  const localInventoryHasData=
-   Object.values(localStock||{}).some(value=>Number(value||0)!==0) ||
-   (Array.isArray(localIngredients)&&localIngredients.some(item=>item.tracked||Number(item.lowStockLevel||0)>0));
-
-  if(backendInventoryPristine && localInventoryHasData){
-   await v2PutJson("/api/inventory/stock-snapshot",{
-    stock:localStock,
-    ingredients:(Array.isArray(localIngredients)?localIngredients:[]).map(item=>({
-     id:item.id,
-     tracked:Boolean(item.tracked),
-     lowStockLevel:Number(item.lowStockLevel||0),
-     unit:item.unit||"unit"
-    }))
-   });
-   inventoryResponse=await fetch("/api/inventory",{cache:"no-store"});
-   inventoryPayload=await inventoryResponse.json();
-  }
-
-  const backendLegacyEmpty=
-   !(statePayload.suppliers||[]).length &&
-   !(statePayload.deliveries||[]).length &&
-   !(statePayload.movements||[]).length;
-  const localLegacyHasData=
-   localSuppliers.length||localDeliveries.length||localMovements.length;
-
-  if(backendLegacyEmpty && localLegacyHasData){
-   await v2PutJson("/api/inventory/legacy-state",{
-    suppliers:localSuppliers,
-    deliveries:localDeliveries,
-    movements:localMovements
-   });
-   stateResponse=await fetch("/api/inventory/legacy-state",{cache:"no-store"});
-   statePayload=await stateResponse.json();
-  }
-
-  v2ApplyInventoryPayload(inventoryPayload,statePayload);
-  return {inventoryPayload,statePayload};
+  v2ApplyNormalizedInventory(inventoryPayload,supplierRows,deliveryRows);
+  return {inventoryPayload,supplierRows,deliveryRows};
  })();
 
  try{
@@ -190,29 +94,27 @@ async function v2SyncLegacyInventory(force=false){
  }
 }
 
+// Preserve the frozen UI's local cache helpers, but never push those snapshots
+// back into SQLite. All authoritative changes go through dedicated backend APIs.
 const v2OriginalSaveInventory=saveInventory;
 saveInventory=function saveInventory(){
  v2RebuildLegacyInventoryItems();
  v2OriginalSaveInventory();
- v2PushInventoryStock();
 };
 
 const v2OriginalSaveSuppliers=saveSuppliers;
 saveSuppliers=function saveSuppliers(){
  v2OriginalSaveSuppliers();
- v2PushInventoryLegacyState();
 };
 
 const v2OriginalSaveInventoryDeliveries=saveInventoryDeliveries;
 saveInventoryDeliveries=function saveInventoryDeliveries(){
  v2OriginalSaveInventoryDeliveries();
- v2PushInventoryLegacyState();
 };
 
 const v2OriginalSaveInventoryMovements=saveInventoryMovements;
 saveInventoryMovements=function saveInventoryMovements(){
  v2OriginalSaveInventoryMovements();
- v2PushInventoryLegacyState();
 };
 
 function v2InventoryActor(){
@@ -221,122 +123,6 @@ function v2InventoryActor(){
  if(name&&id)return `${name} (${id})`;
  return id||name||(role==="owner"?"Owner":"Manager");
 }
-
-async function v2SaveLegacyInventoryHistory(){
- v2OriginalSaveInventoryDeliveries();
- v2OriginalSaveInventoryMovements();
- await v2PutJson("/api/inventory/legacy-state",{
-  suppliers:Array.isArray(suppliers)?suppliers:[],
-  deliveries:Array.isArray(inventoryDeliveries)?inventoryDeliveries:[],
-  movements:Array.isArray(inventoryMovements)?inventoryMovements:[]
- });
-}
-
-window.managerAddStock=async function managerAddStock(){
- const supplierId=document.getElementById("stockInSupplier").value;
- const selectedSupplier=suppliers.find(
-  supplier=>String(supplier.id)===String(supplierId)
- );
- const supplier=selectedSupplier?selectedSupplier.name:"";
- const reference=document.getElementById("stockInReference").value.trim();
- const note=document.getElementById("stockInNote").value.trim();
-
- if(!supplierId||!selectedSupplier){
-  alert("Please select a supplier.");
-  return;
- }
- if(!supplier){
-  alert("Please enter the supplier name.");
-  return;
- }
- if(!currentDeliveryItems.length){
-  alert("Please add at least one item to the delivery.");
-  return;
- }
-
- const deliveryId=Date.now();
- const deliveryItems=[];
- const legacyMovements=[];
-
- try{
-  for(const deliveryItem of currentDeliveryItems){
-   const item=inventoryItems.find(i=>i.id===deliveryItem.itemId);
-   if(!item)continue;
-   const qty=Number(deliveryItem.qty||0);
-   if(!Number.isInteger(qty)||qty<=0)continue;
-
-   const detailParts=[
-    supplier?`Supplier: ${supplier}`:"",
-    reference?`Reference: ${reference}`:"",
-    note||""
-   ].filter(Boolean);
-
-   const result=await v2PostJson(`/api/inventory/${encodeURIComponent(item.id)}/adjust`,{
-    quantity:qty,
-    movement_type:"STOCK IN",
-    note:detailParts.join(" | ")||null,
-    created_by:v2InventoryActor()
-   });
-
-   const previousStock=Number(result.stock_before||0);
-   const newStock=Number(result.stock_after||0);
-
-   deliveryItems.push({
-    itemId:item.id,
-    itemName:item.name,
-    qty,
-    previousStock,
-    newStock
-   });
-
-   legacyMovements.push({
-    id:Date.now()+Math.random(),
-    type:"STOCK IN",
-    itemId:item.id,
-    itemName:item.name,
-    qty,
-    previousStock,
-    newStock,
-    supplierId,
-    supplier,
-    reference,
-    note,
-    deliveryId,
-    actorRole:role==="owner"?"OWNER":"MANAGER",
-    actorName:currentStaffName,
-    actorStaffId:currentStaffId,
-    createdAt:Date.now()
-   });
-  }
-
-  inventoryMovements.push(...legacyMovements);
-  inventoryDeliveries.push({
-   id:deliveryId,
-   supplierId,
-   supplier,
-   reference,
-   note,
-   items:deliveryItems,
-   actorRole:role==="owner"?"OWNER":"MANAGER",
-   actorName:currentStaffName,
-   actorStaffId:currentStaffId,
-   createdAt:Date.now()
-  });
-
-  await v2SaveLegacyInventoryHistory();
-  currentDeliveryItems=[];
-  await v2SyncLegacyInventory(true);
-
-  alert("Delivery received successfully.");
-  managerStockIn();
- }catch(error){
-  console.error("Stock In backend save failed",error);
-  alert(
-   "Unable to receive this delivery.\n\n"+
-   (error?.message||"Please try again.")
-  );
- }
-};
 
 window.managerRemoveStock=async function managerRemoveStock(){
  const itemId=document.getElementById("stockOutItem").value;
@@ -364,30 +150,14 @@ window.managerRemoveStock=async function managerRemoveStock(){
  }
 
  try{
-  const result=await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
+  await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
    quantity:-qty,
    movement_type:"STOCK OUT",
    note:null,
    created_by:v2InventoryActor()
   });
 
-  inventoryMovements.push({
-   id:Date.now(),
-   type:"STOCK OUT",
-   itemId,
-   itemName:item.name,
-   qty:-qty,
-   previousStock:Number(result.stock_before||0),
-   newStock:Number(result.stock_after||0),
-   actorRole:role==="owner"?"OWNER":"MANAGER",
-   actorName:currentStaffName,
-   actorStaffId:currentStaffId,
-   createdAt:Date.now()
-  });
-
-  await v2SaveLegacyInventoryHistory();
   await v2SyncLegacyInventory(true);
-
   alert(`${item.name}: -${qty} units removed.`);
   managerStockOut();
  }catch(error){
@@ -430,31 +200,14 @@ window.managerRecordWaste=async function managerRecordWaste(){
  }
 
  try{
-  const result=await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
+  await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
    quantity:-qty,
    movement_type:"WASTE / ADJUSTMENT",
    note:reason,
    created_by:v2InventoryActor()
   });
 
-  inventoryMovements.push({
-   id:Date.now(),
-   type:"WASTE / ADJUSTMENT",
-   itemId,
-   itemName:item.name,
-   qty:-qty,
-   previousStock:Number(result.stock_before||0),
-   newStock:Number(result.stock_after||0),
-   reason,
-   actorRole:role==="owner"?"OWNER":"MANAGER",
-   actorName:currentStaffName,
-   actorStaffId:currentStaffId,
-   createdAt:Date.now()
-  });
-
-  await v2SaveLegacyInventoryHistory();
   await v2SyncLegacyInventory(true);
-
   alert(`${item.name}: -${qty} units recorded as ${reason}.`);
   managerWasteAdjustment();
  }catch(error){
@@ -492,49 +245,6 @@ function v2WrapInventoryScreen(functionName){
  "managerProductAvailability",
  "ownerSuppliers"
 ].forEach(v2WrapInventoryScreen);
-
-const v2OriginalManagerStockHistory=window.managerStockHistory;
-window.managerStockHistory=async function managerStockHistory(selectedDate,selectedSupplierId){
- const firstOpen=selectedDate===undefined && selectedSupplierId===undefined;
- if(firstOpen){
-  try{
-   await v2SyncLegacyInventory(true);
-  }catch(error){
-   console.error(error);
-   alert("Unable to load inventory from the restaurant server.");
-   return;
-  }
-  v2RebuildLegacyInventoryItems();
- }
-
- v2OriginalManagerStockHistory(selectedDate,selectedSupplierId);
-
- const panel=document.querySelector("#root .panel");
- if(!panel)return;
-
- const dateInput=panel.querySelector('input[type="date"]');
- const supplierSelect=document.getElementById("stockHistorySupplier");
- if(!dateInput)return;
-
- dateInput.removeAttribute("onchange");
- dateInput.onchange=null;
-
- [...panel.querySelectorAll("button")].forEach(button=>{
-  if(button.textContent.trim().toUpperCase()==="ALL DATES"){
-   button.remove();
-  }
- });
-
- const applyButton=document.createElement("button");
- applyButton.id="stockHistoryApplyDate";
- applyButton.className="primary";
- applyButton.style.margin="10px 0 20px 0";
- applyButton.textContent="APPLY DATE";
- applyButton.onclick=()=>{
-  window.managerStockHistory(dateInput.value,supplierSelect?.value||"");
- };
- dateInput.insertAdjacentElement("afterend",applyButton);
-};
 
 async function v2RenderInventoryDashboard(isOwner){
  try{
