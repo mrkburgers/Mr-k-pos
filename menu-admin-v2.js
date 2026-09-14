@@ -188,9 +188,6 @@ window.deleteMenuIngredient=async function deleteMenuIngredient(id){
  }
 };
 
-// Keep the finalized multi-select lists, but restore simple click-to-toggle behavior.
-// This lets the Owner choose several removable ingredients or extras without
-// needing Ctrl/Cmd while preserving the existing screen and selected values.
 const v2MenuMultiSelectIds=new Set([
  "newMenuItemRemovableIngredients",
  "newMenuItemAllowedExtras",
@@ -202,7 +199,6 @@ document.addEventListener("mousedown",event=>{
  const select=event.target?.closest?.("select[multiple]");
  if(!select || !v2MenuMultiSelectIds.has(select.id))return;
  if(event.target.tagName!=="OPTION")return;
-
  event.preventDefault();
  const option=event.target;
  option.selected=!option.selected;
@@ -210,55 +206,133 @@ document.addEventListener("mousedown",event=>{
  select.dispatchEvent(new Event("change",{bubbles:true}));
 });
 
-// Cleanly render the finalized Ingredient List in the same 3-column card grid
-// used by the Menu Items list. Functionality and button actions are unchanged.
 window.ownerIngredientList=function ownerIngredientList(){
  clearInterval(timerInterval);
-
  const rows=menuIngredients.map(ingredient=>`
   <div class="card">
    <h3>${esc(ingredient.name)}</h3>
-   <p class="muted">
-    Inventory: ${ingredient.tracked?"Tracked":"Not Tracked"}
-   </p>
-   <p class="muted">
-    Status: ${ingredient.active?"Active":"Inactive"}
-   </p>
-   <button
-    class="primary"
-    onclick="ownerEditIngredient('${ingredient.id}')">
-    EDIT
-   </button>
-   <button
-    class="back"
-    onclick="toggleIngredientActive('${ingredient.id}')">
-    ${ingredient.active?"DEACTIVATE":"ACTIVATE"}
-   </button>
-   <button
-    class="back"
-    onclick="deleteMenuIngredient('${ingredient.id}')">
-    DELETE
-   </button>
+   <p class="muted">Inventory: ${ingredient.tracked?"Tracked":"Not Tracked"}</p>
+   <p class="muted">Status: ${ingredient.active?"Active":"Inactive"}</p>
+   <button class="primary" onclick="ownerEditIngredient('${ingredient.id}')">EDIT</button>
+   <button class="back" onclick="toggleIngredientActive('${ingredient.id}')">${ingredient.active?"DEACTIVATE":"ACTIVATE"}</button>
+   <button class="back" onclick="deleteMenuIngredient('${ingredient.id}')">DELETE</button>
   </div>
  `).join("");
 
  document.getElementById("root").innerHTML=`
  <div class="app">
   <button class="back" onclick="ownerIngredients()">← BACK</button>
-  <div class="logo">
-   MR K BURGERS
-   <span>OWNER — INGREDIENT LIST</span>
-  </div>
+  <div class="logo">MR K BURGERS<span>OWNER — INGREDIENT LIST</span></div>
   <div class="panel">
    <span class="badge">📋 INGREDIENT LIST</span>
    <h1>Ingredients</h1>
    <div class="grid">
-    ${rows || `
-     <div class="card">
-      <p class="muted">No ingredients found.</p>
-     </div>
-    `}
+    ${rows || `<div class="card"><p class="muted">No ingredients found.</p></div>`}
    </div>
   </div>
  </div>`;
 };
+
+window.addEventListener("load",()=>{
+ const originalDeliveryHistory=window.managerDeliveryHistory;
+ if(typeof originalDeliveryHistory==="function"){
+  window.managerDeliveryHistory=async function managerDeliveryHistory(){
+   await originalDeliveryHistory();
+   const panel=document.querySelector("#root .panel");
+   if(!panel)return;
+   const description=[...panel.querySelectorAll("p.muted")].find(p=>p.textContent.includes("View received supplier deliveries"));
+   if(!description)return;
+
+   const deliveries=[...(Array.isArray(inventoryDeliveries)?inventoryDeliveries:[])].sort(
+    (a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)
+   );
+   const cards=[...panel.querySelectorAll(".order-card")];
+   cards.forEach((card,index)=>{
+    const delivery=deliveries[index];
+    if(!delivery)return;
+    const d=new Date(delivery.createdAt);
+    card.dataset.deliveryDate=Number.isNaN(d.getTime())?"":`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    card.dataset.deliverySupplier=String(delivery.supplier||"");
+   });
+
+   const supplierNames=[...new Set(deliveries.map(d=>String(d.supplier||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+   const filters=document.createElement("div");
+   filters.style.margin="15px 0 20px";
+   filters.innerHTML=`
+    <label>DATE</label>
+    <input id="deliveryHistoryDate" type="date" style="margin-bottom:10px">
+    <label>SUPPLIER</label>
+    <select id="deliveryHistorySupplier" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white;margin-bottom:10px">
+     <option value="">All suppliers</option>
+     ${supplierNames.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("")}
+    </select>
+   `;
+   description.insertAdjacentElement("afterend",filters);
+
+   const dateInput=document.getElementById("deliveryHistoryDate");
+   const supplierSelect=document.getElementById("deliveryHistorySupplier");
+   const applyFilters=()=>{
+    const selectedDate=dateInput.value;
+    const selectedSupplier=supplierSelect.value;
+    let visible=0;
+    cards.forEach(card=>{
+     const matchDate=!selectedDate||card.dataset.deliveryDate===selectedDate;
+     const matchSupplier=!selectedSupplier||card.dataset.deliverySupplier===selectedSupplier;
+     const show=matchDate&&matchSupplier;
+     card.style.display=show?"":"none";
+     if(show)visible++;
+    });
+    let empty=document.getElementById("deliveryHistoryNoResults");
+    if(!visible){
+     if(!empty){
+      empty=document.createElement("p");
+      empty.id="deliveryHistoryNoResults";
+      empty.className="muted";
+      empty.textContent="No deliveries match the selected filters.";
+      panel.appendChild(empty);
+     }
+    }else if(empty){
+     empty.remove();
+    }
+   };
+   dateInput.onchange=applyFilters;
+   supplierSelect.onchange=applyFilters;
+  };
+ }
+
+ const inventoryStockHistory=window.managerStockHistory;
+ if(typeof inventoryStockHistory==="function"){
+  window.managerStockHistory=async function managerStockHistory(selectedDate){
+   await inventoryStockHistory(selectedDate,"");
+   const panel=document.querySelector("#root .panel");
+   if(!panel)return;
+
+   const supplierSelect=document.getElementById("stockHistorySupplier");
+   if(supplierSelect){
+    const supplierLabel=[...panel.querySelectorAll("label")].find(label=>label.textContent.trim().toUpperCase()==="SUPPLIER");
+    supplierLabel?.remove();
+    supplierSelect.remove();
+   }
+
+   const dateInput=panel.querySelector('input[type="date"]');
+   if(!dateInput)return;
+   dateInput.removeAttribute("onchange");
+   dateInput.onchange=null;
+
+   [...panel.querySelectorAll("button")].forEach(button=>{
+    if(button.textContent.trim().toUpperCase()==="ALL DATES")button.remove();
+   });
+
+   let applyButton=document.getElementById("stockHistoryApplyDate");
+   if(!applyButton){
+    applyButton=document.createElement("button");
+    applyButton.id="stockHistoryApplyDate";
+    applyButton.className="primary";
+    applyButton.style.margin="10px 0 20px 0";
+    applyButton.textContent="APPLY DATE";
+    dateInput.insertAdjacentElement("afterend",applyButton);
+   }
+   applyButton.onclick=()=>window.managerStockHistory(dateInput.value);
+  };
+ }
+});
