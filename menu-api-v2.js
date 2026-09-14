@@ -23,9 +23,20 @@ module.exports=function registerMenuAdminV2(app,io,db){
     `).all().map(row=>({...row,active:Boolean(row.active)}));
 
     const ingredients=db.prepare(`
-      SELECT id,name,active,created_at,updated_at
-      FROM menu_ingredients ORDER BY name ASC
-    `).all().map(row=>({...row,active:Boolean(row.active)}));
+      SELECT
+        i.id,i.name,i.active,i.created_at,i.updated_at,
+        COALESCE(inv.tracked,0) AS tracked,
+        COALESCE(inv.low_stock_level,0) AS low_stock_level,
+        COALESCE(inv.unit,'unit') AS unit
+      FROM menu_ingredients i
+      LEFT JOIN inventory_items inv ON inv.ingredient_id=i.id
+      ORDER BY i.name ASC
+    `).all().map(row=>({
+      ...row,
+      active:Boolean(row.active),
+      tracked:Boolean(row.tracked),
+      low_stock_level:Number(row.low_stock_level||0)
+    }));
 
     const ingredientRows=db.prepare(`
       SELECT i.id,i.name,mii.removable,mii.sort_order,COALESCE(mii.quantity,1) AS quantity
@@ -199,14 +210,29 @@ module.exports=function registerMenuAdminV2(app,io,db){
   app.post("/api/menu/ingredients",(req,res)=>{
     const name=String(req.body?.name??"").trim();
     if(!name)return res.status(400).json({error:"ingredient name is required"});
-    const id=makeId("ingredient",name);
+    const requestedId=String(req.body?.id??"").trim();
+    const id=/^[A-Za-z0-9_-]{1,120}$/.test(requestedId)?requestedId:makeId("ingredient",name);
+    const active=req.body?.active!==false;
+    const tracked=req.body?.tracked===true;
+    const lowStock=Number(req.body?.low_stock_level??0);
+    if(!Number.isFinite(lowStock)||lowStock<0)return res.status(400).json({error:"low_stock_level must be zero or greater"});
     try{
-      db.prepare("INSERT INTO menu_ingredients(id,name,active) VALUES(?,?,1)").run(id,name);
-      db.prepare("INSERT OR IGNORE INTO inventory_items(ingredient_id) VALUES(?)").run(id);
-    }catch(error){if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"ingredient name already exists"});throw error;}
+      const save=db.transaction(()=>{
+        db.prepare("INSERT INTO menu_ingredients(id,name,active) VALUES(?,?,?)").run(id,name,active?1:0);
+        db.prepare(`
+          INSERT INTO inventory_items(ingredient_id,tracked,low_stock_level)
+          VALUES(?,?,?)
+          ON CONFLICT(ingredient_id) DO UPDATE SET
+            tracked=excluded.tracked,
+            low_stock_level=excluded.low_stock_level,
+            updated_at=CURRENT_TIMESTAMP
+        `).run(id,tracked?1:0,lowStock);
+      });
+      save();
+    }catch(error){if(String(error.code||"").includes("CONSTRAINT"))return res.status(409).json({error:"ingredient name or id already exists"});throw error;}
     io.emit("menu-changed",{type:"ingredient-created",id});
     io.emit("inventory-changed",{ingredient_id:id});
-    res.status(201).json({id,name,active:true});
+    res.status(201).json({id,name,active,tracked,low_stock_level:lowStock});
   });
 
   app.patch("/api/menu/ingredients/:id",(req,res)=>{
@@ -221,5 +247,24 @@ module.exports=function registerMenuAdminV2(app,io,db){
     io.emit("menu-changed",{type:"ingredient-updated",id});
     io.emit("inventory-changed",{ingredient_id:id});
     res.json({id,name,active});
+  });
+
+  app.delete("/api/menu/ingredients/:id",(req,res)=>{
+    const id=req.params.id;
+    const current=db.prepare("SELECT id,name FROM menu_ingredients WHERE id=?").get(id);
+    if(!current)return res.status(404).json({error:"ingredient not found"});
+    const movementCount=db.prepare("SELECT COUNT(*) AS count FROM inventory_movements WHERE ingredient_id=?").get(id).count;
+    if(movementCount>0){
+      return res.status(409).json({error:"ingredient has stock history and cannot be permanently deleted"});
+    }
+    const remove=db.transaction(()=>{
+      db.prepare("DELETE FROM menu_item_ingredients WHERE ingredient_id=?").run(id);
+      db.prepare("DELETE FROM inventory_items WHERE ingredient_id=?").run(id);
+      db.prepare("DELETE FROM menu_ingredients WHERE id=?").run(id);
+    });
+    remove();
+    io.emit("menu-changed",{type:"ingredient-deleted",id});
+    io.emit("inventory-changed",{ingredient_id:id});
+    res.json({ok:true,id});
   });
 };
