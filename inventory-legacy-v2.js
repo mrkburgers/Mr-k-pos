@@ -25,6 +25,23 @@ async function v2PutJson(url,body){
  return response.json().catch(()=>({}));
 }
 
+async function v2PostJson(url,body){
+ const response=await fetch(url,{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify(body)
+ });
+ let data={};
+ try{data=await response.json();}catch{}
+ if(!response.ok){
+  const error=new Error(data.error||"Inventory action failed");
+  error.status=response.status;
+  error.body=data;
+  throw error;
+ }
+ return data;
+}
+
 function v2InventoryIngredientSnapshot(){
  return (Array.isArray(menuIngredients)?menuIngredients:[]).map(item=>({
   id:item.id,
@@ -196,6 +213,257 @@ const v2OriginalSaveInventoryMovements=saveInventoryMovements;
 saveInventoryMovements=function saveInventoryMovements(){
  v2OriginalSaveInventoryMovements();
  v2PushInventoryLegacyState();
+};
+
+function v2InventoryActor(){
+ const name=String(currentStaffName||"").trim();
+ const id=String(currentStaffId||"").trim();
+ if(name&&id)return `${name} (${id})`;
+ return id||name||(role==="owner"?"Owner":"Manager");
+}
+
+async function v2SaveLegacyInventoryHistory(){
+ v2OriginalSaveInventoryDeliveries();
+ v2OriginalSaveInventoryMovements();
+ await v2PutJson("/api/inventory/legacy-state",{
+  suppliers:Array.isArray(suppliers)?suppliers:[],
+  deliveries:Array.isArray(inventoryDeliveries)?inventoryDeliveries:[],
+  movements:Array.isArray(inventoryMovements)?inventoryMovements:[]
+ });
+}
+
+window.managerAddStock=async function managerAddStock(){
+ const supplierId=document.getElementById("stockInSupplier").value;
+ const selectedSupplier=suppliers.find(
+  supplier=>String(supplier.id)===String(supplierId)
+ );
+ const supplier=selectedSupplier?selectedSupplier.name:"";
+ const reference=document.getElementById("stockInReference").value.trim();
+ const note=document.getElementById("stockInNote").value.trim();
+
+ if(!supplierId||!selectedSupplier){
+  alert("Please select a supplier.");
+  return;
+ }
+ if(!supplier){
+  alert("Please enter the supplier name.");
+  return;
+ }
+ if(!currentDeliveryItems.length){
+  alert("Please add at least one item to the delivery.");
+  return;
+ }
+
+ const deliveryId=Date.now();
+ const deliveryItems=[];
+ const legacyMovements=[];
+
+ try{
+  for(const deliveryItem of currentDeliveryItems){
+   const item=inventoryItems.find(i=>i.id===deliveryItem.itemId);
+   if(!item)continue;
+   const qty=Number(deliveryItem.qty||0);
+   if(!Number.isInteger(qty)||qty<=0)continue;
+
+   const detailParts=[
+    supplier?`Supplier: ${supplier}`:"",
+    reference?`Reference: ${reference}`:"",
+    note||""
+   ].filter(Boolean);
+
+   const result=await v2PostJson(`/api/inventory/${encodeURIComponent(item.id)}/adjust`,{
+    quantity:qty,
+    movement_type:"STOCK IN",
+    note:detailParts.join(" | ")||null,
+    created_by:v2InventoryActor()
+   });
+
+   const previousStock=Number(result.stock_before||0);
+   const newStock=Number(result.stock_after||0);
+
+   deliveryItems.push({
+    itemId:item.id,
+    itemName:item.name,
+    qty,
+    previousStock,
+    newStock
+   });
+
+   legacyMovements.push({
+    id:Date.now()+Math.random(),
+    type:"STOCK IN",
+    itemId:item.id,
+    itemName:item.name,
+    qty,
+    previousStock,
+    newStock,
+    supplierId,
+    supplier,
+    reference,
+    note,
+    deliveryId,
+    actorRole:role==="owner"?"OWNER":"MANAGER",
+    actorName:currentStaffName,
+    actorStaffId:currentStaffId,
+    createdAt:Date.now()
+   });
+  }
+
+  inventoryMovements.push(...legacyMovements);
+  inventoryDeliveries.push({
+   id:deliveryId,
+   supplierId,
+   supplier,
+   reference,
+   note,
+   items:deliveryItems,
+   actorRole:role==="owner"?"OWNER":"MANAGER",
+   actorName:currentStaffName,
+   actorStaffId:currentStaffId,
+   createdAt:Date.now()
+  });
+
+  await v2SaveLegacyInventoryHistory();
+  currentDeliveryItems=[];
+  await v2SyncLegacyInventory(true);
+
+  alert("Delivery received successfully.");
+  managerStockIn();
+ }catch(error){
+  console.error("Stock In backend save failed",error);
+  alert(
+   "Unable to receive this delivery.\n\n"+
+   (error?.message||"Please try again.")
+  );
+ }
+};
+
+window.managerRemoveStock=async function managerRemoveStock(){
+ const itemId=document.getElementById("stockOutItem").value;
+ const qty=Number(document.getElementById("stockOutQty").value);
+
+ if(!itemId){
+  alert("Please select an inventory item.");
+  return;
+ }
+ if(!Number.isInteger(qty)||qty<=0){
+  alert("Please enter a valid whole-number quantity.");
+  return;
+ }
+
+ const item=inventoryItems.find(i=>i.id===itemId);
+ if(!item){
+  alert("Inventory item not found.");
+  return;
+ }
+
+ const current=Number(inventoryStock[itemId]||0);
+ if(qty>current){
+  alert(`Not enough ${item.name} in stock. Current stock: ${current}.`);
+  return;
+ }
+
+ try{
+  const result=await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
+   quantity:-qty,
+   movement_type:"STOCK OUT",
+   note:null,
+   created_by:v2InventoryActor()
+  });
+
+  inventoryMovements.push({
+   id:Date.now(),
+   type:"STOCK OUT",
+   itemId,
+   itemName:item.name,
+   qty:-qty,
+   previousStock:Number(result.stock_before||0),
+   newStock:Number(result.stock_after||0),
+   actorRole:role==="owner"?"OWNER":"MANAGER",
+   actorName:currentStaffName,
+   actorStaffId:currentStaffId,
+   createdAt:Date.now()
+  });
+
+  await v2SaveLegacyInventoryHistory();
+  await v2SyncLegacyInventory(true);
+
+  alert(`${item.name}: -${qty} units removed.`);
+  managerStockOut();
+ }catch(error){
+  console.error("Stock Out backend save failed",error);
+  const message=error?.status===409
+   ?`Not enough ${item.name} in stock.`
+   :(error?.message||"Please try again.");
+  alert("Unable to remove stock.\n\n"+message);
+ }
+};
+
+window.managerRecordWaste=async function managerRecordWaste(){
+ const itemId=document.getElementById("wasteItem").value;
+ const qty=Number(document.getElementById("wasteQty").value);
+ const reason=document.getElementById("wasteReason").value;
+
+ if(!itemId){
+  alert("Please select an inventory item.");
+  return;
+ }
+ if(!Number.isInteger(qty)||qty<=0){
+  alert("Please enter a valid whole-number quantity.");
+  return;
+ }
+ if(!reason){
+  alert("Please select a reason.");
+  return;
+ }
+
+ const item=inventoryItems.find(i=>i.id===itemId);
+ if(!item){
+  alert("Inventory item not found.");
+  return;
+ }
+
+ const current=Number(inventoryStock[itemId]||0);
+ if(qty>current){
+  alert(`Not enough ${item.name} in stock. Current stock: ${current}.`);
+  return;
+ }
+
+ try{
+  const result=await v2PostJson(`/api/inventory/${encodeURIComponent(itemId)}/adjust`,{
+   quantity:-qty,
+   movement_type:"WASTE / ADJUSTMENT",
+   note:reason,
+   created_by:v2InventoryActor()
+  });
+
+  inventoryMovements.push({
+   id:Date.now(),
+   type:"WASTE / ADJUSTMENT",
+   itemId,
+   itemName:item.name,
+   qty:-qty,
+   previousStock:Number(result.stock_before||0),
+   newStock:Number(result.stock_after||0),
+   reason,
+   actorRole:role==="owner"?"OWNER":"MANAGER",
+   actorName:currentStaffName,
+   actorStaffId:currentStaffId,
+   createdAt:Date.now()
+  });
+
+  await v2SaveLegacyInventoryHistory();
+  await v2SyncLegacyInventory(true);
+
+  alert(`${item.name}: -${qty} units recorded as ${reason}.`);
+  managerWasteAdjustment();
+ }catch(error){
+  console.error("Waste adjustment backend save failed",error);
+  const message=error?.status===409
+   ?`Not enough ${item.name} in stock.`
+   :(error?.message||"Please try again.");
+  alert("Unable to record waste / adjustment.\n\n"+message);
+ }
 };
 
 function v2WrapInventoryScreen(functionName){
