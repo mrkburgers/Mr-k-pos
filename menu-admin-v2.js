@@ -233,6 +233,119 @@ window.ownerIngredientList=function ownerIngredientList(){
  </div>`;
 };
 
+// Category backend bridge. Keep the finalized category UI and only persist
+// its existing create/edit/activate actions to SQLite.
+function v2CategoryError(error){
+ console.error("Category backend save failed",error);
+ alert(
+  "Unable to save this category to the restaurant server.\n\n"+
+  (error?.message||"Please try again.")
+ );
+}
+
+async function v2ReloadCategoryList(){
+ if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
+ if(typeof ownerCategoryList==="function")ownerCategoryList();
+}
+
+const v2LegacySaveNewCategory=window.saveNewCategory;
+if(typeof v2LegacySaveNewCategory==="function"){
+ window.saveNewCategory=async function saveNewCategory(){
+  const before=JSON.parse(JSON.stringify(menuCategoryData));
+  const beforeIds=new Set(before.map(category=>category.id));
+
+  v2LegacySaveNewCategory();
+  const created=menuCategoryData.find(category=>!beforeIds.has(category.id));
+  if(!created)return;
+
+  try{
+   await v2MenuJson("/api/menu/categories",{
+    method:"POST",
+    body:JSON.stringify({
+     id:created.id,
+     name:created.name,
+     icon:created.icon||"🍽️",
+     active:created.active!==false
+    })
+   });
+   await v2ReloadCategoryList();
+  }catch(error){
+   menuCategoryData=before;
+   saveMenuCategories();
+   v2CategoryError(error);
+   ownerCategoryList();
+  }
+ };
+}
+
+const v2LegacySaveEditedCategory=window.saveEditedCategory;
+if(typeof v2LegacySaveEditedCategory==="function"){
+ window.saveEditedCategory=async function saveEditedCategory(id){
+  const index=menuCategoryData.findIndex(category=>category.id===id);
+  if(index<0){
+   alert("Category not found.");
+   return;
+  }
+  const before=JSON.parse(JSON.stringify(menuCategoryData[index]));
+
+  v2LegacySaveEditedCategory(id);
+  const updated=menuCategoryData.find(category=>category.id===id);
+  if(!updated)return;
+
+  try{
+   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{
+    method:"PATCH",
+    body:JSON.stringify({
+     name:updated.name,
+     icon:updated.icon||"🍽️",
+     active:updated.active!==false
+    })
+   });
+   await v2ReloadCategoryList();
+  }catch(error){
+   const currentIndex=menuCategoryData.findIndex(category=>category.id===id);
+   if(currentIndex>=0)menuCategoryData[currentIndex]=before;
+   saveMenuCategories();
+   v2CategoryError(error);
+   ownerCategoryList();
+  }
+ };
+}
+
+const v2LegacyToggleCategoryActive=window.toggleCategoryActive;
+if(typeof v2LegacyToggleCategoryActive==="function"){
+ window.toggleCategoryActive=async function toggleCategoryActive(id){
+  const index=menuCategoryData.findIndex(category=>category.id===id);
+  if(index<0){
+   alert("Category not found.");
+   return;
+  }
+  const before=JSON.parse(JSON.stringify(menuCategoryData[index]));
+
+  v2LegacyToggleCategoryActive(id);
+  const updated=menuCategoryData.find(category=>category.id===id);
+  if(!updated)return;
+
+  try{
+   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{
+    method:"PATCH",
+    body:JSON.stringify({
+     name:updated.name,
+     icon:updated.icon||"🍽️",
+     active:updated.active!==false
+    })
+   });
+   await v2ReloadCategoryList();
+  }catch(error){
+   const currentIndex=menuCategoryData.findIndex(category=>category.id===id);
+   if(currentIndex>=0)menuCategoryData[currentIndex]=before;
+   saveMenuCategories();
+   v2CategoryError(error);
+   ownerCategoryList();
+  }
+ };
+}
+
 window.addEventListener("load",()=>{
  const originalDeliveryHistory=window.managerDeliveryHistory;
  if(typeof originalDeliveryHistory==="function"){
