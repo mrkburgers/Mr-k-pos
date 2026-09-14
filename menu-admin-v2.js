@@ -331,3 +331,127 @@ window.addEventListener("load",()=>{
   }
  };
 });
+
+let v2EditingSupplierId=null;
+
+async function v2ReloadSuppliers(){
+ const rows=await v2MenuJson("/api/suppliers",{cache:"no-store"});
+ suppliers=Array.isArray(rows)?rows:[];
+ localStorage.setItem("mrkSuppliers",JSON.stringify(suppliers));
+}
+
+function v2SupplierError(error){
+ console.error("Supplier backend action failed",error);
+ alert(error?.message||"Unable to save supplier.");
+}
+
+window.ownerSuppliers=async function ownerSuppliers(){
+ clearInterval(timerInterval);
+ if(role!=="owner")return ownerInventory();
+ try{await v2ReloadSuppliers();}catch(error){v2SupplierError(error);return;}
+ const editing=suppliers.find(supplier=>String(supplier.id)===String(v2EditingSupplierId));
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerInventory()">← BACK</button>
+  <div class="logo">MR K BURGERS<span>OWNER — SUPPLIERS</span></div>
+  <div class="panel">
+   <span class="badge">🏢 SUPPLIERS</span>
+   <h1>Supplier Management</h1>
+   <p class="muted">Create and manage approved suppliers.</p>
+
+   ${editing?`
+    <div class="order-card" style="margin-bottom:24px">
+     <h3>Edit Supplier</h3>
+     <label>SUPPLIER NAME</label>
+     <input id="editSupplierName" class="input" type="text" value="${esc(editing.name)}">
+     <label>PHONE NUMBER</label>
+     <input id="editSupplierPhone" class="input" type="tel" value="${esc(editing.phone||"")}">
+     <button class="primary" style="margin-top:16px" onclick="ownerSaveSupplierEdit()">SAVE CHANGES</button>
+     <button class="back" onclick="ownerCancelSupplierEdit()">CANCEL</button>
+    </div>`:`
+    <label>SUPPLIER NAME</label>
+    <input id="supplierName" class="input" type="text" placeholder="Enter supplier name">
+    <label>PHONE NUMBER</label>
+    <input id="supplierPhone" class="input" type="tel" placeholder="Enter supplier phone number">
+    <button class="primary" style="margin-top:16px" onclick="ownerAddSupplier()">ADD SUPPLIER</button>`}
+
+   <div style="margin-top:24px">
+    ${suppliers.length?suppliers.map(supplier=>`
+     <div class="order-card">
+      <div class="order-top">
+       <div>
+        <h3>${esc(supplier.name)}</h3>
+        <div class="muted">📞 ${esc(supplier.phone||"No phone number")}</div>
+        <div class="muted">${supplier.active===false?"Inactive":"Active"}</div>
+       </div>
+      </div>
+      <div style="margin-top:12px">
+       <button class="secondary" onclick="ownerEditSupplier(${Number(supplier.id)})">EDIT</button>
+       <button class="secondary" onclick="ownerToggleSupplier(${Number(supplier.id)})">${supplier.active===false?"ACTIVATE":"DEACTIVATE"}</button>
+       <button class="secondary" onclick="ownerDeleteSupplier(${Number(supplier.id)})">DELETE</button>
+      </div>
+     </div>`).join(""):`<p class="muted">No suppliers created yet.</p>`}
+   </div>
+  </div>
+ </div>`;
+};
+
+window.ownerAddSupplier=async function ownerAddSupplier(){
+ if(role!=="owner")return;
+ const name=document.getElementById("supplierName")?.value.trim()||"";
+ const phone=document.getElementById("supplierPhone")?.value.trim()||"";
+ if(!name){alert("Please enter a supplier name.");return;}
+ try{
+  await v2MenuJson("/api/suppliers",{method:"POST",body:JSON.stringify({id:Date.now(),name,phone})});
+  v2EditingSupplierId=null;
+  await ownerSuppliers();
+ }catch(error){v2SupplierError(error);}
+};
+
+window.ownerEditSupplier=function ownerEditSupplier(id){
+ if(role!=="owner")return;
+ v2EditingSupplierId=Number(id);
+ ownerSuppliers();
+};
+
+window.ownerCancelSupplierEdit=function ownerCancelSupplierEdit(){
+ v2EditingSupplierId=null;
+ ownerSuppliers();
+};
+
+window.ownerSaveSupplierEdit=async function ownerSaveSupplierEdit(){
+ if(role!=="owner"||v2EditingSupplierId===null)return;
+ const supplier=suppliers.find(item=>String(item.id)===String(v2EditingSupplierId));
+ if(!supplier){alert("Supplier not found.");return;}
+ const name=document.getElementById("editSupplierName")?.value.trim()||"";
+ const phone=document.getElementById("editSupplierPhone")?.value.trim()||"";
+ if(!name){alert("Supplier name cannot be empty.");return;}
+ try{
+  await v2MenuJson(`/api/suppliers/${encodeURIComponent(v2EditingSupplierId)}`,{method:"PATCH",body:JSON.stringify({name,phone,active:supplier.active!==false})});
+  v2EditingSupplierId=null;
+  await ownerSuppliers();
+ }catch(error){v2SupplierError(error);}
+};
+
+window.ownerToggleSupplier=async function ownerToggleSupplier(id){
+ if(role!=="owner")return;
+ const supplier=suppliers.find(item=>String(item.id)===String(id));
+ if(!supplier)return;
+ try{
+  await v2MenuJson(`/api/suppliers/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({name:supplier.name,phone:supplier.phone||"",active:supplier.active===false})});
+  v2EditingSupplierId=null;
+  await ownerSuppliers();
+ }catch(error){v2SupplierError(error);}
+};
+
+window.ownerDeleteSupplier=async function ownerDeleteSupplier(id){
+ if(role!=="owner")return;
+ const supplier=suppliers.find(item=>String(item.id)===String(id));
+ if(!supplier)return;
+ if(!confirm(`Delete supplier "${supplier.name}"?`))return;
+ try{
+  await v2MenuJson(`/api/suppliers/${encodeURIComponent(id)}`,{method:"DELETE"});
+  v2EditingSupplierId=null;
+  await ownerSuppliers();
+ }catch(error){v2SupplierError(error);}
+};
