@@ -230,6 +230,22 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({id,name,category_id:categoryId,price:Math.round(price),active});
   });
 
+  app.delete("/api/menu/items/:id",(req,res)=>{
+    const id=req.params.id;
+    const current=db.prepare("SELECT id,name FROM menu_items WHERE id=?").get(id);
+    if(!current)return res.status(404).json({error:"menu item not found"});
+
+    const remove=db.transaction(()=>{
+      db.prepare("DELETE FROM menu_item_ingredients WHERE menu_item_id=?").run(id);
+      db.prepare("DELETE FROM menu_item_extras WHERE menu_item_id=? OR extra_item_id=?").run(id,id);
+      db.prepare("DELETE FROM menu_items WHERE id=?").run(id);
+    });
+    remove();
+
+    io.emit("menu-changed",{type:"item-deleted",id});
+    res.json({ok:true,id});
+  });
+
   app.post("/api/menu/ingredients",(req,res)=>{
     const name=String(req.body?.name??"").trim();
     if(!name)return res.status(400).json({error:"ingredient name is required"});
