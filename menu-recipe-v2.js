@@ -125,3 +125,32 @@ if(typeof v2LegacyToggleMenuItemActive==="function"){
   }
  };
 }
+
+const v2LegacyDeleteOwnerMenuItem=window.deleteOwnerMenuItem;
+if(typeof v2LegacyDeleteOwnerMenuItem==="function"){
+ window.deleteOwnerMenuItem=async function deleteOwnerMenuItem(id){
+  const item=ownerMenuData.find(entry=>entry.id===id);
+  if(!item){
+   alert("Menu item not found.");
+   return;
+  }
+
+  const before=v2CloneMenuData(ownerMenuData);
+  v2LegacyDeleteOwnerMenuItem(id);
+
+  const stillExists=ownerMenuData.some(entry=>entry.id===id);
+  if(stillExists)return;
+
+  try{
+   await v2MenuJson(`/api/menu/items/${encodeURIComponent(id)}`,{
+    method:"DELETE"
+   });
+   await v2ReloadOwnerMenuList();
+  }catch(error){
+   ownerMenuData=before;
+   saveOwnerMenuData();
+   v2MenuItemSaveError(error);
+   ownerMenuItemList();
+  }
+ };
+}
