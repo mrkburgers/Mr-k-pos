@@ -31,6 +31,15 @@ module.exports=function registerInventoryV2(app,io,db){
   CREATE INDEX IF NOT EXISTS idx_inventory_movements_ingredient
   ON inventory_movements(ingredient_id, id DESC);
 
+  CREATE TABLE IF NOT EXISTS suppliers (
+   id INTEGER PRIMARY KEY,
+   name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+   phone TEXT NOT NULL DEFAULT '',
+   active INTEGER NOT NULL DEFAULT 1,
+   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS inventory_legacy_state (
    id INTEGER PRIMARY KEY CHECK (id=1),
    suppliers_json TEXT NOT NULL DEFAULT '[]',
@@ -48,6 +57,66 @@ module.exports=function registerInventoryV2(app,io,db){
   SELECT id FROM menu_ingredients
  `);
  seedInventory.run();
+
+ function safeParse(value){
+  try{return JSON.parse(value||"[]");}catch{return [];}
+ }
+
+ function supplierRows(){
+  return db.prepare(`
+   SELECT id,name,phone,active,created_at,updated_at
+   FROM suppliers
+   ORDER BY name COLLATE NOCASE ASC
+  `).all().map(row=>({
+   id:Number(row.id),
+   name:row.name,
+   phone:row.phone||"",
+   active:Boolean(row.active),
+   createdAt:row.created_at,
+   updatedAt:row.updated_at
+  }));
+ }
+
+ function mirrorSuppliersToLegacy(){
+  db.prepare(`
+   UPDATE inventory_legacy_state
+   SET suppliers_json=?,updated_at=CURRENT_TIMESTAMP
+   WHERE id=1
+  `).run(JSON.stringify(supplierRows()));
+ }
+
+ function importSuppliersIfEmpty(candidateSuppliers){
+  if(db.prepare("SELECT COUNT(*) AS count FROM suppliers").get().count>0)return false;
+  if(!Array.isArray(candidateSuppliers)||!candidateSuppliers.length)return false;
+
+  const insert=db.prepare(`
+   INSERT OR IGNORE INTO suppliers(id,name,phone,active,created_at,updated_at)
+   VALUES(?,?,?,?,?,?)
+  `);
+  const importRows=db.transaction(rows=>{
+   rows.forEach((supplier,index)=>{
+    const name=String(supplier?.name||"").trim();
+    if(!name)return;
+    const parsedId=Number(supplier?.id);
+    const id=Number.isSafeInteger(parsedId)&&parsedId>0?parsedId:Date.now()+index;
+    const phone=String(supplier?.phone||"").trim();
+    const active=supplier?.active!==false;
+    const createdAt=Number(supplier?.createdAt)>0
+     ?new Date(Number(supplier.createdAt)).toISOString()
+     :new Date().toISOString();
+    const updatedAt=Number(supplier?.updatedAt)>0
+     ?new Date(Number(supplier.updatedAt)).toISOString()
+     :createdAt;
+    insert.run(id,name,phone,active?1:0,createdAt,updatedAt);
+   });
+  });
+  importRows(candidateSuppliers);
+  mirrorSuppliersToLegacy();
+  return true;
+ }
+
+ const legacyAtStartup=db.prepare("SELECT suppliers_json FROM inventory_legacy_state WHERE id=1").get();
+ importSuppliersIfEmpty(safeParse(legacyAtStartup?.suppliers_json));
 
  function inventoryRows(){
   return db.prepare(`
@@ -74,6 +143,83 @@ module.exports=function registerInventoryV2(app,io,db){
  app.get("/api/inventory",(req,res)=>{
   seedInventory.run();
   res.json({items:inventoryRows()});
+ });
+
+ app.get("/api/suppliers",(req,res)=>{
+  res.json(supplierRows());
+ });
+
+ app.post("/api/suppliers",(req,res)=>{
+  const name=String(req.body?.name||"").trim();
+  const phone=String(req.body?.phone||"").trim();
+  const requestedId=Number(req.body?.id);
+  const id=Number.isSafeInteger(requestedId)&&requestedId>0?requestedId:Date.now();
+  if(!name)return res.status(400).json({error:"supplier name is required"});
+
+  try{
+   db.prepare(`
+    INSERT INTO suppliers(id,name,phone,active)
+    VALUES(?,?,?,1)
+   `).run(id,name,phone);
+  }catch(error){
+   if(String(error.code||"").includes("CONSTRAINT")){
+    return res.status(409).json({error:"supplier name or id already exists"});
+   }
+   throw error;
+  }
+
+  mirrorSuppliersToLegacy();
+  io.emit("inventory-changed",{reason:"supplier-created",supplier_id:id});
+  res.status(201).json(supplierRows().find(supplier=>supplier.id===id));
+ });
+
+ app.patch("/api/suppliers/:id",(req,res)=>{
+  const id=Number(req.params.id);
+  const current=db.prepare("SELECT * FROM suppliers WHERE id=?").get(id);
+  if(!current)return res.status(404).json({error:"supplier not found"});
+
+  const name=String(req.body?.name??current.name).trim();
+  const phone=String(req.body?.phone??current.phone??"").trim();
+  const active=typeof req.body?.active==="boolean"?req.body.active:Boolean(current.active);
+  if(!name)return res.status(400).json({error:"supplier name is required"});
+
+  try{
+   db.prepare(`
+    UPDATE suppliers
+    SET name=?,phone=?,active=?,updated_at=CURRENT_TIMESTAMP
+    WHERE id=?
+   `).run(name,phone,active?1:0,id);
+  }catch(error){
+   if(String(error.code||"").includes("CONSTRAINT")){
+    return res.status(409).json({error:"another supplier already uses this name"});
+   }
+   throw error;
+  }
+
+  mirrorSuppliersToLegacy();
+  io.emit("inventory-changed",{reason:"supplier-updated",supplier_id:id});
+  res.json(supplierRows().find(supplier=>supplier.id===id));
+ });
+
+ app.delete("/api/suppliers/:id",(req,res)=>{
+  const id=Number(req.params.id);
+  const current=db.prepare("SELECT * FROM suppliers WHERE id=?").get(id);
+  if(!current)return res.status(404).json({error:"supplier not found"});
+
+  const state=db.prepare("SELECT deliveries_json FROM inventory_legacy_state WHERE id=1").get();
+  const deliveries=safeParse(state?.deliveries_json);
+  const used=Array.isArray(deliveries)&&deliveries.some(delivery=>
+   (delivery?.supplierId!==undefined&&String(delivery.supplierId)===String(id)) ||
+   String(delivery?.supplier||"").toLowerCase()===String(current.name||"").toLowerCase()
+  );
+  if(used){
+   return res.status(409).json({error:"This supplier has delivery history and cannot be deleted. Deactivate it instead."});
+  }
+
+  db.prepare("DELETE FROM suppliers WHERE id=?").run(id);
+  mirrorSuppliersToLegacy();
+  io.emit("inventory-changed",{reason:"supplier-deleted",supplier_id:id});
+  res.json({ok:true,id});
  });
 
  app.patch("/api/inventory/:ingredientId",(req,res)=>{
@@ -156,9 +302,12 @@ module.exports=function registerInventoryV2(app,io,db){
  });
 
  app.get("/api/inventory/legacy-state",(req,res)=>{
-  const state=db.prepare(`SELECT suppliers_json,deliveries_json,movements_json FROM inventory_legacy_state WHERE id=1`).get();
-  const parse=(value)=>{try{return JSON.parse(value||"[]");}catch{return [];}};
-  res.json({suppliers:parse(state?.suppliers_json),deliveries:parse(state?.deliveries_json),movements:parse(state?.movements_json)});
+  const state=db.prepare(`SELECT deliveries_json,movements_json FROM inventory_legacy_state WHERE id=1`).get();
+  res.json({
+   suppliers:supplierRows(),
+   deliveries:safeParse(state?.deliveries_json),
+   movements:safeParse(state?.movements_json)
+  });
  });
 
  app.put("/api/inventory/stock-snapshot",(req,res)=>{
@@ -194,15 +343,16 @@ module.exports=function registerInventoryV2(app,io,db){
 
  app.put("/api/inventory/legacy-state",(req,res)=>{
   const current=db.prepare("SELECT * FROM inventory_legacy_state WHERE id=1").get();
-  const suppliers=Array.isArray(req.body?.suppliers)?req.body.suppliers:JSON.parse(current.suppliers_json||"[]");
-  const deliveries=Array.isArray(req.body?.deliveries)?req.body.deliveries:JSON.parse(current.deliveries_json||"[]");
-  const movements=Array.isArray(req.body?.movements)?req.body.movements:JSON.parse(current.movements_json||"[]");
+  const incomingSuppliers=Array.isArray(req.body?.suppliers)?req.body.suppliers:[];
+  importSuppliersIfEmpty(incomingSuppliers);
+  const deliveries=Array.isArray(req.body?.deliveries)?req.body.deliveries:safeParse(current.deliveries_json);
+  const movements=Array.isArray(req.body?.movements)?req.body.movements:safeParse(current.movements_json);
 
   db.prepare(`
    UPDATE inventory_legacy_state
    SET suppliers_json=?,deliveries_json=?,movements_json=?,updated_at=CURRENT_TIMESTAMP
    WHERE id=1
-  `).run(JSON.stringify(suppliers),JSON.stringify(deliveries),JSON.stringify(movements));
+  `).run(JSON.stringify(supplierRows()),JSON.stringify(deliveries),JSON.stringify(movements));
 
   io.emit("inventory-changed",{reason:"legacy-state-save"});
   res.json({ok:true});
