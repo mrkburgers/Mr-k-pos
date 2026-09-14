@@ -209,3 +209,56 @@ document.addEventListener("mousedown",event=>{
  select.focus();
  select.dispatchEvent(new Event("change",{bubbles:true}));
 });
+
+// Cleanly render the finalized Ingredient List in the same 3-column card grid
+// used by the Menu Items list. Functionality and button actions are unchanged.
+window.ownerIngredientList=function ownerIngredientList(){
+ clearInterval(timerInterval);
+
+ const rows=menuIngredients.map(ingredient=>`
+  <div class="card">
+   <h3>${esc(ingredient.name)}</h3>
+   <p class="muted">
+    Inventory: ${ingredient.tracked?"Tracked":"Not Tracked"}
+   </p>
+   <p class="muted">
+    Status: ${ingredient.active?"Active":"Inactive"}
+   </p>
+   <button
+    class="primary"
+    onclick="ownerEditIngredient('${ingredient.id}')">
+    EDIT
+   </button>
+   <button
+    class="back"
+    onclick="toggleIngredientActive('${ingredient.id}')">
+    ${ingredient.active?"DEACTIVATE":"ACTIVATE"}
+   </button>
+   <button
+    class="back"
+    onclick="deleteMenuIngredient('${ingredient.id}')">
+    DELETE
+   </button>
+  </div>
+ `).join("");
+
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerIngredients()">← BACK</button>
+  <div class="logo">
+   MR K BURGERS
+   <span>OWNER — INGREDIENT LIST</span>
+  </div>
+  <div class="panel">
+   <span class="badge">📋 INGREDIENT LIST</span>
+   <h1>Ingredients</h1>
+   <div class="grid">
+    ${rows || `
+     <div class="card">
+      <p class="muted">No ingredients found.</p>
+     </div>
+    `}
+   </div>
+  </div>
+ </div>`;
+};
