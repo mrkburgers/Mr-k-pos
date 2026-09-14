@@ -111,6 +111,27 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.status(201).json({id:created.orderId,order_number:created.orderNumber,order_uuid,status:"NEW",items,inventory_consumed:created.consumed});
   });
 
+  app.post("/api/menu/categories",(req,res)=>{
+    const name=String(req.body?.name??"").trim();
+    const icon=String(req.body?.icon??"🍽️").trim()||"🍽️";
+    const active=req.body?.active!==false;
+    const requestedId=String(req.body?.id??"").trim();
+    const id=/^[A-Za-z0-9_-]{1,120}$/.test(requestedId)?requestedId:makeId("category",name);
+    if(!name)return res.status(400).json({error:"category name is required"});
+
+    const duplicate=db.prepare("SELECT id FROM menu_categories WHERE lower(name)=lower(?) OR id=?").get(name,id);
+    if(duplicate)return res.status(409).json({error:"category name or id already exists"});
+
+    const nextSort=db.prepare("SELECT COALESCE(MAX(sort_order),0)+1 AS n FROM menu_categories").get().n;
+    db.prepare(`
+      INSERT INTO menu_categories(id,name,icon,active,sort_order)
+      VALUES(?,?,?,?,?)
+    `).run(id,name,icon,active?1:0,nextSort);
+
+    io.emit("menu-changed",{type:"category-created",id});
+    res.status(201).json({id,name,icon,active,sort_order:nextSort});
+  });
+
   app.patch("/api/menu/categories/:id",(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT * FROM menu_categories WHERE id=?").get(id);
@@ -119,6 +140,8 @@ module.exports=function registerMenuAdminV2(app,io,db){
     const icon=String(req.body?.icon??current.icon).trim()||"🍽️";
     const active=typeof req.body?.active==="boolean"?req.body.active:Boolean(current.active);
     if(!name)return res.status(400).json({error:"category name is required"});
+    const duplicate=db.prepare("SELECT id FROM menu_categories WHERE lower(name)=lower(?) AND id<>?").get(name,id);
+    if(duplicate)return res.status(409).json({error:"category name already exists"});
     db.prepare(`UPDATE menu_categories SET name=?,icon=?,active=?,updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(name,icon,active?1:0,id);
     io.emit("menu-changed",{type:"category",id});
     res.json({id,name,icon,active});
