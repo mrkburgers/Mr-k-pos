@@ -115,6 +115,50 @@ module.exports=function registerInventoryV2(app,io,db){
   return true;
  }
 
+ function syncSuppliersFromLegacy(candidateSuppliers,deliveries){
+  if(!Array.isArray(candidateSuppliers))return;
+  const normalizedDeliveries=Array.isArray(deliveries)?deliveries:[];
+  const upsert=db.prepare(`
+   INSERT INTO suppliers(id,name,phone,active,created_at,updated_at)
+   VALUES(?,?,?,?,?,CURRENT_TIMESTAMP)
+   ON CONFLICT(id) DO UPDATE SET
+    name=excluded.name,
+    phone=excluded.phone,
+    active=excluded.active,
+    updated_at=CURRENT_TIMESTAMP
+  `);
+  const remove=db.prepare("DELETE FROM suppliers WHERE id=?");
+
+  const sync=db.transaction(()=>{
+   const incomingIds=new Set();
+   candidateSuppliers.forEach((supplier,index)=>{
+    const name=String(supplier?.name||"").trim();
+    if(!name)return;
+    const parsedId=Number(supplier?.id);
+    const id=Number.isSafeInteger(parsedId)&&parsedId>0?parsedId:Date.now()+index;
+    incomingIds.add(id);
+    const phone=String(supplier?.phone||"").trim();
+    const active=supplier?.active!==false;
+    const createdAt=Number(supplier?.createdAt)>0
+     ?new Date(Number(supplier.createdAt)).toISOString()
+     :new Date().toISOString();
+    upsert.run(id,name,phone,active?1:0,createdAt);
+   });
+
+   db.prepare("SELECT id,name FROM suppliers").all().forEach(existing=>{
+    if(incomingIds.has(Number(existing.id)))return;
+    const used=normalizedDeliveries.some(delivery=>
+     (delivery?.supplierId!==undefined&&String(delivery.supplierId)===String(existing.id)) ||
+     String(delivery?.supplier||"").toLowerCase()===String(existing.name||"").toLowerCase()
+    );
+    if(!used)remove.run(existing.id);
+   });
+  });
+
+  sync();
+  mirrorSuppliersToLegacy();
+ }
+
  const legacyAtStartup=db.prepare("SELECT suppliers_json FROM inventory_legacy_state WHERE id=1").get();
  importSuppliersIfEmpty(safeParse(legacyAtStartup?.suppliers_json));
 
@@ -343,10 +387,19 @@ module.exports=function registerInventoryV2(app,io,db){
 
  app.put("/api/inventory/legacy-state",(req,res)=>{
   const current=db.prepare("SELECT * FROM inventory_legacy_state WHERE id=1").get();
-  const incomingSuppliers=Array.isArray(req.body?.suppliers)?req.body.suppliers:[];
-  importSuppliersIfEmpty(incomingSuppliers);
   const deliveries=Array.isArray(req.body?.deliveries)?req.body.deliveries:safeParse(current.deliveries_json);
   const movements=Array.isArray(req.body?.movements)?req.body.movements:safeParse(current.movements_json);
+
+  if(Array.isArray(req.body?.suppliers)){
+   try{
+    syncSuppliersFromLegacy(req.body.suppliers,deliveries);
+   }catch(error){
+    if(String(error.code||"").includes("CONSTRAINT")){
+     return res.status(409).json({error:"supplier name or id already exists"});
+    }
+    throw error;
+   }
+  }
 
   db.prepare(`
    UPDATE inventory_legacy_state
