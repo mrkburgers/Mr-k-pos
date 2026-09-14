@@ -35,95 +35,36 @@ window.saveNewIngredient=async function saveNewIngredient(){
  const name=document.getElementById("newIngredientName").value.trim();
  const tracked=document.getElementById("newIngredientTracked").value==="true";
  const lowStockLevel=Number(document.getElementById("newIngredientLowStock").value||0);
-
- if(!name){
-  alert("Please enter an ingredient name.");
-  return;
- }
-
- const duplicate=menuIngredients.some(
-  ingredient=>ingredient.name.toLowerCase()===name.toLowerCase()
- );
- if(duplicate){
-  alert("This ingredient already exists.");
-  return;
- }
- if(!Number.isFinite(lowStockLevel)||lowStockLevel<0){
-  alert("Low Stock Level must be zero or greater.");
-  return;
- }
-
+ if(!name){alert("Please enter an ingredient name.");return;}
+ const duplicate=menuIngredients.some(ingredient=>ingredient.name.toLowerCase()===name.toLowerCase());
+ if(duplicate){alert("This ingredient already exists.");return;}
+ if(!Number.isFinite(lowStockLevel)||lowStockLevel<0){alert("Low Stock Level must be zero or greater.");return;}
  const id="ingredient_"+Date.now()+"_"+Math.random().toString(36).slice(2,8);
-
  try{
-  const created=await v2MenuJson("/api/menu/ingredients",{
-   method:"POST",
-   body:JSON.stringify({
-    id,
-    name,
-    active:true,
-    tracked,
-    low_stock_level:lowStockLevel
-   })
-  });
-
-  menuIngredients.push({
-   id:created.id,
-   name:created.name,
-   tracked:Boolean(created.tracked),
-   lowStockLevel:Number(created.low_stock_level||0),
-   active:Boolean(created.active),
-   unit:"unit"
-  });
+  const created=await v2MenuJson("/api/menu/ingredients",{method:"POST",body:JSON.stringify({id,name,active:true,tracked,low_stock_level:lowStockLevel})});
+  menuIngredients.push({id:created.id,name:created.name,tracked:Boolean(created.tracked),lowStockLevel:Number(created.low_stock_level||0),active:Boolean(created.active),unit:"unit"});
   saveMenuIngredients();
   syncTrackedIngredientsToInventory();
   saveInventory();
   if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
-
   alert("Ingredient added successfully.");
   ownerIngredientList();
- }catch(error){
-  v2IngredientSaveError(error);
- }
+ }catch(error){v2IngredientSaveError(error);}
 };
 
 window.saveEditedIngredient=async function saveEditedIngredient(id){
  const ingredient=menuIngredients.find(item=>item.id===id);
- if(!ingredient){
-  alert("Ingredient not found.");
-  return;
- }
-
+ if(!ingredient){alert("Ingredient not found.");return;}
  const name=document.getElementById("editIngredientName").value.trim();
  const tracked=document.getElementById("editIngredientTracked").value==="true";
  const lowStockLevel=Number(document.getElementById("editIngredientLowStock").value||0);
-
- if(!name){
-  alert("Please enter an ingredient name.");
-  return;
- }
- const duplicate=menuIngredients.some(
-  item=>item.id!==id && item.name.toLowerCase()===name.toLowerCase()
- );
- if(duplicate){
-  alert("Another ingredient already uses this name.");
-  return;
- }
- if(!Number.isFinite(lowStockLevel)||lowStockLevel<0){
-  alert("Low Stock Level must be zero or greater.");
-  return;
- }
-
+ if(!name){alert("Please enter an ingredient name.");return;}
+ const duplicate=menuIngredients.some(item=>item.id!==id&&item.name.toLowerCase()===name.toLowerCase());
+ if(duplicate){alert("Another ingredient already uses this name.");return;}
+ if(!Number.isFinite(lowStockLevel)||lowStockLevel<0){alert("Low Stock Level must be zero or greater.");return;}
  try{
-  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{
-   method:"PATCH",
-   body:JSON.stringify({name,active:Boolean(ingredient.active)})
-  });
-  await v2MenuJson(`/api/inventory/${encodeURIComponent(id)}`,{
-   method:"PATCH",
-   body:JSON.stringify({tracked,low_stock_level:lowStockLevel,unit:ingredient.unit||"unit"})
-  });
-
+  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({name,active:Boolean(ingredient.active)})});
+  await v2MenuJson(`/api/inventory/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({tracked,low_stock_level:lowStockLevel,unit:ingredient.unit||"unit"})});
   ingredient.name=name;
   ingredient.tracked=tracked;
   ingredient.lowStockLevel=lowStockLevel;
@@ -131,73 +72,46 @@ window.saveEditedIngredient=async function saveEditedIngredient(id){
   syncTrackedIngredientsToInventory();
   saveInventory();
   if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
-
   alert("Ingredient updated successfully.");
   ownerIngredientList();
- }catch(error){
-  v2IngredientSaveError(error);
- }
+ }catch(error){v2IngredientSaveError(error);}
 };
 
 window.toggleIngredientActive=async function toggleIngredientActive(id){
  const ingredient=menuIngredients.find(item=>item.id===id);
- if(!ingredient){
-  alert("Ingredient not found.");
-  return;
- }
-
+ if(!ingredient){alert("Ingredient not found.");return;}
  const nextActive=!ingredient.active;
  try{
-  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{
-   method:"PATCH",
-   body:JSON.stringify({active:nextActive})
-  });
+  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({active:nextActive})});
   ingredient.active=nextActive;
   saveMenuIngredients();
   syncTrackedIngredientsToInventory();
   saveInventory();
   if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
   ownerIngredientList();
- }catch(error){
-  v2IngredientSaveError(error);
- }
+ }catch(error){v2IngredientSaveError(error);}
 };
 
 window.deleteMenuIngredient=async function deleteMenuIngredient(id){
  const ingredient=menuIngredients.find(item=>item.id===id);
- if(!ingredient){
-  alert("Ingredient not found.");
-  return;
- }
-
+ if(!ingredient){alert("Ingredient not found.");return;}
  const confirmed=confirm(`Delete "${ingredient.name}" permanently?`);
  if(!confirmed)return;
-
  try{
-  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{
-   method:"DELETE"
-  });
+  await v2MenuJson(`/api/menu/ingredients/${encodeURIComponent(id)}`,{method:"DELETE"});
   menuIngredients=menuIngredients.filter(item=>item.id!==id);
   saveMenuIngredients();
   syncTrackedIngredientsToInventory();
   saveInventory();
   if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
   ownerIngredientList();
- }catch(error){
-  v2IngredientSaveError(error);
- }
+ }catch(error){v2IngredientSaveError(error);}
 };
 
-const v2MenuMultiSelectIds=new Set([
- "newMenuItemRemovableIngredients",
- "newMenuItemAllowedExtras",
- "editMenuItemRemovableIngredients",
- "editMenuItemAllowedExtras"
-]);
-
+const v2MenuMultiSelectIds=new Set(["newMenuItemRemovableIngredients","newMenuItemAllowedExtras","editMenuItemRemovableIngredients","editMenuItemAllowedExtras"]);
 document.addEventListener("mousedown",event=>{
  const select=event.target?.closest?.("select[multiple]");
- if(!select || !v2MenuMultiSelectIds.has(select.id))return;
+ if(!select||!v2MenuMultiSelectIds.has(select.id))return;
  if(event.target.tagName!=="OPTION")return;
  event.preventDefault();
  const option=event.target;
@@ -218,7 +132,6 @@ window.ownerIngredientList=function ownerIngredientList(){
    <button class="back" onclick="deleteMenuIngredient('${ingredient.id}')">DELETE</button>
   </div>
  `).join("");
-
  document.getElementById("root").innerHTML=`
  <div class="app">
   <button class="back" onclick="ownerIngredients()">← BACK</button>
@@ -226,23 +139,15 @@ window.ownerIngredientList=function ownerIngredientList(){
   <div class="panel">
    <span class="badge">📋 INGREDIENT LIST</span>
    <h1>Ingredients</h1>
-   <div class="grid">
-    ${rows || `<div class="card"><p class="muted">No ingredients found.</p></div>`}
-   </div>
+   <div class="grid">${rows||`<div class="card"><p class="muted">No ingredients found.</p></div>`}</div>
   </div>
  </div>`;
 };
 
-// Category backend bridge. Keep the finalized category UI and only persist
-// its existing create/edit/activate actions to SQLite.
 function v2CategoryError(error){
  console.error("Category backend save failed",error);
- alert(
-  "Unable to save this category to the restaurant server.\n\n"+
-  (error?.message||"Please try again.")
- );
+ alert("Unable to save this category to the restaurant server.\n\n"+(error?.message||"Please try again."));
 }
-
 async function v2ReloadCategoryList(){
  if(typeof loadV2BackendMenu==="function")await loadV2BackendMenu(true);
  if(typeof ownerCategoryList==="function")ownerCategoryList();
@@ -253,21 +158,11 @@ if(typeof v2LegacySaveNewCategory==="function"){
  window.saveNewCategory=async function saveNewCategory(){
   const before=JSON.parse(JSON.stringify(menuCategoryData));
   const beforeIds=new Set(before.map(category=>category.id));
-
   v2LegacySaveNewCategory();
   const created=menuCategoryData.find(category=>!beforeIds.has(category.id));
   if(!created)return;
-
   try{
-   await v2MenuJson("/api/menu/categories",{
-    method:"POST",
-    body:JSON.stringify({
-     id:created.id,
-     name:created.name,
-     icon:created.icon||"🍽️",
-     active:created.active!==false
-    })
-   });
+   await v2MenuJson("/api/menu/categories",{method:"POST",body:JSON.stringify({id:created.id,name:created.name,icon:created.icon||"🍽️",active:created.active!==false})});
    await v2ReloadCategoryList();
   }catch(error){
    menuCategoryData=before;
@@ -282,25 +177,13 @@ const v2LegacySaveEditedCategory=window.saveEditedCategory;
 if(typeof v2LegacySaveEditedCategory==="function"){
  window.saveEditedCategory=async function saveEditedCategory(id){
   const index=menuCategoryData.findIndex(category=>category.id===id);
-  if(index<0){
-   alert("Category not found.");
-   return;
-  }
+  if(index<0){alert("Category not found.");return;}
   const before=JSON.parse(JSON.stringify(menuCategoryData[index]));
-
   v2LegacySaveEditedCategory(id);
   const updated=menuCategoryData.find(category=>category.id===id);
   if(!updated)return;
-
   try{
-   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{
-    method:"PATCH",
-    body:JSON.stringify({
-     name:updated.name,
-     icon:updated.icon||"🍽️",
-     active:updated.active!==false
-    })
-   });
+   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({name:updated.name,icon:updated.icon||"🍽️",active:updated.active!==false})});
    await v2ReloadCategoryList();
   }catch(error){
    const currentIndex=menuCategoryData.findIndex(category=>category.id===id);
@@ -316,25 +199,13 @@ const v2LegacyToggleCategoryActive=window.toggleCategoryActive;
 if(typeof v2LegacyToggleCategoryActive==="function"){
  window.toggleCategoryActive=async function toggleCategoryActive(id){
   const index=menuCategoryData.findIndex(category=>category.id===id);
-  if(index<0){
-   alert("Category not found.");
-   return;
-  }
+  if(index<0){alert("Category not found.");return;}
   const before=JSON.parse(JSON.stringify(menuCategoryData[index]));
-
   v2LegacyToggleCategoryActive(id);
   const updated=menuCategoryData.find(category=>category.id===id);
   if(!updated)return;
-
   try{
-   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{
-    method:"PATCH",
-    body:JSON.stringify({
-     name:updated.name,
-     icon:updated.icon||"🍽️",
-     active:updated.active!==false
-    })
-   });
+   await v2MenuJson(`/api/menu/categories/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({name:updated.name,icon:updated.icon||"🍽️",active:updated.active!==false})});
    await v2ReloadCategoryList();
   }catch(error){
    const currentIndex=menuCategoryData.findIndex(category=>category.id===id);
@@ -346,6 +217,13 @@ if(typeof v2LegacyToggleCategoryActive==="function"){
  };
 }
 
+function v2MovementDate(value){
+ if(!value)return null;
+ const text=String(value);
+ const date=new Date(text.includes("T")?text:text.replace(" ","T")+"Z");
+ return Number.isNaN(date.getTime())?null:date;
+}
+
 window.addEventListener("load",()=>{
  const originalDeliveryHistory=window.managerDeliveryHistory;
  if(typeof originalDeliveryHistory==="function"){
@@ -355,10 +233,7 @@ window.addEventListener("load",()=>{
    if(!panel)return;
    const description=[...panel.querySelectorAll("p.muted")].find(p=>p.textContent.includes("View received supplier deliveries"));
    if(!description)return;
-
-   const deliveries=[...(Array.isArray(inventoryDeliveries)?inventoryDeliveries:[])].sort(
-    (a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)
-   );
+   const deliveries=[...(Array.isArray(inventoryDeliveries)?inventoryDeliveries:[])].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
    const cards=[...panel.querySelectorAll(".order-card")];
    cards.forEach((card,index)=>{
     const delivery=deliveries[index];
@@ -367,7 +242,6 @@ window.addEventListener("load",()=>{
     card.dataset.deliveryDate=Number.isNaN(d.getTime())?"":`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     card.dataset.deliverySupplier=String(delivery.supplier||"");
    });
-
    const supplierNames=[...new Set(deliveries.map(d=>String(d.supplier||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
    const filters=document.createElement("div");
    filters.style.margin="15px 0 20px";
@@ -378,10 +252,8 @@ window.addEventListener("load",()=>{
     <select id="deliveryHistorySupplier" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white;margin-bottom:10px">
      <option value="">All suppliers</option>
      ${supplierNames.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join("")}
-    </select>
-   `;
+    </select>`;
    description.insertAdjacentElement("afterend",filters);
-
    const dateInput=document.getElementById("deliveryHistoryDate");
    const supplierSelect=document.getElementById("deliveryHistorySupplier");
    const applyFilters=()=>{
@@ -397,55 +269,65 @@ window.addEventListener("load",()=>{
     });
     let empty=document.getElementById("deliveryHistoryNoResults");
     if(!visible){
-     if(!empty){
-      empty=document.createElement("p");
-      empty.id="deliveryHistoryNoResults";
-      empty.className="muted";
-      empty.textContent="No deliveries match the selected filters.";
-      panel.appendChild(empty);
-     }
-    }else if(empty){
-     empty.remove();
-    }
+     if(!empty){empty=document.createElement("p");empty.id="deliveryHistoryNoResults";empty.className="muted";empty.textContent="No deliveries match the selected filters.";panel.appendChild(empty);}
+    }else if(empty){empty.remove();}
    };
    dateInput.onchange=applyFilters;
    supplierSelect.onchange=applyFilters;
   };
  }
 
- const inventoryStockHistory=window.managerStockHistory;
- if(typeof inventoryStockHistory==="function"){
-  window.managerStockHistory=async function managerStockHistory(selectedDate){
-   await inventoryStockHistory(selectedDate,"");
-   const panel=document.querySelector("#root .panel");
-   if(!panel)return;
+ window.managerStockHistory=async function managerStockHistory(selectedDate){
+  clearInterval(timerInterval);
+  const now=new Date();
+  const today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+  const dateValue=selectedDate===undefined?today:selectedDate;
+  try{
+   const response=await fetch("/api/inventory/movements",{cache:"no-store"});
+   if(!response.ok)throw new Error("Unable to load stock history");
+   const rows=await response.json();
+   const movements=(Array.isArray(rows)?rows:[])
+    .map(row=>({...row,_date:v2MovementDate(row.created_at)}))
+    .filter(row=>{
+     if(!row._date)return false;
+     const movementDate=`${row._date.getFullYear()}-${String(row._date.getMonth()+1).padStart(2,"0")}-${String(row._date.getDate()).padStart(2,"0")}`;
+     return !dateValue||movementDate===dateValue;
+    });
 
-   const supplierSelect=document.getElementById("stockHistorySupplier");
-   if(supplierSelect){
-    const supplierLabel=[...panel.querySelectorAll("label")].find(label=>label.textContent.trim().toUpperCase()==="SUPPLIER");
-    supplierLabel?.remove();
-    supplierSelect.remove();
-   }
-
-   const dateInput=panel.querySelector('input[type="date"]');
-   if(!dateInput)return;
-   dateInput.removeAttribute("onchange");
-   dateInput.onchange=null;
-
-   [...panel.querySelectorAll("button")].forEach(button=>{
-    if(button.textContent.trim().toUpperCase()==="ALL DATES")button.remove();
-   });
-
-   let applyButton=document.getElementById("stockHistoryApplyDate");
-   if(!applyButton){
-    applyButton=document.createElement("button");
-    applyButton.id="stockHistoryApplyDate";
-    applyButton.className="primary";
-    applyButton.style.margin="10px 0 20px 0";
-    applyButton.textContent="APPLY DATE";
-    dateInput.insertAdjacentElement("afterend",applyButton);
-   }
-   applyButton.onclick=()=>window.managerStockHistory(dateInput.value);
-  };
- }
+   document.getElementById("root").innerHTML=`
+   <div class="app">
+    <button class="back" onclick="inventoryHome()">← BACK</button>
+    <div class="logo">MR K BURGERS<span>${role==="owner"?"OWNER":"MANAGER"} — STOCK HISTORY</span></div>
+    <div class="panel">
+     <span class="badge">📜 STOCK HISTORY</span>
+     <h1>Inventory Movements</h1>
+     <p class="muted">View inventory activity for a selected date.</p>
+     <label>DATE</label>
+     <input id="stockHistoryDate" class="input" type="date" value="${dateValue}">
+     <button id="stockHistoryApplyDate" class="primary" style="margin:10px 0 20px 0" onclick="managerStockHistory(document.getElementById('stockHistoryDate').value)">APPLY DATE</button>
+     <div style="margin-top:20px">
+      ${movements.length?movements.map(m=>`
+       <div class="order-card">
+        <div class="order-top">
+         <div>
+          <h3>${esc(m.ingredient_name||m.ingredient_id||"Inventory Item")}</h3>
+          <span class="muted">${esc(m.movement_type||"MOVEMENT")}</span>
+         </div>
+         <div style="text-align:right">
+          <div class="order-number">${Number(m.quantity)>0?"+":""}${Number(m.quantity||0)}</div>
+          <span class="muted">${m._date.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
+         </div>
+        </div>
+        <div class="muted" style="margin-top:8px">Stock: ${Number(m.stock_before||0)} → ${Number(m.stock_after||0)}</div>
+        ${m.note?`<div class="muted" style="margin-top:8px">Note: ${esc(m.note)}</div>`:""}
+        <div class="muted" style="margin-top:8px">Made by: ${esc(m.created_by||"SYSTEM")}</div>
+       </div>`).join(""):`<p class="muted" style="margin-top:20px">No stock movements match the selected filters.</p>`}
+     </div>
+    </div>
+   </div>`;
+  }catch(error){
+   console.error("Stock history load failed",error);
+   alert("Unable to load stock history from the restaurant server.");
+  }
+ };
 });
