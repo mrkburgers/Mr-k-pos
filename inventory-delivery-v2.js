@@ -1,6 +1,38 @@
 // V2 delivery bridge.
 // Keeps the finalized Stock In / Delivery History UI while making SQLite deliveries authoritative.
 
+async function v2LoadSuppliersDirect(){
+ const response=await fetch("/api/suppliers",{cache:"no-store"});
+ if(!response.ok)throw new Error("Unable to load suppliers");
+ const rows=await response.json();
+ suppliers=Array.isArray(rows)?rows:[];
+ localStorage.setItem("mrkSuppliers",JSON.stringify(suppliers));
+ return suppliers;
+}
+
+async function v2LoadDeliveriesDirect(){
+ const response=await fetch("/api/deliveries",{cache:"no-store"});
+ if(!response.ok)throw new Error("Unable to load delivery history");
+ const rows=await response.json();
+ inventoryDeliveries=Array.isArray(rows)?rows:[];
+ localStorage.setItem("mrkInventoryDeliveries",JSON.stringify(inventoryDeliveries));
+ return inventoryDeliveries;
+}
+
+const v2PreviousManagerStockIn=window.managerStockIn;
+if(typeof v2PreviousManagerStockIn==="function"){
+ window.managerStockIn=async function managerStockIn(...args){
+  try{
+   await v2LoadSuppliersDirect();
+  }catch(error){
+   console.error("Direct supplier load failed",error);
+   alert("Unable to load suppliers from the restaurant server.");
+   return;
+  }
+  return v2PreviousManagerStockIn.apply(this,args);
+ };
+}
+
 window.managerAddStock=async function managerAddStock(){
  const supplierId=document.getElementById("stockInSupplier").value;
  const selectedSupplier=suppliers.find(
@@ -43,6 +75,10 @@ window.managerAddStock=async function managerAddStock(){
   });
 
   currentDeliveryItems=[];
+  await Promise.all([
+   v2LoadSuppliersDirect(),
+   v2LoadDeliveriesDirect()
+  ]);
   await v2SyncLegacyInventory(true);
 
   alert("Delivery received successfully.");
@@ -55,3 +91,25 @@ window.managerAddStock=async function managerAddStock(){
   );
  }
 };
+
+// menu-admin-v2 finalizes the Delivery History filter during the window load event.
+// Register this listener afterwards so the final screen always refreshes normalized
+// suppliers/deliveries directly from SQLite before it renders.
+window.addEventListener("load",()=>{
+ const v2PreviousManagerDeliveryHistory=window.managerDeliveryHistory;
+ if(typeof v2PreviousManagerDeliveryHistory!=="function")return;
+
+ window.managerDeliveryHistory=async function managerDeliveryHistory(...args){
+  try{
+   await Promise.all([
+    v2LoadSuppliersDirect(),
+    v2LoadDeliveriesDirect()
+   ]);
+  }catch(error){
+   console.error("Direct delivery history load failed",error);
+   alert("Unable to load delivery history from the restaurant server.");
+   return;
+  }
+  return v2PreviousManagerDeliveryHistory.apply(this,args);
+ };
+});
