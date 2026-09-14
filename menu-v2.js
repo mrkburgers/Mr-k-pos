@@ -15,7 +15,10 @@ function v2ApplyBackendMenu(data){
  menuIngredients=(data.ingredients||[]).map(ingredient=>({
   id:ingredient.id,
   name:ingredient.name,
-  active:Boolean(ingredient.active)
+  active:Boolean(ingredient.active),
+  tracked:Boolean(ingredient.tracked),
+  lowStockLevel:Number(ingredient.low_stock_level||0),
+  unit:ingredient.unit||"unit"
  }));
 
  ownerMenuData=data.items.map(item=>({
