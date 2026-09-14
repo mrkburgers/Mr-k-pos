@@ -187,3 +187,25 @@ window.deleteMenuIngredient=async function deleteMenuIngredient(id){
   v2IngredientSaveError(error);
  }
 };
+
+// Keep the finalized multi-select lists, but restore simple click-to-toggle behavior.
+// This lets the Owner choose several removable ingredients or extras without
+// needing Ctrl/Cmd while preserving the existing screen and selected values.
+const v2MenuMultiSelectIds=new Set([
+ "newMenuItemRemovableIngredients",
+ "newMenuItemAllowedExtras",
+ "editMenuItemRemovableIngredients",
+ "editMenuItemAllowedExtras"
+]);
+
+document.addEventListener("mousedown",event=>{
+ const select=event.target?.closest?.("select[multiple]");
+ if(!select || !v2MenuMultiSelectIds.has(select.id))return;
+ if(event.target.tagName!=="OPTION")return;
+
+ event.preventDefault();
+ const option=event.target;
+ option.selected=!option.selected;
+ select.focus();
+ select.dispatchEvent(new Event("change",{bubbles:true}));
+});
