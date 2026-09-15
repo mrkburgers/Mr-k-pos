@@ -20,6 +20,17 @@ function parseOrderNotes(notes){
  return {removed,extras};
 }
 
+function parseReceiptSnapshot(notes){
+ const match=String(notes||"").match(/(?:^|\|\s*)RECEIPT_JSON:([^|]+)/);
+ if(!match)return null;
+ try{
+  const parsed=JSON.parse(decodeURIComponent(match[1].trim()));
+  return parsed&&typeof parsed==="object"?parsed:null;
+ }catch(error){
+  return null;
+ }
+}
+
 function buildNeeds(db,items){
  const needs=new Map();
  const add=(ingredientId,qty)=>{
@@ -37,31 +48,45 @@ function buildNeeds(db,items){
   WHERE mii.menu_item_id=?
  `);
 
- for(const orderItem of items||[]){
-  const itemName=String(orderItem.item_name||"");
-  const orderQty=Math.max(1,Number(orderItem.quantity||1));
-  const menuItem=menuItemByName.get(itemName);
-  if(!menuItem)continue;
-
-  const {removed,extras}=parseOrderNotes(orderItem.notes);
-  const removedSet=new Set(removed);
-
+ const consumeMenuItem=(name,quantity,removed=[],extras=[])=>{
+  const menuItem=menuItemByName.get(String(name||""));
+  if(!menuItem)return;
+  const orderQty=Math.max(1,Number(quantity||1));
+  const removedSet=new Set((removed||[]).map(value=>String(value)));
   recipeForItem.all(menuItem.id).forEach(ingredient=>{
    if(!removedSet.has(ingredient.name)){
     add(ingredient.id,Number(ingredient.quantity||1)*orderQty);
    }
   });
-
-  extras.forEach(extra=>{
-   const extraItem=menuItemByName.get(extra.name);
+  (extras||[]).forEach(extra=>{
+   const extraItem=menuItemByName.get(String(extra?.name||""));
    if(!extraItem)return;
+   const extraQty=Math.max(1,Number(extra?.quantity??extra?.qty??1));
    recipeForItem.all(extraItem.id).forEach(ingredient=>{
-    add(
-     ingredient.id,
-     Number(ingredient.quantity||1)*Number(extra.quantity||1)*orderQty
-    );
+    add(ingredient.id,Number(ingredient.quantity||1)*extraQty*orderQty);
    });
   });
+ };
+
+ for(const orderItem of items||[]){
+  const orderQty=Math.max(1,Number(orderItem.quantity||1));
+  const snapshot=parseReceiptSnapshot(orderItem.notes);
+
+  if(snapshot?.combo===true && Array.isArray(snapshot.combo_components)){
+   snapshot.combo_components.forEach(component=>{
+    consumeMenuItem(
+     component.item_name,
+     orderQty,
+     Array.isArray(component.removed)?component.removed:[],
+     Array.isArray(component.extras)?component.extras:[]
+    );
+   });
+   continue;
+  }
+
+  const itemName=String(orderItem.item_name||"");
+  const {removed,extras}=parseOrderNotes(orderItem.notes);
+  consumeMenuItem(itemName,orderQty,removed,extras);
  }
 
  return needs;
