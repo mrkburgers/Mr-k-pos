@@ -9,6 +9,7 @@ const registerMenuAdminV2 = require("./menu-api-v2");
 const registerShiftV2 = require("./shift-api-v2");
 const registerOwnerAccountsV2 = require("./owner-accounts-api-v2");
 const registerExpensesV2 = require("./expenses-api-v2");
+const registerCombosV2 = require("./combo-api-v2");
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +28,7 @@ registerMenuAdminV2(app,io,db);
 registerShiftV2(app,io,db);
 registerOwnerAccountsV2(app,io,db);
 registerExpensesV2(app,io,db);
+registerCombosV2(app,io,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
