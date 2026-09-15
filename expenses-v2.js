@@ -76,3 +76,63 @@ v2InitializeExpenses().catch(error=>{
  console.error("Expense initialization failed",error);
  v2ExpensesReady=true;
 });
+
+/* Receipt metadata stays internal and must never appear on operational screens. */
+function v2HideReceiptMetadataFromScreen(){
+ document.querySelectorAll("#root .muted").forEach(element=>{
+  if(!String(element.textContent||"").includes("RECEIPT_JSON:"))return;
+  const cleaned=String(element.textContent||"")
+   .replace(/(?:^|\|\s*)RECEIPT_JSON:[^|]+/g,"")
+   .replace(/^\s*\|\s*|\s*\|\s*$/g,"")
+   .trim();
+  if(cleaned){
+   element.textContent=cleaned;
+  }else{
+   element.remove();
+  }
+ });
+}
+
+function v2AddKitchenReceiptButtons(){
+ if(role!=="kitchen")return;
+ document.querySelectorAll("#root .order-card").forEach(card=>{
+  if(card.querySelector(".v2-kitchen-print"))return;
+  const statusButton=[...card.querySelectorAll("button")].find(button=>
+   String(button.getAttribute("onclick")||"").includes("updateKitchenOrderStatus(")
+  );
+  if(!statusButton)return;
+  const match=String(statusButton.getAttribute("onclick")||"").match(/updateKitchenOrderStatus\((\d+)/);
+  if(!match)return;
+  const orderId=Number(match[1]);
+  if(!Number.isFinite(orderId))return;
+  const actions=card.querySelector(".actions");
+  if(!actions)return;
+  const button=document.createElement("button");
+  button.className="secondary v2-kitchen-print";
+  button.textContent="PRINT RECEIPT";
+  button.onclick=event=>{
+   event.stopPropagation();
+   if(typeof v2PrintReceipt==="function")v2PrintReceipt(orderId);
+  };
+  actions.appendChild(button);
+ });
+}
+
+const v2ReceiptOriginalShowActiveOrders=window.showActiveOrders;
+if(typeof v2ReceiptOriginalShowActiveOrders==="function"){
+ window.showActiveOrders=async function showActiveOrders(...args){
+  const result=await v2ReceiptOriginalShowActiveOrders.apply(this,args);
+  v2HideReceiptMetadataFromScreen();
+  return result;
+ };
+}
+
+const v2ReceiptOriginalKitchenHome=window.kitchenHome;
+if(typeof v2ReceiptOriginalKitchenHome==="function"){
+ window.kitchenHome=async function kitchenHome(...args){
+  const result=await v2ReceiptOriginalKitchenHome.apply(this,args);
+  v2HideReceiptMetadataFromScreen();
+  v2AddKitchenReceiptButtons();
+  return result;
+ };
+}
