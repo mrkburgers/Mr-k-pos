@@ -51,6 +51,7 @@ module.exports=function registerCombosV2(app,io,db){
    combo_id TEXT NOT NULL,
    name TEXT NOT NULL,
    selection_count INTEGER NOT NULL DEFAULT 1,
+   allow_duplicates INTEGER NOT NULL DEFAULT 1,
    sort_order INTEGER NOT NULL DEFAULT 0,
    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -72,6 +73,11 @@ module.exports=function registerCombosV2(app,io,db){
   CREATE INDEX IF NOT EXISTS idx_combo_choice_groups_combo
   ON menu_combo_choice_groups(combo_id,sort_order,name);
  `);
+
+ const groupColumns=db.prepare("PRAGMA table_info(menu_combo_choice_groups)").all();
+ if(!groupColumns.some(column=>column.name==="allow_duplicates")){
+  db.exec("ALTER TABLE menu_combo_choice_groups ADD COLUMN allow_duplicates INTEGER NOT NULL DEFAULT 1");
+ }
 
  function categoryRows(){
   return db.prepare(`
@@ -107,7 +113,7 @@ module.exports=function registerCombosV2(app,io,db){
    ORDER BY COALESCE(mc.sort_order,999999) ASC,COALESCE(i.sort_order,999999) ASC,i.name ASC
   `);
   const groupStmt=db.prepare(`
-   SELECT id,name,selection_count,sort_order
+   SELECT id,name,selection_count,allow_duplicates,sort_order
    FROM menu_combo_choice_groups
    WHERE combo_id=?
    ORDER BY sort_order ASC,name ASC
@@ -141,6 +147,7 @@ module.exports=function registerCombosV2(app,io,db){
    choice_groups:groupStmt.all(combo.id).map(group=>({
     ...group,
     selection_count:Number(group.selection_count||1),
+    allow_duplicates:Boolean(group.allow_duplicates),
     items:choiceItemStmt.all(group.id).map(item=>({
      ...item,
      active:Boolean(item.active),
@@ -278,15 +285,17 @@ module.exports=function registerCombosV2(app,io,db){
   for(const group of groups){
    const name=String(group?.name||"").trim();
    const selectionCount=Number(group?.selection_count??1);
+   const allowDuplicates=group?.allow_duplicates!==false;
    const itemIds=[...new Set(Array.isArray(group?.item_ids)?group.item_ids.map(value=>String(value||"").trim()).filter(Boolean):[])];
    if(!name)return res.status(400).json({error:"every choice group needs a name"});
-   if(selectionCount!==1)return res.status(400).json({error:"choice groups currently support choose 1 only"});
-   if(itemIds.length<2)return res.status(400).json({error:"every choice group needs at least two allowed items"});
+   if(!Number.isInteger(selectionCount)||selectionCount<1)return res.status(400).json({error:"choice group quantity must be a whole number of 1 or more"});
+   if(itemIds.length<1)return res.status(400).json({error:"every choice group needs at least one allowed item"});
+   if(!allowDuplicates && selectionCount>itemIds.length)return res.status(400).json({error:"choice quantity cannot exceed allowed items when duplicates are disabled"});
    for(const itemId of itemIds){
     const item=db.prepare("SELECT id,active FROM menu_items WHERE id=?").get(itemId);
     if(!item||!item.active)return res.status(400).json({error:"choice group items must be active existing menu items"});
    }
-   normalized.push({name,selection_count:1,item_ids:itemIds});
+   normalized.push({name,selection_count:selectionCount,allow_duplicates:allowDuplicates,item_ids:itemIds});
   }
 
   const save=db.transaction(()=>{
@@ -296,8 +305,8 @@ module.exports=function registerCombosV2(app,io,db){
    db.prepare("DELETE FROM menu_combo_choice_groups WHERE combo_id=?").run(comboId);
 
    const addGroup=db.prepare(`
-    INSERT INTO menu_combo_choice_groups(id,combo_id,name,selection_count,sort_order)
-    VALUES(?,?,?,?,?)
+    INSERT INTO menu_combo_choice_groups(id,combo_id,name,selection_count,allow_duplicates,sort_order)
+    VALUES(?,?,?,?,?,?)
    `);
    const addItem=db.prepare(`
     INSERT INTO menu_combo_choice_items(group_id,menu_item_id,sort_order)
@@ -305,7 +314,7 @@ module.exports=function registerCombosV2(app,io,db){
    `);
    normalized.forEach((group,index)=>{
     const groupId=makeId("choice",group.name);
-    addGroup.run(groupId,comboId,group.name,1,index+1);
+    addGroup.run(groupId,comboId,group.name,group.selection_count,group.allow_duplicates?1:0,index+1);
     group.item_ids.forEach((itemId,itemIndex)=>addItem.run(groupId,itemId,itemIndex+1));
    });
   });
