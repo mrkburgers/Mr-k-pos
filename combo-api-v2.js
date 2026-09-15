@@ -46,8 +46,31 @@ module.exports=function registerCombosV2(app,io,db){
    FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
   );
 
+  CREATE TABLE IF NOT EXISTS menu_combo_choice_groups (
+   id TEXT PRIMARY KEY,
+   combo_id TEXT NOT NULL,
+   name TEXT NOT NULL,
+   selection_count INTEGER NOT NULL DEFAULT 1,
+   sort_order INTEGER NOT NULL DEFAULT 0,
+   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   FOREIGN KEY(combo_id) REFERENCES menu_combos(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS menu_combo_choice_items (
+   group_id TEXT NOT NULL,
+   menu_item_id TEXT NOT NULL,
+   sort_order INTEGER NOT NULL DEFAULT 0,
+   PRIMARY KEY(group_id,menu_item_id),
+   FOREIGN KEY(group_id) REFERENCES menu_combo_choice_groups(id) ON DELETE CASCADE,
+   FOREIGN KEY(menu_item_id) REFERENCES menu_items(id)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_menu_combos_category
   ON menu_combos(category_id,sort_order,name);
+
+  CREATE INDEX IF NOT EXISTS idx_combo_choice_groups_combo
+  ON menu_combo_choice_groups(combo_id,sort_order,name);
  `);
 
  function categoryRows(){
@@ -72,12 +95,36 @@ module.exports=function registerCombosV2(app,io,db){
 
  function comboRows(){
   const componentStmt=db.prepare(`
-   SELECT c.menu_item_id,c.quantity,c.sort_order,i.name,i.price,i.active,i.show_on_menu
+   SELECT
+    c.menu_item_id,c.quantity,c.sort_order,
+    i.name,i.price,i.active,i.show_on_menu,i.category_id,
+    mc.name AS category_name,mc.sort_order AS category_sort,
+    i.sort_order AS item_sort
    FROM menu_combo_components c
    JOIN menu_items i ON i.id=c.menu_item_id
+   LEFT JOIN menu_categories mc ON mc.id=i.category_id
    WHERE c.combo_id=?
-   ORDER BY c.sort_order ASC,i.name ASC
+   ORDER BY COALESCE(mc.sort_order,999999) ASC,COALESCE(i.sort_order,999999) ASC,i.name ASC
   `);
+  const groupStmt=db.prepare(`
+   SELECT id,name,selection_count,sort_order
+   FROM menu_combo_choice_groups
+   WHERE combo_id=?
+   ORDER BY sort_order ASC,name ASC
+  `);
+  const choiceItemStmt=db.prepare(`
+   SELECT
+    ci.menu_item_id,ci.sort_order,
+    i.name,i.price,i.active,i.show_on_menu,i.category_id,
+    mc.name AS category_name,mc.sort_order AS category_sort,
+    i.sort_order AS item_sort
+   FROM menu_combo_choice_items ci
+   JOIN menu_items i ON i.id=ci.menu_item_id
+   LEFT JOIN menu_categories mc ON mc.id=i.category_id
+   WHERE ci.group_id=?
+   ORDER BY COALESCE(mc.sort_order,999999) ASC,COALESCE(i.sort_order,999999) ASC,i.name ASC
+  `);
+
   return db.prepare(`
    SELECT id,name,description,category_id,price,active,sort_order,created_at,updated_at
    FROM menu_combos
@@ -90,6 +137,15 @@ module.exports=function registerCombosV2(app,io,db){
     active:Boolean(component.active),
     show_on_menu:Boolean(component.show_on_menu),
     quantity:Number(component.quantity||1)
+   })),
+   choice_groups:groupStmt.all(combo.id).map(group=>({
+    ...group,
+    selection_count:Number(group.selection_count||1),
+    items:choiceItemStmt.all(group.id).map(item=>({
+     ...item,
+     active:Boolean(item.active),
+     show_on_menu:Boolean(item.show_on_menu)
+    }))
    }))
   }));
  }
@@ -138,7 +194,7 @@ module.exports=function registerCombosV2(app,io,db){
   if(!name||!categoryId||!Number.isFinite(price)||price<0)return res.status(400).json({error:"valid combo name, category and price are required"});
   const category=db.prepare("SELECT id,category_type FROM menu_categories WHERE id=?").get(categoryId);
   if(!category||category.category_type!=="combo")return res.status(400).json({error:"combo must use a combo category"});
-  if(!components.length)return res.status(400).json({error:"combo needs at least one component"});
+  if(!components.length)return res.status(400).json({error:"combo needs at least one fixed component"});
   const normalized=[];
   for(const component of components){
    const itemId=String(component?.menu_item_id||"").trim();
@@ -183,7 +239,7 @@ module.exports=function registerCombosV2(app,io,db){
 
   const normalized=[];
   if(components){
-   if(!components.length)return res.status(400).json({error:"combo needs at least one component"});
+   if(!components.length)return res.status(400).json({error:"combo needs at least one fixed component"});
    for(const component of components){
     const itemId=String(component?.menu_item_id||"").trim();
     const quantity=Number(component?.quantity);
@@ -214,10 +270,59 @@ module.exports=function registerCombosV2(app,io,db){
   res.json(comboRows().find(combo=>combo.id===id));
  });
 
+ app.put("/api/combos/:id/choice-groups",(req,res)=>{
+  const comboId=String(req.params.id||"");
+  if(!db.prepare("SELECT id FROM menu_combos WHERE id=?").get(comboId))return res.status(404).json({error:"combo not found"});
+  const groups=Array.isArray(req.body?.choice_groups)?req.body.choice_groups:[];
+  const normalized=[];
+  for(const group of groups){
+   const name=String(group?.name||"").trim();
+   const selectionCount=Number(group?.selection_count??1);
+   const itemIds=[...new Set(Array.isArray(group?.item_ids)?group.item_ids.map(value=>String(value||"").trim()).filter(Boolean):[])];
+   if(!name)return res.status(400).json({error:"every choice group needs a name"});
+   if(selectionCount!==1)return res.status(400).json({error:"choice groups currently support choose 1 only"});
+   if(itemIds.length<2)return res.status(400).json({error:"every choice group needs at least two allowed items"});
+   for(const itemId of itemIds){
+    const item=db.prepare("SELECT id,active FROM menu_items WHERE id=?").get(itemId);
+    if(!item||!item.active)return res.status(400).json({error:"choice group items must be active existing menu items"});
+   }
+   normalized.push({name,selection_count:1,item_ids:itemIds});
+  }
+
+  const save=db.transaction(()=>{
+   const existingGroups=db.prepare("SELECT id FROM menu_combo_choice_groups WHERE combo_id=?").all(comboId);
+   const deleteItems=db.prepare("DELETE FROM menu_combo_choice_items WHERE group_id=?");
+   existingGroups.forEach(group=>deleteItems.run(group.id));
+   db.prepare("DELETE FROM menu_combo_choice_groups WHERE combo_id=?").run(comboId);
+
+   const addGroup=db.prepare(`
+    INSERT INTO menu_combo_choice_groups(id,combo_id,name,selection_count,sort_order)
+    VALUES(?,?,?,?,?)
+   `);
+   const addItem=db.prepare(`
+    INSERT INTO menu_combo_choice_items(group_id,menu_item_id,sort_order)
+    VALUES(?,?,?)
+   `);
+   normalized.forEach((group,index)=>{
+    const groupId=makeId("choice",group.name);
+    addGroup.run(groupId,comboId,group.name,1,index+1);
+    group.item_ids.forEach((itemId,itemIndex)=>addItem.run(groupId,itemId,itemIndex+1));
+   });
+  });
+  save();
+  io.emit("menu-changed",{type:"combo-choice-groups",id:comboId});
+  io.emit("combos-changed",{type:"combo-choice-groups",id:comboId});
+  res.json(comboRows().find(combo=>combo.id===comboId));
+ });
+
  app.delete("/api/combos/:id",(req,res)=>{
   const id=String(req.params.id||"");
   if(!db.prepare("SELECT id FROM menu_combos WHERE id=?").get(id))return res.status(404).json({error:"combo not found"});
   const remove=db.transaction(()=>{
+   const groups=db.prepare("SELECT id FROM menu_combo_choice_groups WHERE combo_id=?").all(id);
+   const deleteChoiceItems=db.prepare("DELETE FROM menu_combo_choice_items WHERE group_id=?");
+   groups.forEach(group=>deleteChoiceItems.run(group.id));
+   db.prepare("DELETE FROM menu_combo_choice_groups WHERE combo_id=?").run(id);
    db.prepare("DELETE FROM menu_combo_components WHERE combo_id=?").run(id);
    db.prepare("DELETE FROM menu_combos WHERE id=?").run(id);
   });
