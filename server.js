@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -51,6 +51,9 @@ app.get("/inventory-delivery-v2.js", (req, res) => {
 });
 app.get("/cashier-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "cashier-v2.js"));
+});
+app.get("/sales-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "sales-v2.js"));
 });
 app.get("/auth-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "auth-v2.js"));
@@ -495,13 +498,24 @@ app.patch("/api/orders/:id/status", (req, res) => {
     });
   }
 
-  db.prepare(`
-    UPDATE orders
-    SET
-      status = ?,
-      updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `).run(status, orderId);
+  if(status === "COMPLETED"){
+    db.prepare(`
+      UPDATE orders
+      SET
+        status = ?,
+        completed_at = COALESCE(completed_at, CURRENT_TIMESTAMP),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(status, orderId);
+  }else{
+    db.prepare(`
+      UPDATE orders
+      SET
+        status = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(status, orderId);
+  }
 
   io.emit("order-status-changed", {
     id: orderId,
