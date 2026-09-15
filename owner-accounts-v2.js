@@ -81,6 +81,116 @@ saveOwnerMobileMoneyAccount=function saveOwnerMobileMoneyAccount(){
  if(v2OwnerAccountsReady)v2QueueOwnerAccountsSave();
 };
 
+function v2CashRangeBoundary(value,endOfRange=false){
+ if(!value)return null;
+ const parts=String(value).split("-").map(Number);
+ if(parts.length!==3||parts.some(part=>!Number.isFinite(part)))return null;
+ const [year,month,day]=parts;
+ return endOfRange
+  ?new Date(year,month-1,day+1).getTime()
+  :new Date(year,month-1,day).getTime();
+}
+
+window.ownerCashHistoryPage=function ownerCashHistoryPage(fromDate="",toDate=""){
+ if(role!=="owner"){
+  alert("Only the owner can view the cash account.");
+  ownerHome();
+  return;
+ }
+
+ const transactions=Array.isArray(ownerCashAccount.transactions)
+  ?ownerCashAccount.transactions
+  :[];
+ const fromMs=v2CashRangeBoundary(fromDate,false);
+ const toExclusiveMs=v2CashRangeBoundary(toDate,true);
+
+ if(fromDate&&toDate&&fromMs!==null&&toExclusiveMs!==null&&fromMs>=toExclusiveMs){
+  alert("The FROM date must be earlier than or the same as the TO date.");
+  return;
+ }
+
+ const filtered=transactions.filter(transaction=>{
+  const createdAt=Number(transaction.createdAt);
+  if(!Number.isFinite(createdAt))return false;
+  if(fromMs!==null&&createdAt<fromMs)return false;
+  if(toExclusiveMs!==null&&createdAt>=toExclusiveMs)return false;
+  return true;
+ });
+
+ const rows=filtered.map(t=>{
+  const time=new Date(t.createdAt).toLocaleString();
+  const sign=t.type==="IN"?"+":"-";
+  const typeLabel=t.source==="TRANSFER"
+   ?"TRANSFER → CASH"
+   :t.type==="IN"
+    ?"CASH IN"
+    :"CASH OUT";
+  return `
+   <div class="summary" style="margin-bottom:12px">
+    <div class="info-row">
+     <span>${time}</span>
+     <strong>${sign}${Number(t.amount||0).toLocaleString()} CFA</strong>
+    </div>
+    <div class="info-row">
+     <span>Type</span>
+     <strong>${typeLabel}</strong>
+    </div>
+    <div class="info-row">
+     <span>Description</span>
+     <strong>${t.description||"-"}</strong>
+    </div>
+    <div class="info-row">
+     <span>Source</span>
+     <strong>${t.source||"-"}</strong>
+    </div>
+    ${t.reference?`
+    <div class="info-row">
+     <span>Reference</span>
+     <strong>${t.reference}</strong>
+    </div>`:""}
+    <div class="info-row">
+     <span>Actor</span>
+     <strong>${t.createdBy||"-"}</strong>
+    </div>
+    <div class="info-row">
+     <span>Balance After</span>
+     <strong>${Number(t.balanceAfter||0).toLocaleString()} CFA</strong>
+    </div>
+   </div>`;
+ }).join("");
+
+ clearInterval(timerInterval);
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerCashAccountPage()">← BACK</button>
+  <div class="logo">
+   MR K BURGERS
+   <span>OWNER — CASH HISTORY</span>
+  </div>
+  <div class="panel">
+   <span class="badge">📋 TRANSACTION HISTORY</span>
+   <h1>Cash Account History</h1>
+   <div class="summary" style="margin-bottom:20px">
+    <div class="info-row">
+     <span>Current Balance</span>
+     <strong>${Number(ownerCashAccount.balance||0).toLocaleString()} CFA</strong>
+    </div>
+   </div>
+   <div class="form" style="margin-bottom:20px;max-width:none">
+    <label>FROM</label>
+    <input id="ownerCashHistoryFrom" type="date" value="${fromDate}">
+    <label>TO</label>
+    <input id="ownerCashHistoryTo" type="date" value="${toDate}">
+    <div class="actions" style="margin-top:0">
+     <button class="primary" onclick="ownerCashHistoryPage(document.getElementById('ownerCashHistoryFrom').value,document.getElementById('ownerCashHistoryTo').value)">APPLY</button>
+     <button class="secondary" onclick="ownerCashHistoryPage('','')">CLEAR / SHOW ALL</button>
+    </div>
+   </div>
+   ${rows||`<p class="muted">${fromDate||toDate?"No cash account transactions match the selected date range.":"No cash account transactions yet."}</p>`}
+  </div>
+ </div>`;
+};
+
 if(typeof socket!=="undefined"&&socket){
  socket.on("owner-accounts-changed",()=>{
   if(v2OwnerAccountsReady){
