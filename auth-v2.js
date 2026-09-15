@@ -261,7 +261,7 @@ window.v2CancelOrderFromDetails=async function v2CancelOrderFromDetails(id){
   if(!response.ok)throw new Error(data.error||"Unable to cancel order");
   if(typeof v2FetchOwnerAccounts==="function")v2FetchOwnerAccounts().catch(()=>{});
   if(typeof v2HydrateShiftState==="function")v2HydrateShiftState().catch(()=>{});
-  await v2OrderDetailsPage(id,back);
+  await v2OrderDetailsPage(id,v2OrderBackAction());
  }catch(error){alert(error.message||"Unable to cancel this order.");}
 };
 
