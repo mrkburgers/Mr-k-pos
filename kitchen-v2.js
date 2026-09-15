@@ -1,3 +1,38 @@
+function v2OrderTimestamp(value){
+ if(!value)return 0;
+ const text=String(value).trim();
+ const normalized=/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(text)
+  ?text.replace(" ","T")+"Z"
+  :text;
+ const parsed=new Date(normalized).getTime();
+ return Number.isFinite(parsed)?parsed:0;
+}
+
+function v2FormatOrderDuration(milliseconds){
+ const totalSeconds=Math.max(0,Math.floor(Number(milliseconds||0)/1000));
+ const hours=Math.floor(totalSeconds/3600);
+ const minutes=Math.floor((totalSeconds%3600)/60);
+ const seconds=totalSeconds%60;
+ return hours>0
+  ?`${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`
+  :`${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+}
+
+function v2OrderDuration(order){
+ const start=v2OrderTimestamp(order.created_at);
+ const end=order.ready_at?v2OrderTimestamp(order.ready_at):Date.now();
+ return start?Math.max(0,end-start):0;
+}
+
+function v2RefreshKitchenTimers(){
+ document.querySelectorAll("[data-order-created-at]").forEach(element=>{
+  const start=v2OrderTimestamp(element.dataset.orderCreatedAt);
+  const readyAt=v2OrderTimestamp(element.dataset.orderReadyAt||"");
+  const end=readyAt||Date.now();
+  element.textContent=v2FormatOrderDuration(start?end-start:0);
+ });
+}
+
 window.kitchenHome=async function kitchenHome(){
 
  clearInterval(timerInterval);
@@ -63,6 +98,9 @@ window.kitchenHome=async function kitchenHome(){
 
   `;
 
+  v2RefreshKitchenTimers();
+  timerInterval=setInterval(v2RefreshKitchenTimers,1000);
+
  }catch(error){
 
   document.querySelector(".panel").innerHTML=`
@@ -97,9 +135,18 @@ window.kitchenCard=function kitchenCard(order){
 
    </div>
 
-   <span class="status">
-    ${esc(order.status||"ACCEPTED")}
-   </span>
+   <div style="text-align:right">
+    <span class="status">
+     ${esc(order.status||"ACCEPTED")}
+    </span>
+    <div
+     class="timer"
+     style="margin-top:10px"
+     data-order-created-at="${esc(order.created_at||"")}"
+     data-order-ready-at="${esc(order.ready_at||"")}">
+     ${v2FormatOrderDuration(v2OrderDuration(order))}
+    </div>
+   </div>
 
   </div>
 
@@ -184,15 +231,17 @@ window.updateKitchenOrderStatus=async function updateKitchenOrderStatus(id,statu
    }
   );
 
+  const data=await response.json().catch(()=>({}));
+
   if(!response.ok){
-   throw new Error("Unable to update kitchen order");
+   throw new Error(data.error||"Unable to update kitchen order");
   }
 
   await kitchenHome();
 
  }catch(error){
 
-  alert("Unable to update kitchen order status.");
+  alert(error.message||"Unable to update kitchen order status.");
 
  }
 
@@ -228,8 +277,8 @@ async function refreshCashierDashboardCounts(){
   const today=new Date();
 
   const completedToday=orders.filter(order=>{
-   if(order.status!=="COMPLETED" || !order.updated_at)return false;
-   const date=new Date(`${order.updated_at}Z`);
+   if(order.status!=="COMPLETED" || !order.completed_at)return false;
+   const date=new Date(`${order.completed_at}Z`);
    return (
     date.getFullYear()===today.getFullYear() &&
     date.getMonth()===today.getMonth() &&
@@ -326,6 +375,11 @@ window.showOrderHistory=async function showOrderHistory(){
       </div>
 
       <div class="info-row">
+       <span>Preparation Time</span>
+       <strong>${v2FormatOrderDuration(v2OrderDuration(order))}</strong>
+      </div>
+
+      <div class="info-row">
        <span>Total</span>
        <strong>${Number(order.total_amount||0).toLocaleString()} CFA</strong>
       </div>
@@ -401,6 +455,11 @@ window.backendOrderHistoryDetail=async function backendOrderHistoryDetail(id){
    <div class="info-row">
     <span>Method</span>
     <strong>${esc(order.payment_method||"—")}</strong>
+   </div>
+
+   <div class="info-row">
+    <span>Preparation Time</span>
+    <strong>${v2FormatOrderDuration(v2OrderDuration(order))}</strong>
    </div>
 
    <div class="info-row">
