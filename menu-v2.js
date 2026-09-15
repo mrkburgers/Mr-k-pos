@@ -177,7 +177,7 @@ if(typeof socket!=="undefined" && socket?.on){
  socket.on("menu-changed",v2HandleLiveMenuChange);
 }
 
-/* Combo owner UI bridge: category-order components + choose-one groups. */
+/* Combo owner UI bridge: category-order components + flexible choice groups. */
 window.addEventListener("load",()=>{
  let v2ChoiceDraft=[];
 
@@ -227,12 +227,19 @@ window.addEventListener("load",()=>{
   const categoryNames=new Map(menuCategoryData.map(category=>[category.id,category.name]));
   return `<div id="v2ChoiceGroupsEditor" style="margin-top:24px">
    <h3>Choice Groups</h3>
-   <p class="muted">Use this when the customer chooses one item, for example one soft drink from the allowed drinks.</p>
+   <p class="muted">Use this when the customer chooses from allowed items, for example 2 soft drinks from Coca Cola, Sprite or Fanta.</p>
    ${v2ChoiceDraft.map((group,index)=>`
     <div class="card" style="margin:12px 0">
      <label>GROUP NAME</label>
      <input class="v2-choice-name" data-choice-index="${index}" value="${esc(group.name||"")}" placeholder="Example: Soft Drink">
-     <p class="muted">Customer chooses 1 from:</p>
+     <label>NUMBER OF CHOICES REQUIRED</label>
+     <input type="number" min="1" step="1" class="v2-choice-count" data-choice-index="${index}" value="${Math.max(1,Number(group.selection_count||1))}">
+     <label>ALLOW SAME ITEM MORE THAN ONCE</label>
+     <select class="v2-choice-duplicates" data-choice-index="${index}" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white;margin-bottom:10px">
+      <option value="true" ${group.allow_duplicates!==false?"selected":""}>Yes</option>
+      <option value="false" ${group.allow_duplicates===false?"selected":""}>No</option>
+     </select>
+     <p class="muted">Customer chooses ${Math.max(1,Number(group.selection_count||1))} from:</p>
      ${items.map(item=>`
       <div class="ingredient-row">
        <input type="checkbox" class="v2-choice-item" data-choice-index="${index}" data-item-id="${esc(item.id)}" ${(group.item_ids||[]).includes(item.id)?"checked":""}>
@@ -247,7 +254,8 @@ window.addEventListener("load",()=>{
  function syncChoiceDraftFromDom(){
   v2ChoiceDraft=v2ChoiceDraft.map((group,index)=>({
    name:document.querySelector(`.v2-choice-name[data-choice-index="${index}"]`)?.value.trim()||group.name||"",
-   selection_count:1,
+   selection_count:Math.max(1,Number(document.querySelector(`.v2-choice-count[data-choice-index="${index}"]`)?.value||group.selection_count||1)),
+   allow_duplicates:document.querySelector(`.v2-choice-duplicates[data-choice-index="${index}"]`)?.value!=="false",
    item_ids:[...document.querySelectorAll(`.v2-choice-item[data-choice-index="${index}"]:checked`)].map(input=>input.dataset.itemId)
   }));
  }
@@ -264,7 +272,7 @@ window.addEventListener("load",()=>{
 
  window.v2AddChoiceGroup=function v2AddChoiceGroup(){
   syncChoiceDraftFromDom();
-  v2ChoiceDraft.push({name:"Soft Drink",selection_count:1,item_ids:[]});
+  v2ChoiceDraft.push({name:"Soft Drink",selection_count:1,allow_duplicates:true,item_ids:[]});
   document.getElementById("v2ChoiceGroupsEditor")?.remove();
   injectChoiceEditor();
  };
@@ -280,7 +288,11 @@ window.addEventListener("load",()=>{
   syncChoiceDraftFromDom();
   for(const group of v2ChoiceDraft){
    if(!group.name)throw new Error("Every choice group needs a name.");
-   if((group.item_ids||[]).length<2)throw new Error(`Choice group "${group.name}" needs at least two allowed items.`);
+   if(!Number.isInteger(group.selection_count)||group.selection_count<1)throw new Error("Choice quantity must be a whole number of 1 or more.");
+   if((group.item_ids||[]).length<1)throw new Error(`Choice group "${group.name}" needs at least one allowed item.`);
+   if(!group.allow_duplicates&&group.selection_count>group.item_ids.length){
+    throw new Error(`Choice group "${group.name}" needs at least ${group.selection_count} different allowed items when duplicates are disabled.`);
+   }
   }
   const response=await fetch(`/api/combos/${encodeURIComponent(comboId)}/choice-groups`,{
    method:"PUT",
@@ -309,7 +321,8 @@ window.addEventListener("load",()=>{
    const combo=(state.combos||[]).find(entry=>entry.id===comboId);
    v2ChoiceDraft=(combo?.choice_groups||[]).map(group=>({
     name:group.name,
-    selection_count:1,
+    selection_count:Math.max(1,Number(group.selection_count||1)),
+    allow_duplicates:group.allow_duplicates!==false,
     item_ids:(group.items||[]).map(item=>item.menu_item_id)
    }));
    const result=await originalEdit(comboId);
@@ -326,7 +339,9 @@ window.addEventListener("load",()=>{
    try{
     for(const group of v2ChoiceDraft){
      if(!group.name){alert("Every choice group needs a name.");return;}
-     if((group.item_ids||[]).length<2){alert(`Choice group "${group.name}" needs at least two allowed items.`);return;}
+     if(!Number.isInteger(group.selection_count)||group.selection_count<1){alert("Choice quantity must be a whole number of 1 or more.");return;}
+     if((group.item_ids||[]).length<1){alert(`Choice group "${group.name}" needs at least one allowed item.`);return;}
+     if(!group.allow_duplicates&&group.selection_count>group.item_ids.length){alert(`Choice group "${group.name}" needs at least ${group.selection_count} different allowed items when duplicates are disabled.`);return;}
     }
     await originalSaveNew(categoryId);
     if(!comboName)return;
@@ -347,7 +362,9 @@ window.addEventListener("load",()=>{
    try{
     for(const group of v2ChoiceDraft){
      if(!group.name){alert("Every choice group needs a name.");return;}
-     if((group.item_ids||[]).length<2){alert(`Choice group "${group.name}" needs at least two allowed items.`);return;}
+     if(!Number.isInteger(group.selection_count)||group.selection_count<1){alert("Choice quantity must be a whole number of 1 or more.");return;}
+     if((group.item_ids||[]).length<1){alert(`Choice group "${group.name}" needs at least one allowed item.`);return;}
+     if(!group.allow_duplicates&&group.selection_count>group.item_ids.length){alert(`Choice group "${group.name}" needs at least ${group.selection_count} different allowed items when duplicates are disabled.`);return;}
     }
     await originalSaveEdit(comboId,oldCategoryId);
     await saveChoiceGroups(comboId);
@@ -373,7 +390,7 @@ window.addEventListener("load",()=>{
      if(!firstButton)return;
      const p=document.createElement("p");
      p.className="muted";
-     p.innerHTML=(combo.choice_groups||[]).map(group=>`${esc(group.name)}: choose 1 from ${(group.items||[]).map(item=>esc(item.name)).join(" / ")}`).join("<br>");
+     p.innerHTML=(combo.choice_groups||[]).map(group=>`${esc(group.name)}: choose ${Number(group.selection_count||1)} from ${(group.items||[]).map(item=>esc(item.name)).join(" / ")}${group.allow_duplicates?" — duplicates allowed":""}`).join("<br>");
      firstButton.insertAdjacentElement("beforebegin",p);
     });
    }catch(error){console.error("Unable to display combo choice groups",error);}
