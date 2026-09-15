@@ -142,7 +142,7 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
   }
 
-  addShiftSale(Number(pending.total||0),created.order_number,paymentMethod);
+  addShiftSale(Number(pending.total||0),created.order_number,paymentMethod,created.id);
 
   if(paymentMethod==="CARD"){
    addOwnerDigitalTransaction(
