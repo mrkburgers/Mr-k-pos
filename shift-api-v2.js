@@ -40,6 +40,10 @@ module.exports=function registerShiftV2(app,io,db){
   CREATE INDEX IF NOT EXISTS idx_shift_sales_shift
   ON shift_sales(shift_id,id ASC);
 
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_shift_sales_legacy_order_unique
+  ON shift_sales(shift_id,order_number)
+  WHERE backend_order_id IS NULL AND order_number IS NOT NULL;
+
   CREATE TABLE IF NOT EXISTS shift_movements (
    id INTEGER PRIMARY KEY AUTOINCREMENT,
    shift_id INTEGER NOT NULL,
@@ -118,23 +122,51 @@ module.exports=function registerShiftV2(app,io,db){
   }));
  }
 
+ function recalculateShift(id){
+  const totals=db.prepare(`
+   SELECT
+    COALESCE(SUM(amount),0) AS sales_total,
+    COUNT(*) AS sales_count,
+    COALESCE(SUM(CASE WHEN payment_method='CASH' THEN amount ELSE 0 END),0) AS cash_sales,
+    COALESCE(SUM(CASE WHEN payment_method='CARD' THEN amount ELSE 0 END),0) AS card_sales,
+    COALESCE(SUM(CASE WHEN payment_method='MOBILE MONEY' THEN amount ELSE 0 END),0) AS mobile_money_sales
+   FROM shift_sales
+   WHERE shift_id=?
+  `).get(id);
+
+  const shift=db.prepare(`
+   SELECT opening_cash,cash_in,cash_out,actual_cash
+   FROM shifts WHERE id=?
+  `).get(id);
+  if(!shift)return;
+
+  const expected=
+   number(shift.opening_cash)+
+   number(totals.cash_sales)+
+   number(shift.cash_in)-
+   number(shift.cash_out);
+  const actual=shift.actual_cash===null?null:number(shift.actual_cash);
+
+  db.prepare(`
+   UPDATE shifts
+   SET
+    sales_total=?,sales_count=?,cash_sales=?,card_sales=?,mobile_money_sales=?,
+    expected_cash=?,difference=?,updated_at=CURRENT_TIMESTAMP
+   WHERE id=?
+  `).run(
+   number(totals.sales_total),Number(totals.sales_count||0),
+   number(totals.cash_sales),number(totals.card_sales),number(totals.mobile_money_sales),
+   expected,
+   actual===null?null:actual-expected,
+   id
+  );
+ }
+
  function saveShift(shift,status){
   if(!shift||!Number.isFinite(Number(shift.id)))return;
   const id=Number(shift.id);
   const orders=Array.isArray(shift.orders)?shift.orders:[];
   const movements=Array.isArray(shift.movements)?shift.movements:[];
-  const cashSales=shift.cashSales!==undefined
-   ?number(shift.cashSales)
-   :orders.filter(order=>!order.paymentMethod||order.paymentMethod==="CASH")
-    .reduce((sum,order)=>sum+number(order.amount),0);
-  const cardSales=shift.cardSales!==undefined
-   ?number(shift.cardSales)
-   :orders.filter(order=>order.paymentMethod==="CARD")
-    .reduce((sum,order)=>sum+number(order.amount),0);
-  const mobileMoneySales=shift.mobileMoneySales!==undefined
-   ?number(shift.mobileMoneySales)
-   :orders.filter(order=>order.paymentMethod==="MOBILE MONEY")
-    .reduce((sum,order)=>sum+number(order.amount),0);
 
   db.prepare(`
    INSERT INTO shifts(
@@ -154,24 +186,15 @@ module.exports=function registerShiftV2(app,io,db){
     opening_cash=excluded.opening_cash,
     cash_in=excluded.cash_in,
     cash_out=excluded.cash_out,
-    cash_sales=excluded.cash_sales,
-    card_sales=excluded.card_sales,
-    mobile_money_sales=excluded.mobile_money_sales,
-    sales_total=excluded.sales_total,
-    sales_count=excluded.sales_count,
-    expected_cash=excluded.expected_cash,
     actual_cash=excluded.actual_cash,
-    difference=excluded.difference,
     actual_cash_edits_json=excluded.actual_cash_edits_json,
     updated_at=CURRENT_TIMESTAMP
   `).run(
    id,status,String(shift.openedAt||new Date().toISOString()),shift.closedAt||null,
    String(shift.openedBy||""),String(shift.role||""),String(shift.closedBy||""),String(shift.closedRole||""),
-   number(shift.openingCash),number(shift.cashIn),number(shift.cashOut),cashSales,cardSales,mobileMoneySales,
-   number(shift.sales),Number(shift.salesCount||orders.length||0),
-   shift.closingCashExpected===null||shift.closingCashExpected===undefined?null:number(shift.closingCashExpected),
+   number(shift.openingCash),number(shift.cashIn),number(shift.cashOut),0,0,0,0,0,null,
    shift.closingCashActual===null||shift.closingCashActual===undefined?null:number(shift.closingCashActual),
-   shift.difference===null||shift.difference===undefined?null:number(shift.difference),
+   null,
    JSON.stringify(Array.isArray(shift.actualCashEdits)?shift.actualCashEdits:[])
   );
 
@@ -210,6 +233,8 @@ module.exports=function registerShiftV2(app,io,db){
     String(movement?.time||movement?.createdAt||shift.openedAt||new Date().toISOString())
    );
   });
+
+  recalculateShift(id);
  }
 
  const saveState=db.transaction(payload=>{
