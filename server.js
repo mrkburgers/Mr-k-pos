@@ -6,6 +6,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const db = require("./database");
 const registerMenuAdminV2 = require("./menu-api-v2");
+const registerShiftV2 = require("./shift-api-v2");
 
 const app = express();
 const server = http.createServer(app);
@@ -21,12 +22,13 @@ function hashPin(pin){
 }
 
 registerMenuAdminV2(app,io,db);
+registerShiftV2(app,io,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/auth-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -54,6 +56,9 @@ app.get("/cashier-v2.js", (req, res) => {
 });
 app.get("/sales-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "sales-v2.js"));
+});
+app.get("/shift-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "shift-v2.js"));
 });
 app.get("/auth-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "auth-v2.js"));
