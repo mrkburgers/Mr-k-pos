@@ -327,6 +327,19 @@ window.showActiveOrders=async function showActiveOrders(){
      }
 
      ${
+      ["NEW","ACCEPTED"].includes(order.status)
+      ?`
+       <button
+        class="danger"
+        style="width:100%;margin-top:10px"
+        onclick="event.stopPropagation();cancelBackendOrderFromList(${Number(order.id)})">
+        CANCEL & REFUND ORDER
+       </button>
+      `
+      :""
+     }
+
+     ${
       order.status==="READY"
       ?`
        <button
@@ -356,6 +369,31 @@ window.showActiveOrders=async function showActiveOrders(){
 
 };
 
+window.cancelBackendOrderFromList=async function cancelBackendOrderFromList(id){
+ if(!confirm("Cancel and refund this order?"))return;
+
+ try{
+  const response=await fetch(`/api/orders/${id}/cancel`,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"}
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok){
+   throw new Error(data.error||"Unable to cancel order");
+  }
+  await showActiveOrders();
+  refreshCashierDashboardCounts();
+  if(typeof v2FetchOwnerAccounts==="function"){
+   v2FetchOwnerAccounts().catch(()=>{});
+  }
+  if(typeof v2HydrateShiftState==="function"){
+   v2HydrateShiftState().catch(()=>{});
+  }
+ }catch(error){
+  alert(error.message||"Unable to cancel this order.");
+ }
+};
+
 window.acceptBackendOrderFromList=async function acceptBackendOrderFromList(id){
 
  try{
@@ -368,15 +406,17 @@ window.acceptBackendOrderFromList=async function acceptBackendOrderFromList(id){
    body:JSON.stringify({status:"ACCEPTED"})
   });
 
+  const data=await response.json().catch(()=>({}));
+
   if(!response.ok){
-   throw new Error("Unable to accept order");
+   throw new Error(data.error||"Unable to accept order");
   }
 
   await showActiveOrders();
   refreshCashierDashboardCounts();
 
  }catch(error){
-  alert("Unable to accept this order.");
+  alert(error.message||"Unable to accept this order.");
  }
 
 };
@@ -393,15 +433,17 @@ window.completeBackendOrderFromList=async function completeBackendOrderFromList(
    body:JSON.stringify({status:"COMPLETED"})
   });
 
+  const data=await response.json().catch(()=>({}));
+
   if(!response.ok){
-   throw new Error("Unable to complete order");
+   throw new Error(data.error||"Unable to complete order");
   }
 
   await showActiveOrders();
   refreshCashierDashboardCounts();
 
  }catch(error){
-  alert("Unable to complete this order.");
+  alert(error.message||"Unable to complete this order.");
  }
 
 };
