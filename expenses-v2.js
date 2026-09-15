@@ -80,10 +80,12 @@ v2InitializeExpenses().catch(error=>{
 /* Receipt metadata stays internal and must never appear on operational screens. */
 function v2HideReceiptMetadataFromScreen(){
  document.querySelectorAll("#root .muted").forEach(element=>{
-  if(!String(element.textContent||"").includes("RECEIPT_JSON:"))return;
-  const cleaned=String(element.textContent||"")
-   .replace(/(?:^|\|\s*)RECEIPT_JSON:[^|]+/g,"")
-   .replace(/^\s*\|\s*|\s*\|\s*$/g,"")
+  const text=String(element.textContent||"");
+  const markerIndex=text.indexOf("RECEIPT_JSON:");
+  if(markerIndex<0)return;
+  const cleaned=text
+   .slice(0,markerIndex)
+   .replace(/\s*\|\s*$/g,"")
    .trim();
   if(cleaned){
    element.textContent=cleaned;
