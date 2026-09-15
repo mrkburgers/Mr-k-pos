@@ -1,3 +1,5 @@
+const registerOrderLifecycleV2=require("./order-lifecycle-api-v2");
+
 module.exports=function registerShiftV2(app,io,db){
  db.exec(`
   CREATE TABLE IF NOT EXISTS shifts (
@@ -58,6 +60,8 @@ module.exports=function registerShiftV2(app,io,db){
   CREATE INDEX IF NOT EXISTS idx_shift_movements_shift
   ON shift_movements(shift_id,id ASC);
  `);
+
+ registerOrderLifecycleV2(app,io,db);
 
  function safeJson(value,fallback=[]){
   try{return JSON.parse(value||JSON.stringify(fallback));}catch{return fallback;}
