@@ -198,28 +198,3 @@
   };
  }
 })();
-
-/* Expense history real-time refresh across Owner / Manager devices */
-(function(){
- if(typeof socket==="undefined"||!socket)return;
-
- socket.on("expenses-changed",async()=>{
-  if(typeof v2FetchExpenses!=="function")return;
-  try{
-   const root=document.getElementById("root");
-   const screenText=String(root?.textContent||"");
-   const historyOpen=screenText.includes("EXPENSE HISTORY");
-   const selectedDate=historyOpen
-    ?String(root?.querySelector('input[type="date"]')?.value||"")
-    :"";
-
-   await v2FetchExpenses();
-
-   if(historyOpen&&typeof expenseHistoryPage==="function"){
-    expenseHistoryPage(selectedDate);
-   }
-  }catch(error){
-   console.error("Real-time expense history refresh failed",error);
-  }
- });
-})();
