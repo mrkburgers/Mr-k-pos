@@ -97,6 +97,14 @@ module.exports=function registerOwnerAccountsV2(app,io,db){
   },0);
  }
 
+ function referenceDay(transaction){
+  const createdAt=Number(transaction?.createdAt);
+  if(!Number.isFinite(createdAt))return 'unknown-day';
+  const date=new Date(createdAt);
+  if(Number.isNaN(date.getTime()))return 'unknown-day';
+  return date.toISOString().slice(0,10);
+ }
+
  function dedupeTransactions(transactions){
   const seenIds=new Set();
   const seenReferences=new Set();
@@ -108,7 +116,7 @@ module.exports=function registerOwnerAccountsV2(app,io,db){
    const source=String(transaction?.source||'MANUAL');
    const reference=String(transaction?.reference||'').trim();
    if(reference){
-    const key=`${source}\u0000${reference}`;
+    const key=`${source}\u0000${reference}\u0000${referenceDay(transaction)}`;
     if(seenReferences.has(key))return false;
     seenReferences.add(key);
    }
