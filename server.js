@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/expenses-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/expenses-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -91,6 +91,9 @@ app.get("/delivery-fee-v2.js", (req, res) => {
 });
 app.get("/shift-delivery-summary-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "shift-delivery-summary-v2.js"));
+});
+app.get("/delivery-zone-map-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "delivery-zone-map-v2.js"));
 });
 
 app.get("/api/health", (req, res) => {
@@ -516,12 +519,12 @@ app.patch("/api/orders/:id/status", (req, res) => {
 
   if (!allowedStatuses.includes(status)) {
     return res.status(400).json({
-      error: "invalid order status"
+      error: "Invalid order status"
     });
   }
 
   const order = db.prepare(`
-    SELECT *
+    SELECT id, order_number, order_uuid
     FROM orders
     WHERE id = ?
   `).get(orderId);
@@ -532,16 +535,16 @@ app.patch("/api/orders/:id/status", (req, res) => {
     });
   }
 
-  if(status === "COMPLETED"){
+  if (status === "COMPLETED") {
     db.prepare(`
       UPDATE orders
       SET
         status = ?,
-        completed_at = COALESCE(completed_at, CURRENT_TIMESTAMP),
+        completed_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `).run(status, orderId);
-  }else{
+  } else {
     db.prepare(`
       UPDATE orders
       SET
@@ -573,18 +576,17 @@ app.patch("/api/orders/:id/payment-status", (req, res) => {
   const allowedPaymentStatuses = [
     "PENDING",
     "PAID",
-    "FAILED",
     "REFUNDED"
   ];
 
   if (!allowedPaymentStatuses.includes(payment_status)) {
     return res.status(400).json({
-      error: "invalid payment status"
+      error: "Invalid payment status"
     });
   }
 
   const order = db.prepare(`
-    SELECT *
+    SELECT id, order_number, order_uuid
     FROM orders
     WHERE id = ?
   `).get(orderId);
@@ -618,14 +620,8 @@ app.patch("/api/orders/:id/payment-status", (req, res) => {
   });
 });
 
-io.on("connection", (socket) => {
-  console.log(`Device connected: ${socket.id}`);
+app.listen = undefined;
 
-  socket.on("disconnect", () => {
-    console.log(`Device disconnected: ${socket.id}`);
-  });
-});
-
-server.listen(PORT, () => {
-  console.log(`Mr K POS v2 server running on port ${PORT}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Mr K POS V2 server running on port ${PORT}`);
 });
