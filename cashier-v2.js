@@ -142,7 +142,17 @@ window.confirmOrderPayment=async function confirmOrderPayment(number,paymentMeth
    draftOrders=draftOrders.filter(d=>d.id!==currentDraftId);
   }
 
-  addShiftSale(Number(pending.total||0),created.order_number,paymentMethod,created.id);
+  addShiftSale(
+   Number(pending.total||0),
+   created.order_number,
+   paymentMethod,
+   created.id,
+   pending.delivery?{
+    zone_id:String(pending.delivery.zone_id||pending.delivery.id||""),
+    zone_name:String(pending.delivery.zone_name||pending.delivery.name||""),
+    fee:Number(pending.delivery.fee||0)
+   }:null
+  );
 
   if(paymentMethod==="CARD"){
    addOwnerDigitalTransaction(
