@@ -1,93 +1,13 @@
-/* Delivery-fee breakdown rendered directly through shift summary HTML */
+/* Shift delivery-fee reporting — backend orders are the single source of truth */
 (function(){
  function money(value){
   return `${Number(value||0).toLocaleString()} CFA`;
  }
 
- function normalizeDeliverySnapshot(snapshot){
-  if(!snapshot)return null;
-  const id=String(snapshot.zone_id||snapshot.id||"");
-  const name=String(snapshot.zone_name||snapshot.name||"");
-  const fee=Math.max(0,Number(snapshot.fee||0));
-  if(!id&&!name&&fee<=0)return null;
-  return {id,name,fee};
- }
-
- function pendingDeliverySnapshot(){
-  const pending=typeof v2PendingCheckout!=="undefined"?v2PendingCheckout:null;
-  const fromPending=normalizeDeliverySnapshot(pending?.delivery);
-  if(fromPending)return fromPending;
-  if(String(orderType||"").toUpperCase()==="DELIVERY"&&customer?.deliveryZoneId){
-   return {
-    id:String(customer.deliveryZoneId||""),
-    name:String(customer.deliveryZoneName||""),
-    fee:Math.max(0,Number(customer.deliveryFee||0))
-   };
-  }
-  return null;
- }
-
- if(typeof addShiftSale==="function"){
-  const previousAddShiftSale=window.addShiftSale;
-  window.addShiftSale=function addShiftSale(amount,orderId=null,paymentMethod="CASH",backendOrderId=null,deliverySnapshot=null){
-   const delivery=normalizeDeliverySnapshot(deliverySnapshot)||pendingDeliverySnapshot();
-   const result=previousAddShiftSale(amount,orderId,paymentMethod,backendOrderId);
-
-   if(delivery){
-    try{
-     const shift=JSON.parse(localStorage.getItem("mrkActiveShift")||"null");
-     if(shift&&Array.isArray(shift.orders)){
-      const row=[...shift.orders].reverse().find(entry=>{
-       const backendMatch=backendOrderId!=null&&Number(entry?.backendOrderId)===Number(backendOrderId);
-       const orderMatch=Number(entry?.orderId)===Number(orderId)&&
-        String(entry?.paymentMethod||"CASH").toUpperCase()===String(paymentMethod||"CASH").toUpperCase();
-       return backendMatch||orderMatch;
-      });
-      if(row){
-       row.backendOrderId=backendOrderId==null?row.backendOrderId:Number(backendOrderId);
-       row.deliveryFee=delivery.fee;
-       row.deliveryZoneId=delivery.id;
-       row.deliveryZoneName=delivery.name;
-       row.deliveryPaymentMethod=String(paymentMethod||"CASH").toUpperCase();
-       localStorage.setItem("mrkActiveShift",JSON.stringify(shift));
-       if(typeof v2ScheduleShiftSync==="function")v2ScheduleShiftSync();
-      }
-     }
-    }catch(error){
-     console.error("Unable to store delivery fee in shift sale row",error);
-    }
-   }
-
-   return result;
-  };
- }
-
- function shiftBreakdown(shift){
+ function emptyBreakdown(shift){
   const rows=Array.isArray(shift?.orders)?shift.orders:[];
-  let fees=0;
-  let cashFees=0;
-  let cardFees=0;
-  let mobileFees=0;
-
-  rows.forEach(row=>{
-   const fee=Math.max(0,Number(row?.deliveryFee||0));
-   if(!fee)return;
-   fees+=fee;
-   const method=String(row?.deliveryPaymentMethod||row?.paymentMethod||"CASH").toUpperCase();
-   if(method==="CARD")cardFees+=fee;
-   else if(method==="MOBILE MONEY")mobileFees+=fee;
-   else cashFees+=fee;
-  });
-
   const gross=Number(shift?.sales||rows.reduce((sum,row)=>sum+Number(row?.amount||0),0)||0);
-  return {
-   gross,
-   fees,
-   food:Math.max(0,gross-fees),
-   cashFees,
-   cardFees,
-   mobileFees
-  };
+  return {gross,fees:0,food:gross,cashFees:0,cardFees:0,mobileFees:0};
  }
 
  function breakdownHtml(values){
@@ -102,23 +22,148 @@
    </div>`;
  }
 
+ async function fetchBackendOrders(){
+  const response=await fetch("/api/orders",{cache:"no-store"});
+  if(!response.ok)throw new Error("Unable to load backend orders for shift delivery fees");
+  const orders=await response.json();
+  return Array.isArray(orders)?orders:[];
+ }
+
+ function parseBackendTime(value){
+  if(!value)return NaN;
+  const text=String(value);
+  const date=new Date(text.includes("T")?text:text.replace(" ","T")+"Z");
+  return date.getTime();
+ }
+
+ function orderBelongsToShift(order,shift){
+  const created=parseBackendTime(order?.created_at);
+  const opened=new Date(shift?.openedAt||0).getTime();
+  const closed=shift?.closedAt?new Date(shift.closedAt).getTime():Date.now()+60000;
+  if(!Number.isFinite(created)||!Number.isFinite(opened)||!Number.isFinite(closed))return true;
+  return created>=opened-60000&&created<=closed+60000;
+ }
+
+ function backendOrderForShiftRow(row,shift,orders){
+  if(row?.backendOrderId!=null){
+   const exact=orders.find(order=>Number(order.id)===Number(row.backendOrderId));
+   if(exact)return exact;
+  }
+  if(row?.orderId!=null){
+   const matches=orders.filter(order=>
+    Number(order.order_number)===Number(row.orderId)&&orderBelongsToShift(order,shift)
+   );
+   if(matches.length===1)return matches[0];
+   if(matches.length>1){
+    const rowTime=row?.time?new Date(row.time).getTime():NaN;
+    if(Number.isFinite(rowTime)){
+     matches.sort((a,b)=>Math.abs(parseBackendTime(a.created_at)-rowTime)-Math.abs(parseBackendTime(b.created_at)-rowTime));
+    }
+    return matches[0];
+   }
+  }
+  return null;
+ }
+
+ function backendBreakdown(shift,orders){
+  const rows=Array.isArray(shift?.orders)?shift.orders:[];
+  const gross=Number(shift?.sales||rows.reduce((sum,row)=>sum+Number(row?.amount||0),0)||0);
+  let fees=0;
+  let cashFees=0;
+  let cardFees=0;
+  let mobileFees=0;
+
+  rows.forEach(row=>{
+   const order=backendOrderForShiftRow(row,shift,orders);
+   if(!order)return;
+   if(String(order.payment_status||"").toUpperCase()==="REFUNDED")return;
+   if(String(order.status||"").toUpperCase()==="CANCELLED")return;
+   const fee=Math.max(0,Number(order.delivery_fee||0));
+   if(!fee)return;
+   fees+=fee;
+   const method=String(order.payment_method||row?.paymentMethod||"CASH").toUpperCase();
+   if(method==="CARD")cardFees+=fee;
+   else if(method==="MOBILE MONEY")mobileFees+=fee;
+   else cashFees+=fee;
+  });
+
+  return {
+   gross,
+   fees,
+   food:Math.max(0,gross-fees),
+   cashFees,
+   cardFees,
+   mobileFees
+  };
+ }
+
+ function replaceBreakdown(container,values){
+  const current=container?.querySelector(".v2-shift-delivery-breakdown");
+  if(!current)return;
+  const holder=document.createElement("div");
+  holder.innerHTML=breakdownHtml(values).trim();
+  current.replaceWith(holder.firstElementChild);
+ }
+
+ async function refreshCurrentShiftBreakdown(){
+  const shift=typeof getActiveShift==="function"?getActiveShift():null;
+  if(!shift)return;
+  try{
+   const orders=await fetchBackendOrders();
+   const card=[...document.querySelectorAll("#root .card")].find(entry=>
+    String(entry.querySelector("h2")?.textContent||"").includes("Current Shift")
+   );
+   if(card)replaceBreakdown(card,backendBreakdown(shift,orders));
+  }catch(error){
+   console.error("Unable to refresh shift delivery fees from backend",error);
+  }
+ }
+
+ function filteredHistory(selectedDate=""){
+  let history=typeof getShiftHistory==="function"?getShiftHistory():[];
+  if(!Array.isArray(history))history=[];
+  if(!selectedDate)return history;
+  return history.filter(shift=>{
+   if(!shift?.openedAt)return false;
+   const date=new Date(shift.openedAt);
+   if(Number.isNaN(date.getTime()))return false;
+   const text=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+   return text===selectedDate;
+  });
+ }
+
+ async function refreshHistoryBreakdowns(selectedDate=""){
+  try{
+   const orders=await fetchBackendOrders();
+   const history=filteredHistory(selectedDate);
+   const cards=[...document.querySelectorAll("#root .card")].filter(card=>{
+    const text=String(card.textContent||"");
+    return text.includes("Opened:")&&text.includes("Closed:")&&card.querySelector(".v2-shift-delivery-breakdown");
+   });
+   cards.forEach((card,index)=>{
+    const shift=history[index];
+    if(shift)replaceBreakdown(card,backendBreakdown(shift,orders));
+   });
+  }catch(error){
+   console.error("Unable to refresh shift history delivery fees from backend",error);
+  }
+ }
+
  if(typeof renderShiftManagement==="function"){
   const originalRenderShiftManagement=renderShiftManagement;
   window.renderShiftManagement=function renderShiftManagement(){
    const html=originalRenderShiftManagement();
    const shift=typeof getActiveShift==="function"?getActiveShift():null;
    if(!shift)return html;
-   const values=shiftBreakdown(shift);
    const target=`<p><b>Total Sales:</b> ${formatShiftMoney(Number(shift.sales||0))}</p>`;
-   if(String(html).includes(target)){
-    return String(html).replace(target,target+breakdownHtml(values));
-   }
+   const block=breakdownHtml(emptyBreakdown(shift));
+   if(String(html).includes(target))return String(html).replace(target,target+block);
    const fallback="<p><b>Total Sales:</b>";
    const index=String(html).indexOf(fallback);
    if(index<0)return html;
    const end=String(html).indexOf("</p>",index);
    if(end<0)return html;
-   return String(html).slice(0,end+4)+breakdownHtml(values)+String(html).slice(end+4);
+   return String(html).slice(0,end+4)+block+String(html).slice(end+4);
   };
  }
 
@@ -126,25 +171,30 @@
   const originalRenderShiftHistory=renderShiftHistory;
   window.renderShiftHistory=function renderShiftHistory(selectedDate=""){
    let html=String(originalRenderShiftHistory(selectedDate));
-   let history=typeof getShiftHistory==="function"?getShiftHistory():[];
-   if(!Array.isArray(history))history=[];
-   if(selectedDate){
-    history=history.filter(shift=>{
-     if(!shift?.openedAt)return false;
-     const date=new Date(shift.openedAt);
-     if(Number.isNaN(date.getTime()))return false;
-     const text=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-     return text===selectedDate;
-    });
-   }
-
+   const history=filteredHistory(selectedDate);
    history.forEach(shift=>{
     const target=`<p><b>Sales:</b> ${formatShiftMoney(shift.sales)}</p>`;
-    if(html.includes(target)){
-     html=html.replace(target,target+breakdownHtml(shiftBreakdown(shift)));
-    }
+    if(html.includes(target))html=html.replace(target,target+breakdownHtml(emptyBreakdown(shift)));
    });
    return html;
+  };
+ }
+
+ if(typeof shiftManagementPageRender==="function"){
+  const originalShiftManagementPageRender=window.shiftManagementPageRender;
+  window.shiftManagementPageRender=function shiftManagementPageRender(...args){
+   const result=originalShiftManagementPageRender.apply(this,args);
+   refreshCurrentShiftBreakdown();
+   return result;
+  };
+ }
+
+ if(typeof shiftHistoryPageRender==="function"){
+  const originalShiftHistoryPageRender=window.shiftHistoryPageRender;
+  window.shiftHistoryPageRender=function shiftHistoryPageRender(selectedDate=""){
+   const result=originalShiftHistoryPageRender(selectedDate);
+   refreshHistoryBreakdowns(selectedDate);
+   return result;
   };
  }
 })();
