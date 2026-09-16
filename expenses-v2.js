@@ -65,9 +65,23 @@ saveExpenseCategories=function saveExpenseCategories(){
 };
 
 if(typeof socket!=="undefined"&&socket){
- socket.on("expenses-changed",()=>{
-  if(v2ExpensesReady){
-   v2FetchExpenses().catch(error=>console.error("Expense refresh failed",error));
+ socket.on("expenses-changed",async()=>{
+  if(!v2ExpensesReady)return;
+  try{
+   const root=document.getElementById("root");
+   const screenText=String(root?.textContent||"").toUpperCase();
+   const historyOpen=screenText.includes("EXPENSE HISTORY");
+   const selectedDate=historyOpen
+    ?String(root?.querySelector('input[type="date"]')?.value||"")
+    :"";
+
+   await v2FetchExpenses();
+
+   if(historyOpen&&typeof expenseHistoryPage==="function"){
+    expenseHistoryPage(selectedDate);
+   }
+  }catch(error){
+   console.error("Expense refresh failed",error);
   }
  });
 }
@@ -325,157 +339,4 @@ window.v2OwnerComboCategory=async function v2OwnerComboCategory(categoryId){
         ${combo.description?`<p class="muted">${esc(combo.description)}</p>`:""}
         <p><strong>${Number(combo.price||0).toLocaleString()} CFA</strong></p>
         <p class="muted">Status: ${combo.active?"Active":"Inactive"}</p>
-        <p class="muted">${(combo.components||[]).map(component=>`${Number(component.quantity||1)} × ${esc(component.name)}`).join("<br>")}</p>
-        <button class="primary" onclick="v2OwnerEditCombo('${esc(combo.id)}')">EDIT</button>
-        <button class="back" onclick="v2ToggleComboActive('${esc(combo.id)}')">${combo.active?"DEACTIVATE":"ACTIVATE"}</button>
-        <button class="back" onclick="v2DeleteCombo('${esc(combo.id)}')">DELETE</button>
-       </div>`).join(""):`<div class="card"><p class="muted">No combos in this category yet.</p></div>`}
-     </div>
-    </div>
-   </div>`;
- }catch(error){alert(error.message||"Unable to load combos.");}
-};
-
-window.v2OwnerAddCombo=async function v2OwnerAddCombo(categoryId){
- try{
-  const state=await v2LoadComboAdminState(true);
-  const category=(state.categories||[]).find(row=>row.id===categoryId&&row.category_type==="combo");
-  if(!category)throw new Error("Combo category not found");
-  document.getElementById("root").innerHTML=`
-   <div class="app">
-    <button class="back" onclick="v2OwnerComboCategory('${esc(categoryId)}')">← BACK</button>
-    <div class="logo">MR K BURGERS<span>OWNER — ADD COMBO</span></div>
-    <div class="panel">
-     <h1>New Combo</h1>
-     <div class="form">
-      <label>Combo Name</label><input id="v2ComboName" placeholder="Example: Classic Combo">
-      <label>Description</label><textarea id="v2ComboDescription" rows="3" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white"></textarea>
-      <label>Combo Price (CFA)</label><input id="v2ComboPrice" type="number" min="0" step="1">
-      <label>Status</label><select id="v2ComboActive" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white"><option value="true">Active</option><option value="false">Inactive</option></select>
-     </div>
-     <h3 style="margin-top:24px">Components</h3>
-     <p class="muted">Select existing active menu items and set the quantity for each.</p>
-     ${v2ComboComponentRows([])}
-     <button class="primary" style="width:100%;margin-top:20px" onclick="v2SaveNewCombo('${esc(categoryId)}')">CREATE COMBO</button>
-    </div>
-   </div>`;
- }catch(error){alert(error.message||"Unable to open combo builder.");}
-};
-
-window.v2SaveNewCombo=async function v2SaveNewCombo(categoryId){
- const name=document.getElementById("v2ComboName")?.value.trim()||"";
- const description=document.getElementById("v2ComboDescription")?.value.trim()||"";
- const price=Number(document.getElementById("v2ComboPrice")?.value);
- const active=document.getElementById("v2ComboActive")?.value!=="false";
- const components=v2ReadComboComponents();
- if(!name){alert("Please enter a combo name.");return;}
- if(!Number.isFinite(price)||price<0){alert("Please enter a valid combo price.");return;}
- if(!components.length){alert("Select at least one combo component.");return;}
- try{
-  const response=await fetch("/api/combos",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description,category_id:categoryId,price,active,components})});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.error||"Unable to create combo");
-  await v2LoadComboAdminState(true);
-  alert("Combo created successfully.");
-  v2OwnerComboCategory(categoryId);
- }catch(error){alert(error.message||"Unable to create combo.");}
-};
-
-window.v2OwnerEditCombo=async function v2OwnerEditCombo(comboId){
- try{
-  const state=await v2LoadComboAdminState(true);
-  const combo=(state.combos||[]).find(row=>row.id===comboId);
-  if(!combo)throw new Error("Combo not found");
-  const comboCategories=(state.categories||[]).filter(category=>category.category_type==="combo");
-  document.getElementById("root").innerHTML=`
-   <div class="app">
-    <button class="back" onclick="v2OwnerComboCategory('${esc(combo.category_id)}')">← BACK</button>
-    <div class="logo">MR K BURGERS<span>OWNER — EDIT COMBO</span></div>
-    <div class="panel">
-     <h1>${esc(combo.name)}</h1>
-     <div class="form">
-      <label>Combo Name</label><input id="v2ComboName" value="${esc(combo.name)}">
-      <label>Description</label><textarea id="v2ComboDescription" rows="3" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white">${esc(combo.description||"")}</textarea>
-      <label>Combo Category</label><select id="v2ComboCategory" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white">${comboCategories.map(category=>`<option value="${esc(category.id)}" ${category.id===combo.category_id?"selected":""}>${esc(category.name)}</option>`).join("")}</select>
-      <label>Combo Price (CFA)</label><input id="v2ComboPrice" type="number" min="0" step="1" value="${Number(combo.price||0)}">
-      <label>Status</label><select id="v2ComboActive" style="width:100%;padding:14px;border-radius:10px;border:1px solid #444;background:#0d0d0d;color:white"><option value="true" ${combo.active?"selected":""}>Active</option><option value="false" ${!combo.active?"selected":""}>Inactive</option></select>
-     </div>
-     <h3 style="margin-top:24px">Components</h3>
-     <p class="muted">Hidden active items remain available here.</p>
-     ${v2ComboComponentRows(combo.components||[])}
-     <button class="primary" style="width:100%;margin-top:20px" onclick="v2SaveEditedCombo('${esc(comboId)}','${esc(combo.category_id)}')">SAVE COMBO</button>
-    </div>
-   </div>`;
- }catch(error){alert(error.message||"Unable to edit combo.");}
-};
-
-window.v2SaveEditedCombo=async function v2SaveEditedCombo(comboId,oldCategoryId){
- const name=document.getElementById("v2ComboName")?.value.trim()||"";
- const description=document.getElementById("v2ComboDescription")?.value.trim()||"";
- const categoryId=document.getElementById("v2ComboCategory")?.value||oldCategoryId;
- const price=Number(document.getElementById("v2ComboPrice")?.value);
- const active=document.getElementById("v2ComboActive")?.value!=="false";
- const components=v2ReadComboComponents();
- if(!name){alert("Please enter a combo name.");return;}
- if(!Number.isFinite(price)||price<0){alert("Please enter a valid combo price.");return;}
- if(!components.length){alert("Select at least one combo component.");return;}
- try{
-  const response=await fetch(`/api/combos/${encodeURIComponent(comboId)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description,category_id:categoryId,price,active,components})});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.error||"Unable to update combo");
-  await v2LoadComboAdminState(true);
-  alert("Combo updated successfully.");
-  v2OwnerComboCategory(categoryId);
- }catch(error){alert(error.message||"Unable to update combo.");}
-};
-
-window.v2ToggleComboActive=async function v2ToggleComboActive(comboId){
- try{
-  const state=await v2LoadComboAdminState(true);
-  const combo=(state.combos||[]).find(row=>row.id===comboId);
-  if(!combo)throw new Error("Combo not found");
-  const response=await fetch(`/api/combos/${encodeURIComponent(comboId)}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({active:!combo.active})});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.error||"Unable to update combo");
-  await v2LoadComboAdminState(true);
-  v2OwnerComboCategory(combo.category_id);
- }catch(error){alert(error.message||"Unable to update combo.");}
-};
-
-window.v2DeleteCombo=async function v2DeleteCombo(comboId){
- try{
-  const state=await v2LoadComboAdminState(true);
-  const combo=(state.combos||[]).find(row=>row.id===comboId);
-  if(!combo)throw new Error("Combo not found");
-  if(!confirm(`Delete "${combo.name}" permanently?`))return;
-  const response=await fetch(`/api/combos/${encodeURIComponent(comboId)}`,{method:"DELETE"});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.error||"Unable to delete combo");
-  await v2LoadComboAdminState(true);
-  v2OwnerComboCategory(combo.category_id);
- }catch(error){alert(error.message||"Unable to delete combo.");}
-};
-
-const v2ComboOriginalOwnerCategoryList=window.ownerCategoryList;
-if(typeof v2ComboOriginalOwnerCategoryList==="function"){
- window.ownerCategoryList=async function ownerCategoryList(...args){
-  try{await v2LoadComboAdminState(true);}catch{}
-  const result=v2ComboOriginalOwnerCategoryList.apply(this,args);
-  const comboCategories=menuCategoryData.filter(category=>category.categoryType==="combo");
-  document.querySelectorAll("#root .card").forEach(card=>{
-   const heading=card.querySelector("h3")?.textContent.trim();
-   const category=comboCategories.find(entry=>entry.name===heading);
-   if(!category||card.querySelector(".v2-manage-combos"))return;
-   const button=document.createElement("button");
-   button.className="primary v2-manage-combos";
-   button.style.marginTop="10px";
-   button.textContent="MANAGE COMBOS";
-   button.onclick=event=>{
-    event.stopPropagation();
-    v2OwnerComboCategory(category.id);
-   };
-   card.appendChild(button);
-  });
-  return result;
- };
-}
+        <p class="muted">${(combo.components||[]).map(component=>`${...
