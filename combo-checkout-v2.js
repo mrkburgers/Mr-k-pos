@@ -243,4 +243,32 @@
     </div>`;
   };
  }
+
+ const originalShowActiveOrders=window.showActiveOrders;
+ if(typeof originalShowActiveOrders==="function"){
+  window.showActiveOrders=async function showActiveOrders(){
+   await originalShowActiveOrders();
+   try{
+    const response=await fetch("/api/orders");
+    if(!response.ok)return;
+    const orders=await response.json();
+    const orderMap=new Map((Array.isArray(orders)?orders:[]).map(order=>[Number(order.id),order]));
+    document.querySelectorAll("#root .order-card.clickable").forEach(card=>{
+     const onclick=String(card.getAttribute("onclick")||"");
+     const match=onclick.match(/activeOrderDetail\((\d+)\)/);
+     if(!match)return;
+     const order=orderMap.get(Number(match[1]));
+     if(!order||!Array.isArray(order.items))return;
+     const summaries=[...card.querySelectorAll(":scope > .summary")];
+     summaries.forEach((summary,index)=>{
+      const item=order.items[index];
+      if(!item)return;
+      summary.innerHTML=`<strong>${Number(item.quantity||0)} × ${esc(item.item_name||"")}</strong>${kitchenItemBodyHtml(item)}`;
+     });
+    });
+   }catch(error){
+    console.error("Unable to clean active order combo display",error);
+   }
+  };
+ }
 })();
