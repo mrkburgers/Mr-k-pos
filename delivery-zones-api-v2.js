@@ -36,6 +36,49 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   db.exec("ALTER TABLE orders ADD COLUMN delivery_fee INTEGER NOT NULL DEFAULT 0");
  }
 
+ function attachDeliverySnapshot(req,res,next){
+  if(String(req.method||"").toUpperCase()!=="POST")return next();
+  if(String(req.body?.order_type||"").toUpperCase()!=="DELIVERY")return next();
+
+  const zoneId=String(req.body?.delivery_zone_id||"").trim();
+  if(!zoneId)return res.status(400).json({error:"delivery zone is required"});
+
+  const zone=db.prepare("SELECT id,name,fee,active FROM delivery_zones WHERE id=?").get(zoneId);
+  if(!zone||!zone.active)return res.status(400).json({error:"selected delivery zone is unavailable"});
+
+  const snapshot={
+   id:zone.id,
+   name:zone.name,
+   fee:Number(zone.fee||0)
+  };
+
+  req.body.delivery_zone_id=snapshot.id;
+  req.body.delivery_zone_name=snapshot.name;
+  req.body.delivery_fee=snapshot.fee;
+
+  const originalJson=res.json.bind(res);
+  res.json=function deliverySnapshotJson(payload){
+   try{
+    if(res.statusCode<400&&payload?.id){
+     db.prepare(`
+      UPDATE orders
+      SET delivery_zone_id=?,delivery_zone_name=?,delivery_fee=?,updated_at=CURRENT_TIMESTAMP
+      WHERE id=?
+     `).run(snapshot.id,snapshot.name,snapshot.fee,Number(payload.id));
+     payload={...payload,delivery_zone_id:snapshot.id,delivery_zone_name:snapshot.name,delivery_fee:snapshot.fee};
+    }
+   }catch(error){
+    console.error("Unable to attach delivery snapshot",error);
+   }
+   return originalJson(payload);
+  };
+
+  next();
+ }
+
+ app.use("/api/orders-with-inventory",attachDeliverySnapshot);
+ app.use("/api/orders",attachDeliverySnapshot);
+
  app.get("/api/delivery-zones",(req,res)=>{
   const includeInactive=String(req.query.all||"")==="1";
   const rows=db.prepare(`
