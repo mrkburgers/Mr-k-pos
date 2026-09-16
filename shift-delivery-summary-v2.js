@@ -4,21 +4,24 @@
   return `${Number(value||0).toLocaleString()} CFA`;
  }
 
+ function normalizeDeliverySnapshot(snapshot){
+  if(!snapshot)return null;
+  const id=String(snapshot.zone_id||snapshot.id||"");
+  const name=String(snapshot.zone_name||snapshot.name||"");
+  const fee=Math.max(0,Number(snapshot.fee||0));
+  if(!id&&!name&&fee<=0)return null;
+  return {id,name,fee};
+ }
+
  function pendingDeliverySnapshot(){
   const pending=typeof v2PendingCheckout!=="undefined"?v2PendingCheckout:null;
-  const delivery=pending?.delivery;
-  if(delivery&&(delivery.zone_id||delivery.id)){
-   return {
-    id:String(delivery.zone_id||delivery.id||""),
-    name:String(delivery.zone_name||delivery.name||""),
-    fee:Number(delivery.fee||0)
-   };
-  }
+  const fromPending=normalizeDeliverySnapshot(pending?.delivery);
+  if(fromPending)return fromPending;
   if(String(orderType||"").toUpperCase()==="DELIVERY"&&customer?.deliveryZoneId){
    return {
     id:String(customer.deliveryZoneId||""),
     name:String(customer.deliveryZoneName||""),
-    fee:Number(customer.deliveryFee||0)
+    fee:Math.max(0,Number(customer.deliveryFee||0))
    };
   }
   return null;
@@ -26,8 +29,8 @@
 
  if(typeof addShiftSale==="function"){
   const previousAddShiftSale=window.addShiftSale;
-  window.addShiftSale=function addShiftSale(amount,orderId=null,paymentMethod="CASH",backendOrderId=null){
-   const delivery=pendingDeliverySnapshot();
+  window.addShiftSale=function addShiftSale(amount,orderId=null,paymentMethod="CASH",backendOrderId=null,deliverySnapshot=null){
+   const delivery=normalizeDeliverySnapshot(deliverySnapshot)||pendingDeliverySnapshot();
    const result=previousAddShiftSale(amount,orderId,paymentMethod,backendOrderId);
 
    if(delivery){
@@ -42,7 +45,7 @@
       });
       if(row){
        row.backendOrderId=backendOrderId==null?row.backendOrderId:Number(backendOrderId);
-       row.deliveryFee=Math.max(0,Number(delivery.fee||0));
+       row.deliveryFee=delivery.fee;
        row.deliveryZoneId=delivery.id;
        row.deliveryZoneName=delivery.name;
        row.deliveryPaymentMethod=String(paymentMethod||"CASH").toUpperCase();
