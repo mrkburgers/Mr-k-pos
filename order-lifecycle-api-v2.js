@@ -51,11 +51,82 @@ module.exports=function registerOrderLifecycleV2(app,io,db){
   sales.forEach(sale=>{const qty=Math.max(0,-number(sale.quantity));if(qty<=0)return;const current=getInventory.get(sale.ingredient_id);if(!current)return;const before=number(current.stock),after=before+qty;update.run(after,sale.ingredient_id);movement.run(sale.ingredient_id,"CANCEL RESTOCK",qty,before,after,`Cancelled order ${order.order_uuid}`,"system");restored.push({ingredient_id:sale.ingredient_id,name:current.name,quantity:qty,stock_after:after});});return restored;
  }
  function ensureDigitalRefund(order,actor){
-  const accountType=String(order.payment_method||"").toUpperCase();if(!["CARD","MOBILE MONEY"].includes(accountType))return null;const saleReference=`ORDER_${order.order_number}`,refundReference=`REFUND_ORDER_${order.id}`;
-  const existingRefund=db.prepare(`SELECT id FROM owner_account_transactions WHERE account_type=? AND source='REFUND' AND reference=? LIMIT 1`).get(accountType,refundReference);if(existingRefund)return existingRefund.id;
-  const original=db.prepare(`SELECT id FROM owner_account_transactions WHERE account_type=? AND source='SALE' AND reference=? LIMIT 1`).get(accountType,saleReference);
-  if(!original)db.prepare(`INSERT INTO owner_account_transactions(id,account_type,type,amount,description,source,reference,created_at_ms,created_by,created_by_staff_id,balance_after) VALUES(?,?,?,?,?,?,?,?,?,?,NULL)`).run(`system-sale-order-${order.id}`,accountType,"IN",number(order.total_amount),`${accountType==='CARD'?'Card':'Mobile Money'} sale - Order #${String(order.order_number).padStart(3,"0")}`,"SALE",saleReference,Date.parse(String(order.created_at).replace(" ","T")+"Z")||Date.now(),"system","");
-  const id=`refund-order-${order.id}`;db.prepare(`INSERT INTO owner_account_transactions(id,account_type,type,amount,description,source,reference,created_at_ms,created_by,created_by_staff_id,balance_after) VALUES(?,?,?,?,?,?,?,?,?,?,NULL)`).run(id,accountType,"OUT",number(order.total_amount),`Refund - Order #${String(order.order_number).padStart(3,"0")}`,"REFUND",refundReference,Date.now(),actor?.name||"system",actor?.staffId||"");return id;
+  const accountType=String(order.payment_method||"").toUpperCase();
+  if(!["CARD","MOBILE MONEY"].includes(accountType))return null;
+
+  const legacySaleReference=`ORDER_${order.order_number}`;
+  const permanentSaleReference=`ORDER_ID_${order.id}`;
+  const refundReference=`REFUND_ORDER_${order.id}`;
+  const existingRefund=db.prepare(`
+   SELECT id FROM owner_account_transactions
+   WHERE account_type=? AND source='REFUND' AND reference=?
+   LIMIT 1
+  `).get(accountType,refundReference);
+  if(existingRefund)return existingRefund.id;
+
+  const orderCreatedMs=Date.parse(String(order.created_at||"").replace(" ","T")+"Z");
+  const createdDate=Number.isFinite(orderCreatedMs)?new Date(orderCreatedMs):new Date();
+  const dayStart=Date.UTC(createdDate.getUTCFullYear(),createdDate.getUTCMonth(),createdDate.getUTCDate());
+  const dayEnd=dayStart+86400000;
+
+  let original=db.prepare(`
+   SELECT id FROM owner_account_transactions
+   WHERE account_type=? AND source='SALE' AND reference=?
+   LIMIT 1
+  `).get(accountType,permanentSaleReference);
+
+  if(!original){
+   original=db.prepare(`
+    SELECT id FROM owner_account_transactions
+    WHERE account_type=?
+      AND source='SALE'
+      AND reference=?
+      AND created_at_ms>=?
+      AND created_at_ms<?
+    ORDER BY created_at_ms ASC,id ASC
+    LIMIT 1
+   `).get(accountType,legacySaleReference,dayStart,dayEnd);
+  }
+
+  if(!original){
+   db.prepare(`
+    INSERT INTO owner_account_transactions(
+     id,account_type,type,amount,description,source,reference,created_at_ms,
+     created_by,created_by_staff_id,balance_after
+    ) VALUES(?,?,?,?,?,?,?,?,?,?,NULL)
+   `).run(
+    `system-sale-order-${order.id}`,
+    accountType,
+    "IN",
+    number(order.total_amount),
+    `${accountType==='CARD'?'Card':'Mobile Money'} sale - Order #${String(order.order_number).padStart(3,"0")}`,
+    "SALE",
+    permanentSaleReference,
+    Number.isFinite(orderCreatedMs)?orderCreatedMs:Date.now(),
+    "system",
+    ""
+   );
+  }
+
+  const id=`refund-order-${order.id}`;
+  db.prepare(`
+   INSERT INTO owner_account_transactions(
+    id,account_type,type,amount,description,source,reference,created_at_ms,
+    created_by,created_by_staff_id,balance_after
+   ) VALUES(?,?,?,?,?,?,?,?,?,?,NULL)
+  `).run(
+   id,
+   accountType,
+   "OUT",
+   number(order.total_amount),
+   `Refund - Order #${String(order.order_number).padStart(3,"0")}`,
+   "REFUND",
+   refundReference,
+   Date.now(),
+   actor?.name||"system",
+   actor?.staffId||""
+  );
+  return id;
  }
  const cancelOrder=db.transaction((orderId,reason,actor)=>{
   const order=db.prepare("SELECT * FROM orders WHERE id=?").get(orderId);if(!order)throw new Error("ORDER_NOT_FOUND");if(order.status==="CANCELLED")return {order,restored:[],alreadyCancelled:true};if(!["NEW","ACCEPTED"].includes(order.status))throw new Error("PREPARATION_ALREADY_STARTED");
