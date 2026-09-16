@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/expenses-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/expenses-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -88,6 +88,9 @@ app.get("/owner-order-filter-v2.js", (req, res) => {
 });
 app.get("/delivery-fee-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "delivery-fee-v2.js"));
+});
+app.get("/shift-delivery-summary-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "shift-delivery-summary-v2.js"));
 });
 
 app.get("/api/health", (req, res) => {
