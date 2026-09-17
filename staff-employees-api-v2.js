@@ -218,7 +218,7 @@ module.exports=function registerStaffEmployeesV2(app,db){
 
  app.put("/api/staff-employees/state",ownerOnly,(req,res)=>{
   try{
-   replaceState(Array.isArray(req.body?.employees)?req.body.employees:[]);
+   replaceState(Array.isArray(req.body?.employees)?req.body.employees:[],{legacyImport:true});
    res.json(fullState());
   }catch(error){
    if(sendKnownError(res,error))return;
