@@ -12,6 +12,7 @@ const registerOwnerAccountsV2 = require("./owner-accounts-api-v2");
 const registerExpensesV2 = require("./expenses-api-v2");
 const registerCombosV2 = require("./combo-api-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
+const loginRateV2 = require("./security-login-rate-v2");
 
 const app = express();
 const server = http.createServer(app);
@@ -144,6 +145,12 @@ app.post("/api/login", (req, res) => {
   const staffId = String(req.body?.staff_id ?? "").trim();
   const pin = String(req.body?.pin ?? "").trim();
 
+  if (loginRateV2.isLimited(req,staffId)) {
+    return res.status(429).json({
+      error: "Too many failed login attempts. Please try again later."
+    });
+  }
+
   if (!staffId || !pin) {
     return res.status(400).json({
       error: "staff_id and pin are required"
@@ -164,17 +171,20 @@ app.post("/api/login", (req, res) => {
   `).get(staffId);
 
   if (!account || account.pin_hash !== hashPin(pin)) {
+    loginRateV2.recordFailure(req,staffId);
     return res.status(401).json({
       error: "Invalid Staff ID or PIN."
     });
   }
 
   if (!account.active) {
+    loginRateV2.recordFailure(req,staffId);
     return res.status(403).json({
       error: "This staff account is inactive."
     });
   }
 
+  loginRateV2.clearSuccess(req,staffId);
   securityAuthV2.createSession(res,account);
 
   res.json({
