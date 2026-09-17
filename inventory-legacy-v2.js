@@ -52,14 +52,18 @@ function v2ApplyNormalizedInventory(inventoryPayload,supplierRows,deliveryRows){
   });
 
   suppliers=Array.isArray(supplierRows)?supplierRows:[];
-  inventoryDeliveries=Array.isArray(deliveryRows)?deliveryRows:[];
+  if(Array.isArray(deliveryRows)){
+   inventoryDeliveries=deliveryRows;
+  }
 
   v2RebuildLegacyInventoryItems();
 
   // Cache only. These values never write back over SQLite.
   localStorage.setItem("mrkInventoryStock",JSON.stringify(inventoryStock));
   localStorage.setItem("mrkSuppliers",JSON.stringify(suppliers));
-  localStorage.setItem("mrkInventoryDeliveries",JSON.stringify(inventoryDeliveries));
+  if(Array.isArray(deliveryRows)){
+   localStorage.setItem("mrkInventoryDeliveries",JSON.stringify(inventoryDeliveries));
+  }
  }finally{
   v2LegacyInventoryApplying=false;
  }
@@ -69,19 +73,22 @@ async function v2SyncLegacyInventory(force=false){
  if(v2LegacyInventorySyncPromise&&!force)return v2LegacyInventorySyncPromise;
 
  v2LegacyInventorySyncPromise=(async()=>{
+  const canLoadDeliveries=Boolean(loggedIn&&["owner","manager"].includes(role));
   const [inventoryResponse,suppliersResponse,deliveriesResponse]=await Promise.all([
    fetch("/api/inventory",{cache:"no-store"}),
    fetch("/api/suppliers",{cache:"no-store"}),
-   fetch("/api/deliveries",{cache:"no-store"})
+   canLoadDeliveries
+    ?fetch("/api/deliveries",{cache:"no-store"})
+    :Promise.resolve(null)
   ]);
 
-  if(!inventoryResponse.ok||!suppliersResponse.ok||!deliveriesResponse.ok){
+  if(!inventoryResponse.ok||!suppliersResponse.ok||(deliveriesResponse&&!deliveriesResponse.ok)){
    throw new Error("Unable to load inventory from restaurant server");
   }
 
   const inventoryPayload=await inventoryResponse.json();
   const supplierRows=await suppliersResponse.json();
-  const deliveryRows=await deliveriesResponse.json();
+  const deliveryRows=deliveriesResponse?await deliveriesResponse.json():null;
 
   v2ApplyNormalizedInventory(inventoryPayload,supplierRows,deliveryRows);
   return {inventoryPayload,supplierRows,deliveryRows};
