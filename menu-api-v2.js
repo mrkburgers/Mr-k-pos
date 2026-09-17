@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const registerInventoryV2 = require("./inventory-api-v2");
 const { consumeOrderInventory } = require("./inventory-service-v2");
+const createSecurityAuthV2 = require("./security-auth-v2");
 
 function makeId(prefix,name){
   const slug=String(name||"")
@@ -14,6 +15,7 @@ function makeId(prefix,name){
 }
 
 module.exports=function registerMenuAdminV2(app,io,db){
+  const ownerOnly=createSecurityAuthV2().requireRole("owner");
   registerInventoryV2(app,io,db);
 
   app.get("/api/menu-v2",(req,res)=>{
@@ -111,7 +113,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.status(201).json({id:created.orderId,order_number:created.orderNumber,order_uuid,status:"NEW",items,inventory_consumed:created.consumed});
   });
 
-  app.post("/api/menu/categories",(req,res)=>{
+  app.post("/api/menu/categories",ownerOnly,(req,res)=>{
     const name=String(req.body?.name??"").trim();
     const icon=String(req.body?.icon??"🍽️").trim()||"🍽️";
     const active=req.body?.active!==false;
@@ -132,7 +134,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.status(201).json({id,name,icon,active,sort_order:nextSort});
   });
 
-  app.patch("/api/menu/categories/:id",(req,res)=>{
+  app.patch("/api/menu/categories/:id",ownerOnly,(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT * FROM menu_categories WHERE id=?").get(id);
     if(!current)return res.status(404).json({error:"category not found"});
@@ -147,7 +149,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({id,name,icon,active});
   });
 
-  app.post("/api/menu/items",(req,res)=>{
+  app.post("/api/menu/items",ownerOnly,(req,res)=>{
     const name=String(req.body?.name??"").trim();
     const categoryId=String(req.body?.category_id??"").trim();
     const price=Number(req.body?.price);
@@ -187,7 +189,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.status(201).json({id,name,category_id:categoryId,price:Math.round(price),active});
   });
 
-  app.patch("/api/menu/items/:id",(req,res)=>{
+  app.patch("/api/menu/items/:id",ownerOnly,(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT * FROM menu_items WHERE id=?").get(id);
     if(!current)return res.status(404).json({error:"menu item not found"});
@@ -230,7 +232,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({id,name,category_id:categoryId,price:Math.round(price),active});
   });
 
-  app.delete("/api/menu/items/:id",(req,res)=>{
+  app.delete("/api/menu/items/:id",ownerOnly,(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT id,name FROM menu_items WHERE id=?").get(id);
     if(!current)return res.status(404).json({error:"menu item not found"});
@@ -246,7 +248,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({ok:true,id});
   });
 
-  app.post("/api/menu/ingredients",(req,res)=>{
+  app.post("/api/menu/ingredients",ownerOnly,(req,res)=>{
     const name=String(req.body?.name??"").trim();
     if(!name)return res.status(400).json({error:"ingredient name is required"});
     const requestedId=String(req.body?.id??"").trim();
@@ -274,7 +276,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.status(201).json({id,name,active,tracked,low_stock_level:lowStock});
   });
 
-  app.patch("/api/menu/ingredients/:id",(req,res)=>{
+  app.patch("/api/menu/ingredients/:id",ownerOnly,(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT * FROM menu_ingredients WHERE id=?").get(id);
     if(!current)return res.status(404).json({error:"ingredient not found"});
@@ -288,7 +290,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({id,name,active});
   });
 
-  app.delete("/api/menu/ingredients/:id",(req,res)=>{
+  app.delete("/api/menu/ingredients/:id",ownerOnly,(req,res)=>{
     const id=req.params.id;
     const current=db.prepare("SELECT id,name FROM menu_ingredients WHERE id=?").get(id);
     if(!current)return res.status(404).json({error:"ingredient not found"});
