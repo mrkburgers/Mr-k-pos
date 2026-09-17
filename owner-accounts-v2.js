@@ -35,6 +35,7 @@ async function v2FetchOwnerAccounts(){
 }
 
 async function v2InitializeOwnerAccounts(){
+ if(v2OwnerAccountsReady)return;
  const localState=v2OwnerAccountsSnapshot();
  const response=await fetch("/api/owner-accounts/import-if-empty",{
   method:"POST",
@@ -198,8 +199,3 @@ if(typeof socket!=="undefined"&&socket){
   }
  });
 }
-
-v2InitializeOwnerAccounts().catch(error=>{
- console.error("Owner account initialization failed",error);
- v2OwnerAccountsReady=true;
-});
