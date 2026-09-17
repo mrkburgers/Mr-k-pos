@@ -88,6 +88,9 @@ window.login=async function login(){
    if(typeof v2InitializeOwnerAccounts==="function"){
     await v2InitializeOwnerAccounts();
    }
+   if(typeof v2InitializeExpenses==="function"){
+    await v2InitializeExpenses();
+   }
    getActiveShift();
    getShiftHistory();
    showStorageIntegrityWarning();
@@ -96,6 +99,9 @@ window.login=async function login(){
   }
 
   if(role==="manager"){
+   if(typeof v2InitializeExpenses==="function"){
+    await v2InitializeExpenses();
+   }
    managerHome();
    return;
   }
