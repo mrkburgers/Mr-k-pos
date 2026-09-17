@@ -270,7 +270,7 @@ app.get("/api/settings", (req, res) => {
   });
 });
 
-app.patch("/api/settings/online-ordering", (req, res) => {
+app.patch("/api/settings/online-ordering", securityAuthV2.requireRole("owner","manager"), (req, res) => {
   const { enabled } = req.body;
 
   if (typeof enabled !== "boolean") {
@@ -299,7 +299,7 @@ app.patch("/api/settings/online-ordering", (req, res) => {
   });
 });
 
-app.patch("/api/settings/restaurant-status", (req, res) => {
+app.patch("/api/settings/restaurant-status", securityAuthV2.requireRole("owner","manager"), (req, res) => {
   const { status } = req.body;
 
   if (!["OPEN", "CLOSED"].includes(status)) {
