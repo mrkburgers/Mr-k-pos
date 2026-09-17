@@ -85,6 +85,9 @@ window.login=async function login(){
   currentStaffId=result.staff_id;
 
   if(role==="owner"){
+   if(typeof v2InitializeOwnerAccounts==="function"){
+    await v2InitializeOwnerAccounts();
+   }
    getActiveShift();
    getShiftHistory();
    showStorageIntegrityWarning();
@@ -382,7 +385,7 @@ window.v2OrderDetailsPage=async function v2OrderDetailsPage(id,backAction=""){
   const canCancel=["NEW","ACCEPTED"].includes(order.status)&&["cashier","manager","owner"].includes(role);
   const canComplete=order.status==="READY"&&["cashier","manager","owner"].includes(role);
   const canPrint=order.payment_status==="PAID"&&order.status!=="CANCELLED";
-  const timeline=Array.isArray(order.timeline)?order.timeline:[];
+  const timeline=Array.isArray(order?.timeline)?order.timeline:[];
   document.querySelector(".panel").innerHTML=`
    <div class="order-top">
     <div>
