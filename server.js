@@ -11,12 +11,14 @@ const registerShiftV2 = require("./shift-api-v2");
 const registerOwnerAccountsV2 = require("./owner-accounts-api-v2");
 const registerExpensesV2 = require("./expenses-api-v2");
 const registerCombosV2 = require("./combo-api-v2");
+const createSecurityAuthV2 = require("./security-auth-v2");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json());
 const PORT = 3000;
+const securityAuthV2 = createSecurityAuthV2();
 
 function hashPin(pin){
   return crypto
@@ -172,6 +174,8 @@ app.post("/api/login", (req, res) => {
       error: "This staff account is inactive."
     });
   }
+
+  securityAuthV2.createSession(res,account);
 
   res.json({
     id: account.id,
