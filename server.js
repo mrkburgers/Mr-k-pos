@@ -3,7 +3,6 @@ const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
 const db = require("./database");
 const registerDeliveryZonesV2 = require("./delivery-zones-api-v2");
 const registerMenuAdminV2 = require("./menu-api-v2");
@@ -13,6 +12,7 @@ const registerExpensesV2 = require("./expenses-api-v2");
 const registerCombosV2 = require("./combo-api-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
 const loginRateV2 = require("./security-login-rate-v2");
+const pinSecurityV2 = require("./security-pin-v2");
 
 const app = express();
 const server = http.createServer(app);
@@ -20,13 +20,6 @@ const io = new Server(server);
 app.use(express.json());
 const PORT = 3000;
 const securityAuthV2 = createSecurityAuthV2();
-
-function hashPin(pin){
-  return crypto
-    .createHash("sha256")
-    .update(String(pin))
-    .digest("hex");
-}
 
 registerDeliveryZonesV2(app,io,db);
 registerMenuAdminV2(app,io,db);
@@ -170,7 +163,11 @@ app.post("/api/login", (req, res) => {
     LIMIT 1
   `).get(staffId);
 
-  if (!account || account.pin_hash !== hashPin(pin)) {
+  const pinCheck=account
+    ?pinSecurityV2.verifyPin(pin,account.pin_hash)
+    :{ok:false,needsUpgrade:false};
+
+  if (!account || !pinCheck.ok) {
     loginRateV2.recordFailure(req,staffId);
     return res.status(401).json({
       error: "Invalid Staff ID or PIN."
@@ -182,6 +179,16 @@ app.post("/api/login", (req, res) => {
     return res.status(403).json({
       error: "This staff account is inactive."
     });
+  }
+
+  if (pinCheck.needsUpgrade) {
+    const upgradedHash=pinSecurityV2.hashPin(pin);
+    db.prepare(`
+      UPDATE staff_accounts
+      SET pin_hash=?,updated_at=CURRENT_TIMESTAMP
+      WHERE id=?
+    `).run(upgradedHash,account.id);
+    account.pin_hash=upgradedHash;
   }
 
   loginRateV2.clearSuccess(req,staffId);
