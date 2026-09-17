@@ -1,4 +1,9 @@
+const createSecurityAuthV2=require("./security-auth-v2");
+
 module.exports=function registerInventoryV2(app,io,db){
+ const ownerOnly=createSecurityAuthV2().requireRole("owner");
+ const inventoryAccess=createSecurityAuthV2().requireRole("owner","manager");
+
  const ingredientColumns=db.prepare("PRAGMA table_info(menu_item_ingredients)").all();
  if(!ingredientColumns.some(column=>column.name==="quantity")){
   db.exec("ALTER TABLE menu_item_ingredients ADD COLUMN quantity REAL NOT NULL DEFAULT 1");
@@ -156,11 +161,11 @@ module.exports=function registerInventoryV2(app,io,db){
   res.json(supplierRows());
  });
 
- app.get("/api/deliveries",(req,res)=>{
+ app.get("/api/deliveries",inventoryAccess,(req,res)=>{
   res.json(deliveryRows());
  });
 
- app.post("/api/suppliers",(req,res)=>{
+ app.post("/api/suppliers",ownerOnly,(req,res)=>{
   const name=String(req.body?.name||"").trim();
   const phone=String(req.body?.phone||"").trim();
   const requestedId=Number(req.body?.id);
@@ -184,7 +189,7 @@ module.exports=function registerInventoryV2(app,io,db){
   res.status(201).json(supplierRows().find(supplier=>supplier.id===id));
  });
 
- app.patch("/api/suppliers/:id",(req,res)=>{
+ app.patch("/api/suppliers/:id",ownerOnly,(req,res)=>{
   const id=Number(req.params.id);
   const current=db.prepare("SELECT * FROM suppliers WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"supplier not found"});
@@ -212,7 +217,7 @@ module.exports=function registerInventoryV2(app,io,db){
   res.json(supplierRows().find(supplier=>supplier.id===id));
  });
 
- app.delete("/api/suppliers/:id",(req,res)=>{
+ app.delete("/api/suppliers/:id",ownerOnly,(req,res)=>{
   const id=Number(req.params.id);
   const current=db.prepare("SELECT * FROM suppliers WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"supplier not found"});
@@ -227,7 +232,7 @@ module.exports=function registerInventoryV2(app,io,db){
   res.json({ok:true,id});
  });
 
- app.post("/api/deliveries",(req,res)=>{
+ app.post("/api/deliveries",inventoryAccess,(req,res)=>{
   seedInventory.run();
 
   const supplierId=Number(req.body?.supplier_id);
@@ -322,7 +327,7 @@ module.exports=function registerInventoryV2(app,io,db){
   res.status(201).json(deliveryRows().find(delivery=>delivery.id===deliveryId));
  });
 
- app.patch("/api/inventory/:ingredientId",(req,res)=>{
+ app.patch("/api/inventory/:ingredientId",ownerOnly,(req,res)=>{
   const id=String(req.params.ingredientId||"");
   const ingredient=db.prepare("SELECT id,name FROM menu_ingredients WHERE id=?").get(id);
   if(!ingredient)return res.status(404).json({error:"ingredient not found"});
@@ -348,7 +353,7 @@ module.exports=function registerInventoryV2(app,io,db){
   res.json(updated);
  });
 
- app.post("/api/inventory/:ingredientId/adjust",(req,res)=>{
+ app.post("/api/inventory/:ingredientId/adjust",inventoryAccess,(req,res)=>{
   const id=String(req.params.ingredientId||"");
   const ingredient=db.prepare("SELECT id,name FROM menu_ingredients WHERE id=?").get(id);
   if(!ingredient)return res.status(404).json({error:"ingredient not found"});
@@ -403,7 +408,7 @@ module.exports=function registerInventoryV2(app,io,db){
   });
  });
 
- app.get("/api/inventory/movements",(req,res)=>{
+ app.get("/api/inventory/movements",inventoryAccess,(req,res)=>{
   const rows=db.prepare(`
    SELECT
     m.id,
