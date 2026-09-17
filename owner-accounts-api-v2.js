@@ -1,4 +1,6 @@
-module.exports=function registerOwnerAccountsV2(app,io,db){
+module.exports=function registerOwnerAccountsV2(app,io,db,securityAuthV2){
+ const ownerOnly=securityAuthV2.requireRole("owner");
+
  db.exec(`
   CREATE TABLE IF NOT EXISTS owner_accounts (
    account_type TEXT PRIMARY KEY CHECK(account_type IN ('CASH','CARD','MOBILE MONEY')),
@@ -177,11 +179,11 @@ module.exports=function registerOwnerAccountsV2(app,io,db){
   return Number(count)===0&&Number(flagged)===0;
  }
 
- app.get('/api/owner-accounts',(req,res)=>{
+ app.get('/api/owner-accounts',ownerOnly,(req,res)=>{
   res.json(fullState());
  });
 
- app.post('/api/owner-accounts/import-if-empty',(req,res)=>{
+ app.post('/api/owner-accounts/import-if-empty',ownerOnly,(req,res)=>{
   if(!backendIsEmpty()){
    return res.json({imported:false,state:fullState()});
   }
@@ -195,7 +197,7 @@ module.exports=function registerOwnerAccountsV2(app,io,db){
   res.json({imported:true,state:fullState()});
  });
 
- app.put('/api/owner-accounts/state',(req,res)=>{
+ app.put('/api/owner-accounts/state',ownerOnly,(req,res)=>{
   const payload=req.body||{};
   db.transaction(()=>{
    replaceAccount('CASH',payload.cash||{});
