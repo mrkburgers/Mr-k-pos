@@ -1,7 +1,9 @@
 const path=require("path");
 const createSecurityAuthV2=require("./security-auth-v2");
+const cleanupLegacyBootstrapStaff=require("./staff-bootstrap-cleanup-v2");
 
 module.exports=function registerStaffEmployeesV2(app,db){
+ cleanupLegacyBootstrapStaff(db);
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
 
  app.get("/staff-employees-v2.js",(req,res)=>{
