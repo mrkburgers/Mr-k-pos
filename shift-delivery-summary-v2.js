@@ -198,3 +198,11 @@
   };
  }
 })();
+
+(function loadStaffEmployeesV2(){
+ if(document.querySelector('script[data-v2-staff-employees="true"]'))return;
+ const script=document.createElement("script");
+ script.src="/staff-employees-v2.js";
+ script.dataset.v2StaffEmployees="true";
+ document.head.appendChild(script);
+})();
