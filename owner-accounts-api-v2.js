@@ -1,7 +1,9 @@
 const createSecurityAuthV2=require("./security-auth-v2");
+const registerStaffPinV2=require("./staff-pin-api-v2");
 
 module.exports=function registerOwnerAccountsV2(app,io,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
+ registerStaffPinV2(app,db);
 
  db.exec(`
   CREATE TABLE IF NOT EXISTS owner_accounts (
