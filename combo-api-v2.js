@@ -1,4 +1,5 @@
 const crypto=require("crypto");
+const createSecurityAuthV2=require("./security-auth-v2");
 
 function makeId(prefix,name){
  const slug=String(name||"")
@@ -12,6 +13,8 @@ function makeId(prefix,name){
 }
 
 module.exports=function registerCombosV2(app,io,db){
+ const ownerOnly=createSecurityAuthV2().requireRole("owner");
+
  const categoryColumns=db.prepare("PRAGMA table_info(menu_categories)").all();
  if(!categoryColumns.some(column=>column.name==="category_type")){
   db.exec("ALTER TABLE menu_categories ADD COLUMN category_type TEXT NOT NULL DEFAULT 'item'");
@@ -161,7 +164,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.json({categories:categoryRows(),items:itemRows(),combos:comboRows()});
  });
 
- app.post("/api/combos/categories",(req,res)=>{
+ app.post("/api/combos/categories",ownerOnly,(req,res)=>{
   const name=String(req.body?.name||"").trim();
   const icon=String(req.body?.icon||"🍱").trim()||"🍱";
   const active=req.body?.active!==false;
@@ -180,7 +183,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.status(201).json({id,name,icon,active,sort_order:nextSort,category_type:"combo"});
  });
 
- app.patch("/api/menu/items/:id/visibility",(req,res)=>{
+ app.patch("/api/menu/items/:id/visibility",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   const item=db.prepare("SELECT id,name,active,show_on_menu FROM menu_items WHERE id=?").get(id);
   if(!item)return res.status(404).json({error:"menu item not found"});
@@ -191,7 +194,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.json({id,name:item.name,active:Boolean(item.active),show_on_menu:req.body.show_on_menu});
  });
 
- app.post("/api/combos",(req,res)=>{
+ app.post("/api/combos",ownerOnly,(req,res)=>{
   const name=String(req.body?.name||"").trim();
   const description=String(req.body?.description||"").trim();
   const categoryId=String(req.body?.category_id||"").trim();
@@ -230,7 +233,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.status(201).json(comboRows().find(combo=>combo.id===id));
  });
 
- app.patch("/api/combos/:id",(req,res)=>{
+ app.patch("/api/combos/:id",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   const current=db.prepare("SELECT * FROM menu_combos WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"combo not found"});
@@ -277,7 +280,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.json(comboRows().find(combo=>combo.id===id));
  });
 
- app.put("/api/combos/:id/choice-groups",(req,res)=>{
+ app.put("/api/combos/:id/choice-groups",ownerOnly,(req,res)=>{
   const comboId=String(req.params.id||"");
   if(!db.prepare("SELECT id FROM menu_combos WHERE id=?").get(comboId))return res.status(404).json({error:"combo not found"});
   const groups=Array.isArray(req.body?.choice_groups)?req.body.choice_groups:[];
@@ -324,7 +327,7 @@ module.exports=function registerCombosV2(app,io,db){
   res.json(comboRows().find(combo=>combo.id===comboId));
  });
 
- app.delete("/api/combos/:id",(req,res)=>{
+ app.delete("/api/combos/:id",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   if(!db.prepare("SELECT id FROM menu_combos WHERE id=?").get(id))return res.status(404).json({error:"combo not found"});
   const remove=db.transaction(()=>{
