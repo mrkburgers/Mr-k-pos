@@ -1,5 +1,7 @@
-module.exports=function registerOwnerAccountsV2(app,io,db,securityAuthV2){
- const ownerOnly=securityAuthV2.requireRole("owner");
+const createSecurityAuthV2=require("./security-auth-v2");
+
+module.exports=function registerOwnerAccountsV2(app,io,db){
+ const ownerOnly=createSecurityAuthV2().requireRole("owner");
 
  db.exec(`
   CREATE TABLE IF NOT EXISTS owner_accounts (
