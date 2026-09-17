@@ -91,15 +91,21 @@ module.exports=function registerStaffEmployeesV2(app,db){
   `).all().map(mapRow);
  }
 
- function normalizeEmployee(employee){
+ function normalizeEmployee(employee,{legacyImport=false}={}){
   const id=String(employee?.id||"").trim();
   const name=String(employee?.name||"").trim();
   const position=String(employee?.position||"").trim();
-  const salary=Number(employee?.salary??employee?.monthly_salary??0);
+  const salaryValue=employee?.salary??employee?.monthly_salary;
+  const parsedSalary=Number(salaryValue);
+  const salary=Number.isFinite(parsedSalary)&&parsedSalary>=0?parsedSalary:0;
   const startDate=String(employee?.startDate??employee?.start_date??"").trim();
   const active=employee?.active!==false;
 
-  if(!id||!name||!position||!startDate||!Number.isFinite(salary)||salary<0){
+  if(!id||!name){
+   throw new Error("INVALID_EMPLOYEE");
+  }
+
+  if(!legacyImport&&(!position||!startDate||!Number.isFinite(parsedSalary)||parsedSalary<0)){
    throw new Error("INVALID_EMPLOYEE");
   }
 
@@ -114,9 +120,9 @@ module.exports=function registerStaffEmployeesV2(app,db){
   };
  }
 
- function replaceState(employees){
+ function replaceState(employees,{legacyImport=false}={}){
   if(!Array.isArray(employees))throw new Error("INVALID_EMPLOYEE_STATE");
-  const normalized=employees.map(normalizeEmployee);
+  const normalized=employees.map(employee=>normalizeEmployee(employee,{legacyImport}));
   const seenIds=new Set();
   const seenAccounts=new Set();
   normalized.forEach(employee=>{
@@ -200,7 +206,7 @@ module.exports=function registerStaffEmployeesV2(app,db){
    return res.json({imported:false,state:fullState()});
   }
   try{
-   replaceState(Array.isArray(req.body?.employees)?req.body.employees:[]);
+   replaceState(Array.isArray(req.body?.employees)?req.body.employees:[],{legacyImport:true});
    res.json({imported:true,state:fullState()});
   }catch(error){
    if(sendKnownError(res,error))return;
