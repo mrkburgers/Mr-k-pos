@@ -2,8 +2,11 @@ const crypto=require("crypto");
 
 const COOKIE_NAME="mrk_pos_session";
 const SESSION_TTL_MS=12*60*60*1000;
+let sharedSecurityAuthV2=null;
 
 module.exports=function createSecurityAuthV2(){
+ if(sharedSecurityAuthV2)return sharedSecurityAuthV2;
+
  const sessions=new Map();
 
  function removeExpiredSessions(){
@@ -89,11 +92,12 @@ module.exports=function createSecurityAuthV2(){
   };
  }
 
- return {
+ sharedSecurityAuthV2={
   createSession,
   getSession,
   clearSession,
   requireAuth,
   requireRole
  };
+ return sharedSecurityAuthV2;
 };
