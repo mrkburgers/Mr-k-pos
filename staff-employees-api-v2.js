@@ -1,7 +1,12 @@
+const path=require("path");
 const createSecurityAuthV2=require("./security-auth-v2");
 
 module.exports=function registerStaffEmployeesV2(app,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
+
+ app.get("/staff-employees-v2.js",(req,res)=>{
+  res.sendFile(path.join(__dirname,"staff-employees-v2.js"));
+ });
 
  db.exec(`
   CREATE TABLE IF NOT EXISTS staff_employees (
