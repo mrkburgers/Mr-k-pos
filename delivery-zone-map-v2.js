@@ -2,6 +2,7 @@
 (function(){
  const BAMAKO_CENTER=[12.6392,-8.0029];
  const BAMAKO_ZOOM=12;
+ const MAPBOX_PUBLIC_TOKEN="pk.eyJ1IjoibXJrYnVyZ2VycyIsImEiOiJjbXU1YTA3a3cwYXkyMnpzNzRpODRvYjBnIn0.NRPWmNW1VICsTRRtJJ777YQ";
  let map=null;
  let mapZones=[];
  let selectedZoneId="";
@@ -162,9 +163,11 @@
   if(!container)return;
   cleanupMap();
   map=L.map(container,{zoomControl:true}).setView(BAMAKO_CENTER,BAMAKO_ZOOM);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=${encodeURIComponent(MAPBOX_PUBLIC_TOKEN)}`,{
    maxZoom:19,
-   attribution:'&copy; OpenStreetMap contributors'
+   tileSize:256,
+   zoomOffset:0,
+   attribution:'© Mapbox © OpenStreetMap contributors'
   }).addTo(map);
   map.on("click",event=>addPoint(event.latlng));
   loadSelectedZoneBoundary({fit:true});
