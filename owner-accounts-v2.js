@@ -339,3 +339,232 @@ if(typeof v2OriginalOwnerStaffManagement==="function"){
   return result;
  };
 }
+
+let v2StaffAdminAccounts=[];
+
+async function v2LoadStaffAdminAccounts(){
+ const response=await fetch("/api/staff-admin",{cache:"no-store"});
+ const result=await response.json().catch(()=>[]);
+ if(!response.ok)throw new Error(result.error||"Unable to load staff accounts.");
+ v2StaffAdminAccounts=Array.isArray(result)?result:[];
+ return v2StaffAdminAccounts;
+}
+
+window.ownerEditAccount=async function ownerEditAccount(){
+ if(role!=="owner")return;
+ try{
+  const accounts=await v2LoadStaffAdminAccounts();
+  const account=accounts.find(item=>item.role==="owner");
+  if(!account)throw new Error("Owner account not found.");
+  clearInterval(timerInterval);
+  document.getElementById("root").innerHTML=`
+  <div class="app">
+   <button class="back" onclick="ownerStaffManagement()">← BACK</button>
+   <div class="logo">MR K BURGERS<span>OWNER — ACCOUNT</span></div>
+   <div class="panel">
+    <span class="badge">👑 OWNER ACCOUNT</span>
+    <h1>${esc(account.name)}</h1>
+    <div class="info-row"><span>Name</span><input id="v2OwnerName" value="${esc(account.name)}"></div>
+    <div class="info-row"><span>Staff ID</span><input id="v2OwnerStaffId" value="${esc(account.staff_id)}"></div>
+    <div class="info-row"><span>Role</span><strong>OWNER</strong></div>
+    <button class="primary" style="margin-top:20px;width:100%" onclick="v2SaveOwnerAccountDetails(${Number(account.id)})">SAVE CHANGES</button>
+    <button class="secondary" style="margin-top:12px;width:100%" onclick="v2ChangeStaffPinPage(${Number(account.id)})">CHANGE 8-DIGIT PIN</button>
+   </div>
+  </div>`;
+ }catch(error){
+  alert(error.message||"Unable to load Owner account.");
+ }
+};
+
+window.v2SaveOwnerAccountDetails=async function v2SaveOwnerAccountDetails(accountId){
+ const name=String(document.getElementById("v2OwnerName")?.value||"").trim();
+ const staffId=String(document.getElementById("v2OwnerStaffId")?.value||"").trim();
+ if(!name||!staffId){
+  alert("Name and Staff ID are required.");
+  return;
+ }
+ try{
+  const response=await fetch(`/api/staff-admin/${Number(accountId)}`,{
+   method:"PATCH",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name,staff_id:staffId})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Unable to update Owner account.");
+  currentStaffName=result.name;
+  currentStaffId=result.staff_id;
+  if(typeof ownerAccount==="object"&&ownerAccount){
+   ownerAccount.name=result.name;
+   ownerAccount.staffId=result.staff_id;
+   localStorage.setItem("mrkOwnerAccount",JSON.stringify(ownerAccount));
+  }
+  alert("Owner account updated successfully.");
+  await ownerEditAccount();
+ }catch(error){
+  alert(error.message||"Unable to update Owner account.");
+ }
+};
+
+window.ownerStaffList=async function ownerStaffList(){
+ if(role!=="owner")return;
+ try{
+  const accounts=await v2LoadStaffAdminAccounts();
+  const rows=accounts.filter(account=>account.role!=="owner").map(account=>`
+   <div class="card">
+    <div class="category-icon">${account.role==="manager"?"🧑‍💼":account.role==="cashier"?"💵":"🍳"}</div>
+    <h3>${esc(account.name)}</h3>
+    <p class="muted">${esc(account.staff_id)} — ${esc(String(account.role).toUpperCase())}</p>
+    <p class="muted">${account.active?"ACTIVE":"INACTIVE"}</p>
+    <button class="primary" onclick="v2StaffAdminEditPage(${Number(account.id)})">EDIT</button>
+    <button class="secondary" onclick="v2ChangeStaffPinPage(${Number(account.id)})">CHANGE PIN</button>
+    <button class="secondary" onclick="v2ToggleStaffAdminActive(${Number(account.id)},${account.active?"false":"true"})">${account.active?"DEACTIVATE":"ACTIVATE"}</button>
+   </div>`).join("");
+  clearInterval(timerInterval);
+  document.getElementById("root").innerHTML=`
+  <div class="app">
+   <button class="back" onclick="ownerStaffManagement()">← BACK</button>
+   <div class="logo">MR K BURGERS<span>OWNER — STAFF LIST</span></div>
+   <div class="panel">
+    <span class="badge">👥 POS STAFF ACCOUNTS</span>
+    <h1>Staff Accounts</h1>
+    <p class="muted">These are the real POS login accounts stored on the restaurant server.</p>
+    <div class="grid">${rows||'<p class="muted">No staff accounts found.</p>'}</div>
+   </div>
+  </div>`;
+ }catch(error){
+  alert(error.message||"Unable to load staff accounts.");
+ }
+};
+
+window.v2StaffAdminEditPage=async function v2StaffAdminEditPage(accountId){
+ try{
+  if(!v2StaffAdminAccounts.length)await v2LoadStaffAdminAccounts();
+  const account=v2StaffAdminAccounts.find(item=>Number(item.id)===Number(accountId));
+  if(!account||account.role==="owner")return;
+  document.getElementById("root").innerHTML=`
+  <div class="app">
+   <button class="back" onclick="ownerStaffList()">← BACK</button>
+   <div class="logo">MR K BURGERS<span>OWNER — EDIT STAFF ACCOUNT</span></div>
+   <div class="panel">
+    <span class="badge">✏️ EDIT POS ACCOUNT</span>
+    <h1>${esc(account.name)}</h1>
+    <div class="info-row"><span>Name</span><input id="v2EditStaffName" value="${esc(account.name)}"></div>
+    <div class="info-row"><span>Staff ID</span><input id="v2EditStaffId" value="${esc(account.staff_id)}"></div>
+    <div class="info-row"><span>Role</span><select id="v2EditStaffRole">
+     <option value="manager" ${account.role==="manager"?"selected":""}>Manager</option>
+     <option value="cashier" ${account.role==="cashier"?"selected":""}>Cashier</option>
+     <option value="kitchen" ${account.role==="kitchen"?"selected":""}>Kitchen</option>
+    </select></div>
+    <button class="primary" style="margin-top:20px;width:100%" onclick="v2SaveStaffAdminAccount(${Number(account.id)})">SAVE CHANGES</button>
+    <button class="secondary" style="margin-top:12px;width:100%" onclick="v2ChangeStaffPinPage(${Number(account.id)})">CHANGE PIN</button>
+   </div>
+  </div>`;
+ }catch(error){
+  alert(error.message||"Unable to open staff account.");
+ }
+};
+
+window.v2SaveStaffAdminAccount=async function v2SaveStaffAdminAccount(accountId){
+ const name=String(document.getElementById("v2EditStaffName")?.value||"").trim();
+ const staffId=String(document.getElementById("v2EditStaffId")?.value||"").trim();
+ const staffRole=String(document.getElementById("v2EditStaffRole")?.value||"").trim();
+ if(!name||!staffId||!staffRole){
+  alert("Please complete all account fields.");
+  return;
+ }
+ try{
+  const response=await fetch(`/api/staff-admin/${Number(accountId)}`,{
+   method:"PATCH",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name,staff_id:staffId,role:staffRole})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Unable to update staff account.");
+  alert("Staff account updated successfully.");
+  await ownerStaffList();
+ }catch(error){
+  alert(error.message||"Unable to update staff account.");
+ }
+};
+
+window.v2ToggleStaffAdminActive=async function v2ToggleStaffAdminActive(accountId,active){
+ if(!confirm(`${active?"Activate":"Deactivate"} this POS account?`))return;
+ try{
+  const response=await fetch(`/api/staff-admin/${Number(accountId)}/active`,{
+   method:"PATCH",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({active:Boolean(active)})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Unable to update account status.");
+  await ownerStaffList();
+ }catch(error){
+  alert(error.message||"Unable to update account status.");
+ }
+};
+
+window.ownerAddStaff=function ownerAddStaff(){
+ if(role!=="owner")return;
+ clearInterval(timerInterval);
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerStaffManagement()">← BACK</button>
+  <div class="logo">MR K BURGERS<span>OWNER — ADD STAFF ACCOUNT</span></div>
+  <div class="panel">
+   <span class="badge">➕ NEW POS ACCOUNT</span>
+   <h1>Create Staff Account</h1>
+   <p class="muted">Employee salary/profile information will be connected in Staff Backend Phase 2.</p>
+   <div class="info-row"><span>Name</span><input id="v2NewAdminStaffName" placeholder="Staff name"></div>
+   <div class="info-row"><span>Staff ID</span><input id="v2NewAdminStaffId" placeholder="Staff ID"></div>
+   <div class="info-row"><span>Role</span><select id="v2NewAdminStaffRole" onchange="v2RefreshNewStaffPinHint()">
+    <option value="">Select role</option>
+    <option value="manager">Manager</option>
+    <option value="cashier">Cashier</option>
+    <option value="kitchen">Kitchen</option>
+   </select></div>
+   <div class="info-row"><span>PIN</span><input id="v2NewAdminStaffPin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Select role first"></div>
+   <div id="v2NewStaffPinHint" class="system-note">Manager uses 8 digits. Cashier and Kitchen use 4 digits.</div>
+   <button class="primary" style="margin-top:20px;width:100%" onclick="v2CreateStaffAdminAccount()">CREATE STAFF ACCOUNT</button>
+  </div>
+ </div>`;
+};
+
+window.v2RefreshNewStaffPinHint=function v2RefreshNewStaffPinHint(){
+ const selected=String(document.getElementById("v2NewAdminStaffRole")?.value||"");
+ const input=document.getElementById("v2NewAdminStaffPin");
+ const length=selected==="manager"?8:(selected==="cashier"||selected==="kitchen"?4:0);
+ if(input){
+  input.maxLength=length||8;
+  input.value="";
+  input.placeholder=length?`${length}-digit PIN`:"Select role first";
+ }
+};
+
+window.v2CreateStaffAdminAccount=async function v2CreateStaffAdminAccount(){
+ const name=String(document.getElementById("v2NewAdminStaffName")?.value||"").trim();
+ const staffId=String(document.getElementById("v2NewAdminStaffId")?.value||"").trim();
+ const staffRole=String(document.getElementById("v2NewAdminStaffRole")?.value||"").trim();
+ const pin=String(document.getElementById("v2NewAdminStaffPin")?.value||"").trim();
+ const length=staffRole==="manager"?8:4;
+ if(!name||!staffId||!["manager","cashier","kitchen"].includes(staffRole)){
+  alert("Please complete all staff account fields.");
+  return;
+ }
+ if(!new RegExp(`^\\d{${length}}$`).test(pin)){
+  alert(`PIN must be exactly ${length} numeric digits.`);
+  return;
+ }
+ try{
+  const response=await fetch("/api/staff-admin",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name,staff_id:staffId,role:staffRole,pin})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Unable to create staff account.");
+  alert("Staff account created successfully.");
+  await ownerStaffList();
+ }catch(error){
+  alert(error.message||"Unable to create staff account.");
+ }
+};
