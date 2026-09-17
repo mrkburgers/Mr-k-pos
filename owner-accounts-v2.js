@@ -199,3 +199,143 @@ if(typeof socket!=="undefined"&&socket){
   }
  });
 }
+
+let v2StaffPinAccounts=[];
+
+async function v2LoadStaffPinAccounts(){
+ const response=await fetch("/api/staff",{cache:"no-store"});
+ if(!response.ok)throw new Error("Unable to load staff accounts.");
+ v2StaffPinAccounts=await response.json();
+ return v2StaffPinAccounts;
+}
+
+window.v2StaffPinManagement=async function v2StaffPinManagement(){
+ if(role!=="owner"){
+  alert("Only the owner can manage staff PINs.");
+  return;
+ }
+ try{
+  const accounts=await v2LoadStaffPinAccounts();
+  clearInterval(timerInterval);
+  document.getElementById("root").innerHTML=`
+  <div class="app">
+   <button class="back" onclick="ownerStaffManagement()">← BACK</button>
+   <div class="logo">MR K BURGERS<span>OWNER — PIN MANAGEMENT</span></div>
+   <div class="panel">
+    <span class="badge">🔐 STAFF PIN SECURITY</span>
+    <h1>PIN Management</h1>
+    <p class="muted">Owner and Manager use exactly 8 numeric digits. Cashier and Kitchen use exactly 4 numeric digits.</p>
+    <div class="grid">
+     ${accounts.map(account=>`
+      <div class="card">
+       <div class="category-icon">${account.role==="owner"?"👑":account.role==="manager"?"🧑‍💼":account.role==="cashier"?"💵":"🍳"}</div>
+       <h3>${esc(account.name)}</h3>
+       <p class="muted">${esc(account.staff_id)} — ${esc(String(account.role).toUpperCase())}</p>
+       <p class="muted">Required PIN: ${account.role==="owner"||account.role==="manager"?"8 digits":"4 digits"}</p>
+       <button class="primary" onclick="v2ChangeStaffPinPage(${Number(account.id)})">CHANGE PIN</button>
+      </div>
+     `).join("")}
+    </div>
+   </div>
+  </div>`;
+ }catch(error){
+  alert(error.message||"Unable to load staff accounts.");
+ }
+};
+
+window.v2ChangeStaffPinPage=async function v2ChangeStaffPinPage(accountId){
+ if(role!=="owner"){
+  alert("Only the owner can manage staff PINs.");
+  return;
+ }
+ try{
+  if(!v2StaffPinAccounts.length)await v2LoadStaffPinAccounts();
+  const account=v2StaffPinAccounts.find(item=>Number(item.id)===Number(accountId));
+  if(!account){
+   alert("Staff account not found.");
+   return;
+  }
+  const requiredLength=account.role==="owner"||account.role==="manager"?8:4;
+  document.getElementById("root").innerHTML=`
+  <div class="app">
+   <button class="back" onclick="v2StaffPinManagement()">← BACK</button>
+   <div class="logo">MR K BURGERS<span>OWNER — CHANGE PIN</span></div>
+   <div class="panel">
+    <span class="badge">🔐 CHANGE STAFF PIN</span>
+    <h1>${esc(account.name)}</h1>
+    <p class="muted">${esc(account.staff_id)} — ${esc(String(account.role).toUpperCase())}</p>
+    <div class="system-note">This account requires exactly ${requiredLength} numeric digits.</div>
+    <div class="form" style="margin-top:20px">
+     <label>New PIN</label>
+     <input id="v2NewStaffPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="${requiredLength}" placeholder="${requiredLength}-digit PIN">
+     <label>Confirm New PIN</label>
+     <input id="v2ConfirmStaffPin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="${requiredLength}" placeholder="Repeat ${requiredLength}-digit PIN">
+     <button class="primary" onclick="v2SaveStaffPin(${Number(account.id)})">SAVE NEW PIN</button>
+    </div>
+   </div>
+  </div>`;
+ }catch(error){
+  alert(error.message||"Unable to open PIN management.");
+ }
+};
+
+window.v2SaveStaffPin=async function v2SaveStaffPin(accountId){
+ if(role!=="owner"){
+  alert("Only the owner can manage staff PINs.");
+  return;
+ }
+ const account=v2StaffPinAccounts.find(item=>Number(item.id)===Number(accountId));
+ if(!account){
+  alert("Staff account not found.");
+  return;
+ }
+ const requiredLength=account.role==="owner"||account.role==="manager"?8:4;
+ const pin=String(document.getElementById("v2NewStaffPin")?.value||"").trim();
+ const confirmPin=String(document.getElementById("v2ConfirmStaffPin")?.value||"").trim();
+ const pattern=new RegExp(`^\\d{${requiredLength}}$`);
+ if(!pattern.test(pin)){
+  alert(`PIN must be exactly ${requiredLength} numeric digits.`);
+  return;
+ }
+ if(pin!==confirmPin){
+  alert("The two PIN entries do not match.");
+  return;
+ }
+ if(!confirm(`Change the PIN for ${account.name}?`))return;
+ try{
+  const response=await fetch(`/api/staff/${Number(account.id)}/pin`,{
+   method:"PATCH",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({pin})
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result.error||"Unable to change PIN.");
+  alert("PIN changed successfully.");
+  await v2StaffPinManagement();
+ }catch(error){
+  alert(error.message||"Unable to change PIN.");
+ }
+};
+
+const v2OriginalOwnerStaffManagement=window.ownerStaffManagement;
+if(typeof v2OriginalOwnerStaffManagement==="function"){
+ window.ownerStaffManagement=function ownerStaffManagement(){
+  const result=v2OriginalOwnerStaffManagement.apply(this,arguments);
+  if(role==="owner"){
+   const grid=document.querySelector("#root .panel .grid");
+   if(grid&&!document.getElementById("v2PinManagementCard")){
+    const card=document.createElement("div");
+    card.id="v2PinManagementCard";
+    card.className="card";
+    card.style.cursor="pointer";
+    card.onclick=()=>v2StaffPinManagement();
+    card.innerHTML=`
+     <div class="category-icon">🔐</div>
+     <h3>PIN MANAGEMENT</h3>
+     <p class="muted">Securely change POS account PINs</p>`;
+    grid.appendChild(card);
+   }
+  }
+  return result;
+ };
+}
