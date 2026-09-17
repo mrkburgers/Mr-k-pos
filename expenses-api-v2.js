@@ -1,4 +1,8 @@
+const createSecurityAuthV2=require("./security-auth-v2");
+
 module.exports=function registerExpensesV2(app,io,db){
+ const expensesAccess=createSecurityAuthV2().requireRole("owner","manager");
+
  db.exec(`
   CREATE TABLE IF NOT EXISTS expense_categories (
    id TEXT PRIMARY KEY,
@@ -117,11 +121,11 @@ module.exports=function registerExpensesV2(app,io,db){
 
  const save=db.transaction(replaceState);
 
- app.get('/api/expenses/state',(req,res)=>{
+ app.get('/api/expenses/state',expensesAccess,(req,res)=>{
   res.json(state());
  });
 
- app.post('/api/expenses/import-if-empty',(req,res)=>{
+ app.post('/api/expenses/import-if-empty',expensesAccess,(req,res)=>{
   const existing=db.prepare('SELECT COUNT(*) AS count FROM expenses').get().count;
   const categoriesExisting=db.prepare('SELECT COUNT(*) AS count FROM expense_categories').get().count;
   if(Number(existing)>0||Number(categoriesExisting)>0){
@@ -132,7 +136,7 @@ module.exports=function registerExpensesV2(app,io,db){
   res.json({imported:true,state:state()});
  });
 
- app.put('/api/expenses/state',(req,res)=>{
+ app.put('/api/expenses/state',expensesAccess,(req,res)=>{
   save(req.body||{});
   io.emit('expenses-changed',{});
   res.json(state());
