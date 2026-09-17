@@ -1,4 +1,5 @@
 const crypto=require("crypto");
+const createSecurityAuthV2=require("./security-auth-v2");
 
 function makeZoneId(name){
  const slug=String(name||"")
@@ -12,6 +13,8 @@ function makeZoneId(name){
 }
 
 module.exports=function registerDeliveryZonesV2(app,io,db){
+ const ownerOnly=createSecurityAuthV2().requireRole("owner");
+
  db.exec(`
   CREATE TABLE IF NOT EXISTS delivery_zones(
    id TEXT PRIMARY KEY,
@@ -205,7 +208,7 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   res.json(rows);
  });
 
- app.get("/api/delivery-zones/map",(req,res)=>{
+ app.get("/api/delivery-zones/map",ownerOnly,(req,res)=>{
   const rows=db.prepare(`
    SELECT id,name,fee,active,sort_order,boundary_json,created_at,updated_at
    FROM delivery_zones
@@ -236,7 +239,7 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   res.json({available:false,zone:null});
  });
 
- app.post("/api/delivery-zones",(req,res)=>{
+ app.post("/api/delivery-zones",ownerOnly,(req,res)=>{
   const name=String(req.body?.name||"").trim();
   const fee=Number(req.body?.fee);
   const active=req.body?.active!==false;
@@ -252,7 +255,7 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   res.status(201).json({id,name,fee:Math.round(fee),active,sort_order:sortOrder});
  });
 
- app.patch("/api/delivery-zones/:id",(req,res)=>{
+ app.patch("/api/delivery-zones/:id",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   const current=db.prepare("SELECT * FROM delivery_zones WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"delivery zone not found"});
@@ -269,7 +272,7 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   res.json({id,name,fee:Math.round(fee),active});
  });
 
- app.put("/api/delivery-zones/:id/boundary",(req,res)=>{
+ app.put("/api/delivery-zones/:id/boundary",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   const current=db.prepare("SELECT id,name,fee,active,sort_order FROM delivery_zones WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"delivery zone not found"});
@@ -299,7 +302,7 @@ module.exports=function registerDeliveryZonesV2(app,io,db){
   res.json({...current,fee:Number(current.fee||0),active:Boolean(current.active),boundary:polygon});
  });
 
- app.delete("/api/delivery-zones/:id",(req,res)=>{
+ app.delete("/api/delivery-zones/:id",ownerOnly,(req,res)=>{
   const id=String(req.params.id||"");
   const current=db.prepare("SELECT id FROM delivery_zones WHERE id=?").get(id);
   if(!current)return res.status(404).json({error:"delivery zone not found"});
