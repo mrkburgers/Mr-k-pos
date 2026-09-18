@@ -110,7 +110,17 @@ if(typeof v2OriginalOwnerSalariesAdvances==="function"){
     return;
    }
   }
-  return v2OriginalOwnerSalariesAdvances.apply(this,arguments);
+
+  const allEmployees=staffMembers;
+  staffMembers=Array.isArray(allEmployees)
+   ?allEmployees.filter(employee=>employee.active!==false)
+   :[];
+
+  try{
+   return v2OriginalOwnerSalariesAdvances.apply(this,arguments);
+  }finally{
+   staffMembers=allEmployees;
+  }
  };
 }
 
@@ -419,41 +429,41 @@ window.v2PayrollHistoryPage=function v2PayrollHistoryPage(employeeId=""){
 
  const employees=Array.isArray(staffMembers)?staffMembers:[];
  const selected=employees.find(employee=>String(employee.id)===String(employeeId));
- const options=employees.map(employee=>\`
-  <option value="\${esc(employee.id)}" \${selected&&String(selected.id)===String(employee.id)?"selected":""}>
-   \${esc(employee.name)}\${employee.active===false?" — INACTIVE":""}
-  </option>\`
+ const options=employees.map(employee=>`
+  <option value="${esc(employee.id)}" ${selected&&String(selected.id)===String(employee.id)?"selected":""}>
+   ${esc(employee.name)}${employee.active===false?" — INACTIVE":""}
+  </option>`
  ).join("");
 
  const events=selected?v2PayrollEmployeeHistoryEvents(selected.id):[];
- const rows=events.map(event=>\`
+ const rows=events.map(event=>`
   <div class="summary" style="margin-bottom:12px">
    <div class="info-row">
     <span>Date</span>
-    <strong>\${esc(v2PayrollHistoryDate(event.date||event.createdAt))}</strong>
+    <strong>${esc(v2PayrollHistoryDate(event.date||event.createdAt))}</strong>
    </div>
    <div class="info-row">
     <span>Type</span>
-    <strong>\${esc(v2PayrollHistoryTypeLabel(event.type))}</strong>
+    <strong>${esc(v2PayrollHistoryTypeLabel(event.type))}</strong>
    </div>
    <div class="info-row">
     <span>Amount</span>
-    <strong>\${Number(event.amount||0).toLocaleString()} CFA</strong>
+    <strong>${Number(event.amount||0).toLocaleString()} CFA</strong>
    </div>
-   \${event.detail?\`
+   ${event.detail?`
     <div class="info-row">
      <span>Reference</span>
-     <strong>\${esc(event.detail)}</strong>
-    </div>\`:""}
-   \${event.note?\`
+     <strong>${esc(event.detail)}</strong>
+    </div>`:""}
+   ${event.note?`
     <div class="info-row">
      <span>Note</span>
-     <strong>\${esc(event.note)}</strong>
-    </div>\`:""}
-  </div>\`
+     <strong>${esc(event.note)}</strong>
+    </div>`:""}
+  </div>`
  ).join("");
 
- document.getElementById("root").innerHTML=\`
+ document.getElementById("root").innerHTML=`
  <div class="app">
   <button class="back" onclick="ownerSalariesAdvances()">← BACK</button>
   <div class="logo">MR K BURGERS<span>OWNER — SALARY / ADVANCE HISTORY</span></div>
@@ -465,16 +475,16 @@ window.v2PayrollHistoryPage=function v2PayrollHistoryPage(employeeId=""){
     <label>Employee</label>
     <select id="v2PayrollHistoryEmployee" onchange="v2PayrollHistoryPage(this.value)">
      <option value="">Select employee</option>
-     \${options}
+     ${options}
     </select>
    </div>
-   \${selected?\`
-    <h2>\${esc(selected.name)}</h2>
-    <p class="muted">\${esc(selected.position||"No position")}</p>
-    \${rows||'<p class="muted">No salary or advance history for this employee yet.</p>'}
-   \`:'<p class="muted">Select an employee above to view history.</p>'}
+   ${selected?`
+    <h2>${esc(selected.name)}</h2>
+    <p class="muted">${esc(selected.position||"No position")}</p>
+    ${rows||'<p class="muted">No salary or advance history for this employee yet.</p>'}
+   `:'<p class="muted">Select an employee above to view history.</p>'}
   </div>
- </div>\`;
+ </div>`;
 };
 
 const v2OriginalSalariesAdvancesForHistory=window.ownerSalariesAdvances;
