@@ -151,7 +151,7 @@ window.v2EmployeeManagement=async function v2EmployeeManagement(){
   if(!v2StaffEmployeesReady)await v2InitializeStaffEmployees();
   else await v2FetchStaffEmployees();
   clearInterval(timerInterval);
-  const cards=staffMembers.map(employee=>`
+  const employeeCard=employee=>`
    <div class="card">
     <div class="category-icon">👤</div>
     <h3>${esc(employee.name)}</h3>
@@ -162,7 +162,11 @@ window.v2EmployeeManagement=async function v2EmployeeManagement(){
     <p class="muted">${employee.active!==false?"ACTIVE":"INACTIVE"}</p>
     <button class="primary" onclick="v2EmployeeEditPage('${esc(employee.id)}')">EDIT</button>
     <button class="secondary" onclick="v2ToggleEmployeeActive('${esc(employee.id)}')">${employee.active!==false?"DEACTIVATE":"ACTIVATE"}</button>
-   </div>`).join("");
+   </div>`;
+  const activeEmployees=staffMembers.filter(employee=>employee.active!==false);
+  const inactiveEmployees=staffMembers.filter(employee=>employee.active===false);
+  const activeCards=activeEmployees.map(employeeCard).join("");
+  const inactiveCards=inactiveEmployees.map(employeeCard).join("");
   document.getElementById("root").innerHTML=`
   <div class="app">
    <button class="back" onclick="ownerStaffManagement()">← BACK</button>
@@ -172,7 +176,14 @@ window.v2EmployeeManagement=async function v2EmployeeManagement(){
     <h1>Employees</h1>
     <p class="muted">Employee profiles are stored on the restaurant server. POS login accounts are managed separately.</p>
     <button class="primary" style="margin-bottom:20px" onclick="v2EmployeeAddPage()">+ ADD EMPLOYEE</button>
-    <div class="grid">${cards||'<p class="muted">No employee records yet.</p>'}</div>
+
+    <h2 style="margin:10px 0 14px">ACTIVE EMPLOYEES</h2>
+    <div class="grid">${activeCards||'<p class="muted">No active employees.</p>'}</div>
+
+    <div style="margin:32px 0 20px;border-top:1px solid #3b3b3b"></div>
+
+    <h2 style="margin:0 0 14px">INACTIVE EMPLOYEES</h2>
+    <div class="grid">${inactiveCards||'<p class="muted">No inactive employees.</p>'}</div>
    </div>
   </div>`;
  }catch(error){
