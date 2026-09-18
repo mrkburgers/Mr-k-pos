@@ -338,3 +338,163 @@ window.v2ToggleEmployeeActive=async function v2ToggleEmployeeActive(employeeId){
   alert(error.message||"Unable to update employee status.");
  }
 };
+
+
+function v2PayrollHistoryDate(value){
+ const text=String(value||"").trim();
+ if(!text)return "—";
+ if(/^\d{4}-\d{2}-\d{2}$/.test(text)){
+  const parts=text.split("-").map(Number);
+  const date=new Date(parts[0],parts[1]-1,parts[2]);
+  return Number.isNaN(date.getTime())?text:date.toLocaleDateString();
+ }
+ const date=new Date(text);
+ return Number.isNaN(date.getTime())?text:date.toLocaleDateString();
+}
+
+function v2PayrollHistoryTimestamp(value){
+ const text=String(value||"").trim();
+ if(!text)return 0;
+ if(/^\d{4}-\d{2}-\d{2}$/.test(text)){
+  const parts=text.split("-").map(Number);
+  return new Date(parts[0],parts[1]-1,parts[2]).getTime();
+ }
+ const date=new Date(text);
+ return Number.isNaN(date.getTime())?0:date.getTime();
+}
+
+function v2PayrollHistoryTypeLabel(type){
+ const labels={
+  ADVANCE:"ADVANCE",
+  SALARY_PAYMENT:"SALARY PAYMENT",
+  BONUS:"BONUS",
+  OVERTIME:"OVERTIME",
+  DEDUCTION:"DEDUCTION",
+  ADVANCE_RECOVERY:"ADVANCE RECOVERY"
+ };
+ return labels[type]||String(type||"").replaceAll("_"," ");
+}
+
+function v2PayrollEmployeeHistoryEvents(employeeId){
+ const advances=(Array.isArray(staffAdvances)?staffAdvances:[])
+  .filter(item=>String(item.employeeId)===String(employeeId))
+  .map(item=>({
+   id:item.id,
+   type:"ADVANCE",
+   amount:Number(item.amount||0),
+   date:item.date||item.createdAt||"",
+   createdAt:item.createdAt||"",
+   note:item.note||"",
+   detail:item.status?String(item.status).replaceAll("_"," "):""
+  }));
+
+ const transactions=(Array.isArray(payrollTransactions)?payrollTransactions:[])
+  .filter(item=>String(item.employeeId)===String(employeeId))
+  .map(item=>{
+   const period=(Array.isArray(salaryPeriods)?salaryPeriods:[])
+    .find(period=>String(period.id)===String(item.periodId||""));
+   return {
+    id:item.id,
+    type:item.type||"PAYROLL",
+    amount:Number(item.amount||0),
+    date:item.date||item.createdAt||"",
+    createdAt:item.createdAt||"",
+    note:item.note||"",
+    detail:period?.month?("Salary period: "+period.month):""
+   };
+  });
+
+ return [...advances,...transactions].sort((a,b)=>
+  v2PayrollHistoryTimestamp(b.date||b.createdAt)-
+  v2PayrollHistoryTimestamp(a.date||a.createdAt)
+ );
+}
+
+window.v2PayrollHistoryPage=function v2PayrollHistoryPage(employeeId=""){
+ if(role!=="owner"){
+  alert("Only the owner can view payroll history.");
+  return;
+ }
+ clearInterval(timerInterval);
+
+ const employees=Array.isArray(staffMembers)?staffMembers:[];
+ const selected=employees.find(employee=>String(employee.id)===String(employeeId));
+ const options=employees.map(employee=>\`
+  <option value="\${esc(employee.id)}" \${selected&&String(selected.id)===String(employee.id)?"selected":""}>
+   \${esc(employee.name)}\${employee.active===false?" — INACTIVE":""}
+  </option>\`
+ ).join("");
+
+ const events=selected?v2PayrollEmployeeHistoryEvents(selected.id):[];
+ const rows=events.map(event=>\`
+  <div class="summary" style="margin-bottom:12px">
+   <div class="info-row">
+    <span>Date</span>
+    <strong>\${esc(v2PayrollHistoryDate(event.date||event.createdAt))}</strong>
+   </div>
+   <div class="info-row">
+    <span>Type</span>
+    <strong>\${esc(v2PayrollHistoryTypeLabel(event.type))}</strong>
+   </div>
+   <div class="info-row">
+    <span>Amount</span>
+    <strong>\${Number(event.amount||0).toLocaleString()} CFA</strong>
+   </div>
+   \${event.detail?\`
+    <div class="info-row">
+     <span>Reference</span>
+     <strong>\${esc(event.detail)}</strong>
+    </div>\`:""}
+   \${event.note?\`
+    <div class="info-row">
+     <span>Note</span>
+     <strong>\${esc(event.note)}</strong>
+    </div>\`:""}
+  </div>\`
+ ).join("");
+
+ document.getElementById("root").innerHTML=\`
+ <div class="app">
+  <button class="back" onclick="ownerSalariesAdvances()">← BACK</button>
+  <div class="logo">MR K BURGERS<span>OWNER — SALARY / ADVANCE HISTORY</span></div>
+  <div class="panel">
+   <span class="badge">📋 PAYROLL HISTORY</span>
+   <h1>Salary & Advance History</h1>
+   <p class="muted">Choose an employee to view salary payments, advances, adjustments and advance recoveries.</p>
+   <div class="form" style="margin:20px 0;max-width:none">
+    <label>Employee</label>
+    <select id="v2PayrollHistoryEmployee" onchange="v2PayrollHistoryPage(this.value)">
+     <option value="">Select employee</option>
+     \${options}
+    </select>
+   </div>
+   \${selected?\`
+    <h2>\${esc(selected.name)}</h2>
+    <p class="muted">\${esc(selected.position||"No position")}</p>
+    \${rows||'<p class="muted">No salary or advance history for this employee yet.</p>'}
+   \`:'<p class="muted">Select an employee above to view history.</p>'}
+  </div>
+ </div>\`;
+};
+
+const v2OriginalSalariesAdvancesForHistory=window.ownerSalariesAdvances;
+if(typeof v2OriginalSalariesAdvancesForHistory==="function"){
+ window.ownerSalariesAdvances=async function ownerSalariesAdvances(){
+  const result=await v2OriginalSalariesAdvancesForHistory.apply(this,arguments);
+  if(role==="owner"){
+   const panel=document.querySelector("#root .panel");
+   if(panel&&!document.getElementById("v2PayrollHistoryButton")){
+    const button=document.createElement("button");
+    button.id="v2PayrollHistoryButton";
+    button.className="secondary";
+    button.style.marginBottom="20px";
+    button.textContent="📋 SALARY / ADVANCE HISTORY";
+    button.onclick=()=>v2PayrollHistoryPage();
+    const grid=panel.querySelector(".grid");
+    if(grid)panel.insertBefore(button,grid);
+    else panel.appendChild(button);
+   }
+  }
+  return result;
+ };
+}
