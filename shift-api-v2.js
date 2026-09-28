@@ -1,6 +1,8 @@
 const registerOrderLifecycleV2=require("./order-lifecycle-api-v2");
+const createSecurityAuthV2=require("./security-auth-v2");
 
 module.exports=function registerShiftV2(app,io,db){
+ const shiftAccess=createSecurityAuthV2().requireRole("owner","manager","cashier");
  db.exec(`
   CREATE TABLE IF NOT EXISTS shifts (
    id INTEGER PRIMARY KEY,
@@ -255,7 +257,7 @@ module.exports=function registerShiftV2(app,io,db){
   }
  });
 
- app.get("/api/shifts/state",(req,res)=>{
+ app.get("/api/shifts/state",shiftAccess,(req,res)=>{
   const rows=shiftRows();
   res.json({
    active:rows.find(shift=>!shift.closedAt)||null,
@@ -263,7 +265,7 @@ module.exports=function registerShiftV2(app,io,db){
   });
  });
 
- app.put("/api/shifts/state",(req,res)=>{
+ app.put("/api/shifts/state",shiftAccess,(req,res)=>{
   try{saveState(req.body||{});}
   catch(error){
    if(String(error.code||"").includes("CONSTRAINT")){
