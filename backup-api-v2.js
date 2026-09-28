@@ -76,12 +76,36 @@ module.exports=function registerDatabaseBackupV2(app,io,db){
    await db.backup(tempPath);
    validateMrKDatabase(tempPath);
 
-   res.download(tempPath,filename,error=>{
+   const stat=fs.statSync(tempPath);
+   res.status(200);
+   res.setHeader("Content-Type","application/octet-stream");
+   res.setHeader("Content-Length",String(stat.size));
+   res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="'+filename.replace(/"/g,"")+'"'
+   );
+   res.setHeader("Cache-Control","no-store");
+
+   const stream=fs.createReadStream(tempPath);
+   let cleaned=false;
+   const cleanup=()=>{
+    if(cleaned)return;
+    cleaned=true;
     safeUnlink(tempPath);
-    if(error&&!res.headersSent){
+   };
+
+   stream.on("error",error=>{
+    console.error("Database backup stream failed",error);
+    cleanup();
+    if(!res.headersSent){
      res.status(500).json({error:"Unable to download database backup."});
+    }else{
+     res.destroy(error);
     }
    });
+   res.on("finish",cleanup);
+   res.on("close",cleanup);
+   stream.pipe(res);
   }catch(error){
    safeUnlink(tempPath);
    console.error("Database backup failed",error);
