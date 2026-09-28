@@ -18,7 +18,7 @@ async function loadV2BackendStaff(){
 window.loginScreen=async function loginScreen(){
  await loadV2BackendStaff();
 
- const activeAccounts=v2BackendStaff.filter(account=>account.active);
+ const activeAccounts=v2BackendStaff;
 
  document.getElementById("root").innerHTML=`
  <div class="login">
