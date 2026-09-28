@@ -134,6 +134,11 @@ app.get("/api/staff", (req, res) => {
   })));
 });
 
+app.post("/api/logout", (req, res) => {
+  securityAuthV2.clearSession(req,res);
+  res.json({logged_out:true});
+});
+
 app.post("/api/login", (req, res) => {
   const staffId = String(req.body?.staff_id ?? "").trim();
   const pin = String(req.body?.pin ?? "").trim();
