@@ -2,7 +2,7 @@ const path=require("path");
 const createSecurityAuthV2=require("./security-auth-v2");
 const cleanupLegacyBootstrapStaff=require("./staff-bootstrap-cleanup-v2");
 
-module.exports=function registerStaffEmployeesV2(app,db){
+module.exports=function registerStaffEmployeesV2(app,io,db){
  cleanupLegacyBootstrapStaff(db);
  const securityAuthV2=createSecurityAuthV2();
  const ownerOnly=securityAuthV2.requireRole("owner");
@@ -247,7 +247,12 @@ module.exports=function registerStaffEmployeesV2(app,db){
      SET active=0,updated_at=CURRENT_TIMESTAMP
      WHERE id=? AND role<>'owner'
     `).run(Number(employee.staff_account_id));
-    securityAuthV2.invalidateAccountSessions(Number(employee.staff_account_id));
+    const accountId=Number(employee.staff_account_id);
+    securityAuthV2.invalidateAccountSessions(accountId);
+    io.emit("staff-session-invalidated",{
+     account_id:accountId,
+     reason:"FINAL_SETTLEMENT"
+    });
    }
   })();
 
