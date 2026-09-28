@@ -92,6 +92,7 @@ app.use((req,res,next)=>{
   next();
 });
 
+registerCustomersV2(app,io,db);
 registerDeliveryZonesV2(app,io,db);
 registerMenuAdminV2(app,io,db);
 registerShiftV2(app,io,db);
@@ -100,7 +101,6 @@ registerExpensesV2(app,io,db);
 registerCombosV2(app,io,db);
 registerDatabaseBackupV2(app,io,db);
 registerFinanceReportV2(app,db);
-registerCustomersV2(app,io,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
