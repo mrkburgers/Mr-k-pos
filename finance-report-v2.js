@@ -6,16 +6,68 @@ function v2MoneyFormat(value){
  return Number(value||0).toLocaleString()+" CFA";
 }
 
+function v2MoneyDateKey(date){
+ return [
+  date.getFullYear(),
+  String(date.getMonth()+1).padStart(2,"0"),
+  String(date.getDate()).padStart(2,"0")
+ ].join("-");
+}
+
 function v2MoneyDefaultDates(){
  const now=new Date();
- const year=now.getFullYear();
- const month=String(now.getMonth()+1).padStart(2,"0");
- const day=String(now.getDate()).padStart(2,"0");
  return {
-  from:`${year}-${month}-01`,
-  to:`${year}-${month}-${day}`
+  from:v2MoneyDateKey(new Date(now.getFullYear(),now.getMonth(),1)),
+  to:v2MoneyDateKey(now)
  };
 }
+
+function v2MoneyPresetDates(preset){
+ const now=new Date();
+
+ if(preset==="last-month"){
+  const from=new Date(now.getFullYear(),now.getMonth()-1,1);
+  const to=new Date(now.getFullYear(),now.getMonth(),0);
+  return {from:v2MoneyDateKey(from),to:v2MoneyDateKey(to)};
+ }
+
+ if(preset==="this-year"){
+  return {
+   from:v2MoneyDateKey(new Date(now.getFullYear(),0,1)),
+   to:v2MoneyDateKey(now)
+  };
+ }
+
+ return v2MoneyDefaultDates();
+}
+
+function v2MoneySetPresetButtons(activePreset){
+ ["this-month","last-month","this-year","custom"].forEach(preset=>{
+  const button=document.getElementById("v2MoneyPreset-"+preset);
+  if(!button)return;
+  button.className=preset===activePreset?"primary":"secondary";
+ });
+}
+
+window.v2MoneyChoosePreset=function v2MoneyChoosePreset(preset){
+ const custom=document.getElementById("v2MoneyCustomDates");
+ const fromInput=document.getElementById("v2MoneyFrom");
+ const toInput=document.getElementById("v2MoneyTo");
+
+ v2MoneySetPresetButtons(preset);
+
+ if(preset==="custom"){
+  if(custom)custom.style.display="";
+  fromInput?.focus();
+  return;
+ }
+
+ const dates=v2MoneyPresetDates(preset);
+ if(fromInput)fromInput.value=dates.from;
+ if(toInput)toInput.value=dates.to;
+ if(custom)custom.style.display="none";
+ v2RunMoneyReport();
+};
 
 window.ownerMoneyReport=function ownerMoneyReport(){
  if(role!=="owner"){
@@ -31,19 +83,31 @@ window.ownerMoneyReport=function ownerMoneyReport(){
   <div class="panel">
    <span class="badge">💰 MONEY REPORT</span>
    <h1>Sales minus Expenses</h1>
-   <p class="muted">Choose any From and To dates. Salary costs belong to their salary month. Staff advances are shown separately and are not counted twice as expenses.</p>
-   <div class="info-row">
-    <span>From</span>
-    <input type="date" id="v2MoneyFrom" value="${defaults.from}">
+   <p class="muted">Use a quick period or choose custom dates. Salary costs belong to their salary month. Staff advances are shown separately and are not counted twice as expenses.</p>
+
+   <div class="actions" style="margin-top:20px">
+    <button id="v2MoneyPreset-this-month" class="primary" onclick="v2MoneyChoosePreset('this-month')">THIS MONTH</button>
+    <button id="v2MoneyPreset-last-month" class="secondary" onclick="v2MoneyChoosePreset('last-month')">LAST MONTH</button>
+    <button id="v2MoneyPreset-this-year" class="secondary" onclick="v2MoneyChoosePreset('this-year')">THIS YEAR</button>
+    <button id="v2MoneyPreset-custom" class="secondary" onclick="v2MoneyChoosePreset('custom')">CUSTOM</button>
    </div>
-   <div class="info-row">
-    <span>To</span>
-    <input type="date" id="v2MoneyTo" value="${defaults.to}">
+
+   <div id="v2MoneyCustomDates" style="display:none;margin-top:18px">
+    <div class="info-row">
+     <span>From</span>
+     <input type="date" id="v2MoneyFrom" value="${defaults.from}">
+    </div>
+    <div class="info-row">
+     <span>To</span>
+     <input type="date" id="v2MoneyTo" value="${defaults.to}">
+    </div>
+    <button class="primary" style="margin-top:20px;width:100%" onclick="v2RunMoneyReport()">VIEW CUSTOM REPORT</button>
    </div>
-   <button class="primary" style="margin-top:20px;width:100%" onclick="v2RunMoneyReport()">VIEW MONEY REPORT</button>
+
    <div id="v2MoneyResults"></div>
   </div>
  </div>`;
+ v2RunMoneyReport();
 };
 
 window.v2RunMoneyReport=async function v2RunMoneyReport(){
