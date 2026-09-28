@@ -1,3 +1,7 @@
+(function(){
+ if(window.__mrkStaffEmployeesV2Loaded)return;
+ window.__mrkStaffEmployeesV2Loaded=true;
+
 let v2StaffEmployeesReady=false;
 let v2StaffEmployeesSaveQueue=Promise.resolve();
 
@@ -508,3 +512,7 @@ if(typeof v2OriginalSalariesAdvancesForHistory==="function"){
   return result;
  };
 }
+
+
+ window.v2FetchStaffEmployees=v2FetchStaffEmployees;
+})();
