@@ -39,20 +39,101 @@ function verifyScrypt(pin,stored){
  const r=Number(parts[2]);
  const p=Number(parts[3]);
  if(
-  !Number.isSafeInteger(N)||N<=1||
-  !Number.isSafeInteger(r)||r<=0||
-  !Number.isSafeInteger(p)||p<=0
+  N!==SCRYPT_N||
+  r!==SCRYPT_R||
+  p!==SCRYPT_P
+ )return false;
+
+ const saltHex=String(parts[4]||"");
+ const expectedHex=String(parts[5]||"");
+ if(
+  !new RegExp(`^[a-f0-9]{${SALT_BYTES*2}}const crypto=require("crypto");
+
+const SCRYPT_N=16384;
+const SCRYPT_R=8;
+const SCRYPT_P=1;
+const KEY_LENGTH=32;
+const SALT_BYTES=16;
+const PREFIX="scrypt";
+
+function legacyHash(pin){
+ return crypto
+  .createHash("sha256")
+  .update(String(pin))
+  .digest("hex");
+}
+
+function hashPin(pin){
+ const salt=crypto.randomBytes(SALT_BYTES);
+ const derived=crypto.scryptSync(String(pin),salt,KEY_LENGTH,{
+  N:SCRYPT_N,
+  r:SCRYPT_R,
+  p:SCRYPT_P
+ });
+ return [
+  PREFIX,
+  SCRYPT_N,
+  SCRYPT_R,
+  SCRYPT_P,
+  salt.toString("hex"),
+  derived.toString("hex")
+ ].join("$");
+}
+
+function verifyScrypt(pin,stored){
+ const parts=String(stored||"").split("$");
+ if(parts.length!==6||parts[0]!==PREFIX)return false;
+
+,"i").test(saltHex)||
+  !new RegExp(`^[a-f0-9]{${KEY_LENGTH*2}}const crypto=require("crypto");
+
+const SCRYPT_N=16384;
+const SCRYPT_R=8;
+const SCRYPT_P=1;
+const KEY_LENGTH=32;
+const SALT_BYTES=16;
+const PREFIX="scrypt";
+
+function legacyHash(pin){
+ return crypto
+  .createHash("sha256")
+  .update(String(pin))
+  .digest("hex");
+}
+
+function hashPin(pin){
+ const salt=crypto.randomBytes(SALT_BYTES);
+ const derived=crypto.scryptSync(String(pin),salt,KEY_LENGTH,{
+  N:SCRYPT_N,
+  r:SCRYPT_R,
+  p:SCRYPT_P
+ });
+ return [
+  PREFIX,
+  SCRYPT_N,
+  SCRYPT_R,
+  SCRYPT_P,
+  salt.toString("hex"),
+  derived.toString("hex")
+ ].join("$");
+}
+
+function verifyScrypt(pin,stored){
+ const parts=String(stored||"").split("$");
+ if(parts.length!==6||parts[0]!==PREFIX)return false;
+
+,"i").test(expectedHex)
  )return false;
 
  let salt;
  let expected;
  try{
-  salt=Buffer.from(parts[4],"hex");
-  expected=Buffer.from(parts[5],"hex");
+  salt=Buffer.from(saltHex,"hex");
+  expected=Buffer.from(expectedHex,"hex");
  }catch{
   return false;
  }
- if(!salt.length||expected.length!==KEY_LENGTH)return false;
+ if(salt.length!==SALT_BYTES||expected.length!==KEY_LENGTH)return false;
 
  let actual;
  try{
