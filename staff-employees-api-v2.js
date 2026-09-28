@@ -216,6 +216,47 @@ module.exports=function registerStaffEmployeesV2(app,db){
   }
  });
 
+ app.patch("/api/staff-employees/:id/final-settlement-deactivate",ownerOnly,(req,res)=>{
+  const employeeId=String(req.params.id||"").trim();
+  if(!employeeId){
+   return res.status(400).json({error:"Employee ID is required."});
+  }
+
+  const employee=db.prepare(`
+   SELECT id,staff_account_id
+   FROM staff_employees
+   WHERE id=?
+   LIMIT 1
+  `).get(employeeId);
+
+  if(!employee){
+   return res.status(404).json({error:"Employee not found."});
+  }
+
+  db.transaction(()=>{
+   db.prepare(`
+    UPDATE staff_employees
+    SET active=0,updated_at=CURRENT_TIMESTAMP
+    WHERE id=?
+   `).run(employeeId);
+
+   if(employee.staff_account_id!==null&&employee.staff_account_id!==undefined){
+    db.prepare(`
+     UPDATE staff_accounts
+     SET active=0,updated_at=CURRENT_TIMESTAMP
+     WHERE id=? AND role<>'owner'
+    `).run(Number(employee.staff_account_id));
+   }
+  })();
+
+  res.json({
+   employeeId,
+   employeeActive:false,
+   staffAccountId:employee.staff_account_id===null?null:Number(employee.staff_account_id),
+   staffAccountDeactivated:employee.staff_account_id!==null&&employee.staff_account_id!==undefined
+  });
+ });
+
  app.put("/api/staff-employees/state",ownerOnly,(req,res)=>{
   try{
    replaceState(Array.isArray(req.body?.employees)?req.body.employees:[],{legacyImport:true});
