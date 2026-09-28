@@ -23,6 +23,7 @@ const securityAuthV2 = createSecurityAuthV2();
 const orderReadAccess = securityAuthV2.requireRole("owner","manager","cashier","kitchen");
 const orderCashierAccess = securityAuthV2.requireRole("owner","manager","cashier");
 const orderCreateAccess = securityAuthV2.requireRole("cashier");
+const orderPaymentAccess = securityAuthV2.requireRole("cashier");
 
 function fallbackOrderStatusAccess(req,res,next){
   const session=securityAuthV2.getSession(req);
@@ -654,7 +655,7 @@ app.patch("/api/orders/:id/status", fallbackOrderStatusAccess, (req, res) => {
   });
 });
 
-app.patch("/api/orders/:id/payment-status", orderCashierAccess, (req, res) => {
+app.patch("/api/orders/:id/payment-status", orderPaymentAccess, (req, res) => {
   const orderId = Number(req.params.id);
   const { payment_status } = req.body;
 
