@@ -1,5 +1,7 @@
 let v2BackendStaff=[];
 let v2LastPaidOrderId=null;
+let v2CurrentStaffAccountId=null;
+let v2SessionResetInProgress=false;
 
 async function loadV2BackendStaff(){
  try{
@@ -83,6 +85,8 @@ window.login=async function login(){
   role=result.role;
   currentStaffName=result.name;
   currentStaffId=result.staff_id;
+  v2CurrentStaffAccountId=Number(result.id);
+  v2SessionResetInProgress=false;
 
   if(role==="owner"){
    if(typeof v2InitializeOwnerAccounts==="function"){
@@ -123,17 +127,15 @@ window.login=async function login(){
  }
 };
 
-window.logout=async function logout(){
- try{
-  await fetch("/api/logout",{method:"POST"});
- }catch(error){
-  console.error("Server logout failed",error);
- }
+async function v2ForceLocalSessionEnd(message="",showAlert=false){
+ if(v2SessionResetInProgress)return;
+ v2SessionResetInProgress=true;
 
  loggedIn=false;
  role="";
  currentStaffName="";
  currentStaffId="";
+ v2CurrentStaffAccountId=null;
  clearInterval(timerInterval);
 
  if(typeof loginScreen==="function"){
@@ -141,7 +143,41 @@ window.logout=async function logout(){
  }else if(typeof render==="function"){
   render();
  }
+
+ if(showAlert&&message){
+  alert(message);
+ }
+
+ v2SessionResetInProgress=false;
+}
+
+window.logout=async function logout(){
+ try{
+  await fetch("/api/logout",{method:"POST"});
+ }catch(error){
+  console.error("Server logout failed",error);
+ }
+
+ await v2ForceLocalSessionEnd();
 };
+
+if(typeof socket!=="undefined"&&socket){
+ socket.on("staff-session-invalidated",payload=>{
+  if(!loggedIn)return;
+  if(Number(payload?.account_id)!==Number(v2CurrentStaffAccountId))return;
+
+  const reason=String(payload?.reason||"");
+  const message=reason==="ROLE_CHANGED"
+   ?"Your account access changed. Please log in again."
+   :reason==="FINAL_SETTLEMENT"
+    ?"Your POS account has been deactivated. Please log in again if it is reactivated."
+    :"Your POS account has been deactivated. Please contact the Owner.";
+
+  v2ForceLocalSessionEnd(message,true).catch(error=>{
+   console.error("Realtime session reset failed",error);
+  });
+ });
+}
 
 function v2ActorPayload(){
  return {
@@ -213,6 +249,26 @@ function v2CleanOrderNotes(notes){
 }
 
 const v2NativeFetch=window.fetch.bind(window);
+
+async function v2HandleSessionResponse(response,url){
+ if(
+  response?.status===401&&
+  loggedIn&&
+  url!=="/api/login"&&
+  url!=="/api/logout"
+ ){
+  await v2ForceLocalSessionEnd();
+  return new Response(
+   JSON.stringify({error:"Your session has expired. Please log in again."}),
+   {
+    status:401,
+    headers:{"Content-Type":"application/json"}
+   }
+  );
+ }
+ return response;
+}
+
 window.fetch=async function v2AuditedFetch(input,options={}){
  const url=typeof input==="string"?input:String(input?.url||"");
  const method=String(options?.method||"GET").toUpperCase();
@@ -230,7 +286,10 @@ window.fetch=async function v2AuditedFetch(input,options={}){
     )
    }));
   }
-  const response=await v2NativeFetch(input,{...options,body:JSON.stringify(body)});
+  const response=await v2HandleSessionResponse(
+   await v2NativeFetch(input,{...options,body:JSON.stringify(body)}),
+   url
+  );
   if(response.ok){
    response.clone().json().then(data=>{
     if(data?.id)v2LastPaidOrderId=Number(data.id);
@@ -246,7 +305,7 @@ window.fetch=async function v2AuditedFetch(input,options={}){
   body={...body,...v2ActorPayload()};
   if(body.status==="ACCEPTED"){
    const pending=typeof v2PendingCheckout!=="undefined"?v2PendingCheckout:null;
-   await v2NativeFetch(`/api/orders/${match[1]}/initialize`,{
+   const initializeResponse=await v2NativeFetch(`/api/orders/${match[1]}/initialize`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
@@ -254,11 +313,20 @@ window.fetch=async function v2AuditedFetch(input,options={}){
      table_number:pending?.customer?.table||"",
      ...v2ActorPayload()
     })
-   }).catch(()=>{});
+   }).catch(()=>null);
+   if(initializeResponse){
+    await v2HandleSessionResponse(initializeResponse,`/api/orders/${match[1]}/initialize`);
+   }
   }
-  return v2NativeFetch(input,{...options,body:JSON.stringify(body)});
+  return v2HandleSessionResponse(
+   await v2NativeFetch(input,{...options,body:JSON.stringify(body)}),
+   url
+  );
  }
- return v2NativeFetch(input,options);
+ return v2HandleSessionResponse(
+  await v2NativeFetch(input,options),
+  url
+ );
 };
 
 async function v2FetchOrderDetails(id){
