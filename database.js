@@ -1,6 +1,12 @@
 const Database = require("better-sqlite3");
+const path = require("path");
 
-const db = new Database("mr-k-pos.db");
+const configuredDbPath=String(process.env.MRK_DB_PATH||"").trim();
+const databasePath=configuredDbPath
+  ?path.resolve(configuredDbPath)
+  :path.join(__dirname,"mr-k-pos.db");
+
+const db = new Database(databasePath);
 
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
