@@ -125,6 +125,71 @@ module.exports=function registerExpensesV2(app,io,db){
   res.json(state());
  });
 
+ app.post('/api/expenses',expensesAccess,(req,res)=>{
+  const expense=req.body||{};
+  const amount=number(expense.amount);
+  const id=String(expense.id||'').trim();
+  const createdAt=Number(expense.createdAt);
+
+  if(!id){
+   return res.status(400).json({error:'Expense ID is required.'});
+  }
+  if(amount<=0){
+   return res.status(400).json({error:'Expense amount must be greater than zero.'});
+  }
+
+  db.prepare(`
+   INSERT INTO expenses(
+    id,category_id,category_name,amount,note,reference,payment_method,
+    created_at_ms,created_by,created_by_staff_id,created_by_role,source,account_reference
+   ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
+   ON CONFLICT(id) DO NOTHING
+  `).run(
+   id,
+   expense.categoryId?String(expense.categoryId):null,
+   String(expense.categoryName||''),
+   amount,
+   String(expense.note||''),
+   String(expense.reference||''),
+   String(expense.paymentMethod||'CASH'),
+   Number.isFinite(createdAt)?createdAt:Date.now(),
+   String(expense.createdBy||''),
+   String(expense.createdByStaffId||''),
+   String(expense.createdByRole||''),
+   String(expense.source||'MANUAL'),
+   String(expense.accountReference||id)
+  );
+
+  io.emit('expenses-changed',{});
+  res.status(201).json(state());
+ });
+
+ app.put('/api/expense-categories/state',expensesAccess,(req,res)=>{
+  const categories=Array.isArray(req.body?.categories)?req.body.categories:[];
+
+  const upsert=db.prepare(`
+   INSERT INTO expense_categories(id,name,active,updated_at)
+   VALUES(?,?,?,CURRENT_TIMESTAMP)
+   ON CONFLICT(id) DO UPDATE SET
+    name=excluded.name,
+    active=excluded.active,
+    updated_at=CURRENT_TIMESTAMP
+  `);
+
+  const saveCategories=db.transaction(rows=>{
+   rows.forEach((category,index)=>{
+    const id=String(category?.id||`expense-category-${index+1}`);
+    const name=String(category?.name||'').trim();
+    if(!name)return;
+    upsert.run(id,name,category?.active===false?0:1);
+   });
+  });
+
+  saveCategories(categories);
+  io.emit('expenses-changed',{});
+  res.json(state());
+ });
+
  app.post('/api/expenses/import-if-empty',expensesAccess,(req,res)=>{
   const existing=db.prepare('SELECT COUNT(*) AS count FROM expenses').get().count;
   const categoriesExisting=db.prepare('SELECT COUNT(*) AS count FROM expense_categories').get().count;
