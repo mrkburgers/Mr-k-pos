@@ -15,7 +15,9 @@ function makeId(prefix,name){
 }
 
 module.exports=function registerMenuAdminV2(app,io,db){
-  const ownerOnly=createSecurityAuthV2().requireRole("owner");
+  const securityAuthV2=createSecurityAuthV2();
+  const ownerOnly=securityAuthV2.requireRole("owner");
+  const cashierOnly=securityAuthV2.requireRole("cashier");
   registerInventoryV2(app,io,db);
 
   app.get("/api/menu-v2",(req,res)=>{
@@ -72,7 +74,7 @@ module.exports=function registerMenuAdminV2(app,io,db){
     res.json({categories,items,ingredients});
   });
 
-  app.post("/api/orders-with-inventory",(req,res)=>{
+  app.post("/api/orders-with-inventory",cashierOnly,(req,res)=>{
     const {order_uuid,order_type,payment_status="PENDING",payment_method=null,customer_name=null,customer_phone=null,total_amount=0,items=[]}=req.body;
     if(!order_uuid||!order_type)return res.status(400).json({error:"order_uuid and order_type are required"});
     if(!Array.isArray(items))return res.status(400).json({error:"items must be an array"});
