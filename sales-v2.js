@@ -73,6 +73,30 @@ function v2SalesLoadFailed(){
  alert("Unable to load sales from the restaurant server.");
 }
 
+const v2LegacyOwnerReports=typeof ownerReports==="function"?ownerReports:null;
+if(v2LegacyOwnerReports){
+ ownerReports=async function ownerReports(){
+  if(!await v2SyncCompletedSales())return v2SalesLoadFailed();
+  return v2LegacyOwnerReports();
+ };
+}
+
+const v2LegacyOwnerSalesPerformance=typeof ownerSalesPerformance==="function"?ownerSalesPerformance:null;
+if(v2LegacyOwnerSalesPerformance){
+ ownerSalesPerformance=async function ownerSalesPerformance(){
+  if(!await v2SyncCompletedSales())return v2SalesLoadFailed();
+  return v2LegacyOwnerSalesPerformance();
+ };
+}
+
+const v2LegacyOwnerItemPerformance=typeof ownerItemPerformance==="function"?ownerItemPerformance:null;
+if(v2LegacyOwnerItemPerformance){
+ ownerItemPerformance=async function ownerItemPerformance(){
+  if(!await v2SyncCompletedSales())return v2SalesLoadFailed();
+  return v2LegacyOwnerItemPerformance();
+ };
+}
+
 const v2LegacyOwnerSales=typeof ownerSales==="function"?ownerSales:null;
 if(v2LegacyOwnerSales){
  ownerSales=async function ownerSales(){
