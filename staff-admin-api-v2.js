@@ -1,7 +1,7 @@
 const createSecurityAuthV2=require("./security-auth-v2");
 const pinSecurityV2=require("./security-pin-v2");
 
-module.exports=function registerStaffAdminV2(app,db){
+module.exports=function registerStaffAdminV2(app,io,db){
  const securityAuthV2=createSecurityAuthV2();
  const ownerOnly=securityAuthV2.requireRole("owner");
  const allowedNonOwnerRoles=new Set(["manager","cashier","kitchen"]);
@@ -114,6 +114,10 @@ module.exports=function registerStaffAdminV2(app,db){
    `).run(name,staffId,role,id);
    if(role!==existing.role){
     securityAuthV2.invalidateAccountSessions(id);
+    io.emit("staff-session-invalidated",{
+     account_id:id,
+     reason:"ROLE_CHANGED"
+    });
    }
    res.json(publicAccount(getAccount(id)));
   }catch(error){
@@ -145,6 +149,10 @@ module.exports=function registerStaffAdminV2(app,db){
   `).run(active?1:0,id);
   if(!active){
    securityAuthV2.invalidateAccountSessions(id);
+   io.emit("staff-session-invalidated",{
+    account_id:id,
+    reason:"ACCOUNT_DEACTIVATED"
+   });
   }
   res.json(publicAccount(getAccount(id)));
  });
