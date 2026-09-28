@@ -2,6 +2,7 @@ const createSecurityAuthV2=require("./security-auth-v2");
 
 module.exports=function registerCustomersV2(app,io,db){
  const customerAccess=createSecurityAuthV2().requireRole("owner","manager","cashier");
+ const ownerOnly=createSecurityAuthV2().requireRole("owner");
 
  db.exec(`
   CREATE TABLE IF NOT EXISTS customers(
@@ -62,6 +63,95 @@ module.exports=function registerCustomersV2(app,io,db){
 
   if(!row)return res.status(404).json({found:false});
   res.json({found:true,customer:customerRow(row)});
+ });
+
+ function customerHistoryData(){
+  const customers=db.prepare(`
+   SELECT *
+   FROM customers
+   ORDER BY name COLLATE NOCASE ASC,phone ASC
+  `).all();
+
+  const orders=db.prepare(`
+   SELECT
+    id,order_number,customer_name,customer_phone,customer_address,
+    delivery_zone_id,delivery_zone_name,delivery_fee,total_amount,
+    payment_method,payment_status,status,created_at,completed_at,updated_at
+   FROM orders
+   WHERE upper(order_type)='DELIVERY'
+   ORDER BY id DESC
+  `).all();
+
+  const ordersByPhone=new Map();
+  for(const order of orders){
+   const key=normalizePhone(order.customer_phone);
+   if(!key)continue;
+   if(!ordersByPhone.has(key))ordersByPhone.set(key,[]);
+   ordersByPhone.get(key).push(order);
+  }
+
+  return customers.map(row=>{
+   const saved=customerRow(row);
+   const history=ordersByPhone.get(row.phone_key)||[];
+   const chronological=[...history].sort((a,b)=>Number(a.id)-Number(b.id));
+   const completedPaid=history.filter(order=>
+    String(order.status||"").toUpperCase()==="COMPLETED"&&
+    String(order.payment_status||"").toUpperCase()==="PAID"
+   );
+   const totalSpent=completedPaid.reduce((sum,order)=>sum+Number(order.total_amount||0),0);
+
+   return {
+    ...saved,
+    firstOrderAt:chronological[0]?.created_at||saved.firstOrderAt,
+    lastOrderAt:history[0]?.created_at||saved.lastOrderAt,
+    totalOrders:history.length,
+    completedPaidOrders:completedPaid.length,
+    totalSpent,
+    history:history.map(order=>({
+     id:Number(order.id),
+     orderNumber:Number(order.order_number||0),
+     name:order.customer_name||"",
+     phone:order.customer_phone||"",
+     address:order.customer_address||"",
+     deliveryZoneId:order.delivery_zone_id||"",
+     deliveryZoneName:order.delivery_zone_name||"",
+     deliveryFee:Number(order.delivery_fee||0),
+     total:Number(order.total_amount||0),
+     paymentMethod:order.payment_method||"",
+     paymentStatus:order.payment_status||"",
+     status:order.status||"",
+     createdAt:order.created_at,
+     completedAt:order.completed_at,
+     updatedAt:order.updated_at
+    }))
+   };
+  });
+ }
+
+ app.get("/api/customers",ownerOnly,(req,res)=>{
+  const search=String(req.query.search||"").trim().toLowerCase();
+  const phoneSearch=normalizePhone(search);
+
+  let rows=customerHistoryData();
+  if(search){
+   rows=rows.filter(customer=>
+    String(customer.name||"").toLowerCase().includes(search)||
+    String(customer.phone||"").toLowerCase().includes(search)||
+    (phoneSearch&&String(customer.phoneKey||"").includes(phoneSearch))
+   );
+  }
+
+  res.json(rows.map(({history,...customer})=>customer));
+ });
+
+ app.get("/api/customers/:phoneKey/history",ownerOnly,(req,res)=>{
+  const phoneKey=normalizePhone(req.params.phoneKey);
+  if(!phoneKey)return res.status(400).json({error:"A valid customer phone number is required."});
+
+  const customer=customerHistoryData().find(entry=>entry.phoneKey===phoneKey);
+  if(!customer)return res.status(404).json({error:"Customer not found."});
+
+  res.json(customer);
  });
 
  function attachCustomerSnapshot(req,res,next){
