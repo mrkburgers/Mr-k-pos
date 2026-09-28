@@ -396,6 +396,7 @@ window.v2SaveOwnerAccountDetails=async function v2SaveOwnerAccountDetails(accoun
   if(typeof ownerAccount==="object"&&ownerAccount){
    ownerAccount.name=result.name;
    ownerAccount.staffId=result.staff_id;
+   delete ownerAccount.pin;
    localStorage.setItem("mrkOwnerAccount",JSON.stringify(ownerAccount));
   }
   alert("Owner account updated successfully.");
