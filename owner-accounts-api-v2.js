@@ -5,8 +5,8 @@ const registerPayrollV2=require("./payroll-api-v2");
 
 module.exports=function registerOwnerAccountsV2(app,io,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
- registerStaffPinV2(app,db);
- registerStaffEmployeesV2(app,db);
+ registerStaffPinV2(app,io,db);
+ registerStaffEmployeesV2(app,io,db);
  registerPayrollV2(app,db);
 
  db.exec(`
