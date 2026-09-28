@@ -193,3 +193,134 @@
   }
  };
 })();
+
+
+/* OWNER ACTIVE ORDERS — BACKEND AUTHORITATIVE */
+async function v2OwnerFetchBackendOrders(){
+ const response=await fetch("/api/orders",{cache:"no-store"});
+ const data=await response.json().catch(()=>[]);
+ if(!response.ok){
+  const error=Array.isArray(data)?null:data?.error;
+  throw new Error(error||"Unable to load orders from the restaurant server.");
+ }
+ return Array.isArray(data)?data:[];
+}
+
+window.ownerOrders=async function ownerOrders(){
+ clearInterval(timerInterval);
+
+ const today=new Date();
+ const todayOrders=completedOrders.filter(o=>{
+  if(!o.completedAt)return false;
+  const date=new Date(Number(o.completedAt));
+  return date.getFullYear()===today.getFullYear() &&
+         date.getMonth()===today.getMonth() &&
+         date.getDate()===today.getDate();
+ });
+
+ let activeCount=0;
+ try{
+  const orders=await v2OwnerFetchBackendOrders();
+  activeCount=orders.filter(order=>
+   !["COMPLETED","CANCELLED"].includes(String(order?.status||""))
+  ).length;
+ }catch(error){
+  console.error("Unable to refresh Owner active order count",error);
+ }
+
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerHome()">← BACK</button>
+  <div class="logo">
+   MR K BURGERS
+   <span>OWNER — ORDERS</span>
+  </div>
+  <div class="panel">
+   <span class="badge">📋 ORDERS</span>
+   <h1>Order Management</h1>
+   <div class="grid">
+    <div class="card" onclick="ownerActiveOrders()" style="cursor:pointer">
+     <div class="category-icon">📦</div>
+     <h3>ACTIVE ORDERS</h3>
+     <strong>${activeCount}</strong>
+    </div>
+    <div class="card" onclick="ownerOrderHistory()" style="cursor:pointer">
+     <div class="category-icon">📜</div>
+     <h3>ORDER HISTORY</h3>
+     <strong>${todayOrders.length}</strong>
+    </div>
+   </div>
+  </div>
+ </div>`;
+};
+
+window.ownerActiveOrders=async function ownerActiveOrders(){
+ clearInterval(timerInterval);
+
+ document.getElementById("root").innerHTML=`
+ <div class="app">
+  <button class="back" onclick="ownerOrders()">← BACK</button>
+  <div class="logo">
+   MR K BURGERS
+   <span>OWNER — ACTIVE ORDERS</span>
+  </div>
+  <div class="panel">
+   <span class="badge">📦 ACTIVE ORDERS</span>
+   <h1>Active Orders</h1>
+   <p class="muted">Loading orders...</p>
+  </div>
+ </div>`;
+
+ try{
+  const orders=(await v2OwnerFetchBackendOrders())
+   .filter(order=>!["COMPLETED","CANCELLED"].includes(String(order?.status||"")))
+   .sort((a,b)=>Number(b?.order_number||0)-Number(a?.order_number||0));
+
+  document.querySelector("#root .panel").innerHTML=`
+   <span class="badge">📦 ACTIVE ORDERS</span>
+   <h1>Active Orders</h1>
+   ${
+    orders.length
+    ?orders.map(order=>`
+      <div
+       class="order-card clickable"
+       onclick="v2OrderDetailsPage(${Number(order.id)},'ownerActiveOrders()')">
+       <div class="order-top">
+        <div>
+         <div class="order-number">#${padOrder(order.order_number)}</div>
+         <div class="muted">${esc(order.order_type||"")}</div>
+        </div>
+        <span class="status ${order.status==="READY"?"ready":""}">
+         ${esc(order.status||"NEW")}
+        </span>
+       </div>
+       <div class="info-row">
+        <span>Payment</span>
+        <strong>${esc(order.payment_status||"PENDING")}</strong>
+       </div>
+       <div class="info-row">
+        <span>Total</span>
+        <strong>${Number(order.total_amount||0).toLocaleString()} CFA</strong>
+       </div>
+       <h3>Items</h3>
+       ${
+        Array.isArray(order.items)&&order.items.length
+        ?order.items.map(item=>`
+          <div class="summary">
+           <strong>${Number(item.quantity||0)} × ${esc(item.item_name||"")}</strong>
+           ${item.notes?`<div class="muted">${esc(v2CleanOrderNotes(item.notes))}</div>`:""}
+          </div>`
+         ).join("")
+        :`<p class="muted">No item details available.</p>`
+       }
+      </div>
+     `).join("")
+    :`<p class="muted">No active orders.</p>`
+   }`;
+ }catch(error){
+  document.querySelector("#root .panel").innerHTML=`
+   <span class="badge">📦 ACTIVE ORDERS</span>
+   <h1>Active Orders</h1>
+   <div class="system-note">${esc(error.message||"Unable to load active orders.")}</div>`;
+ }
+};
