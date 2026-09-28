@@ -368,4 +368,3 @@ if(typeof socket!=="undefined"&&socket){
  });
 }
 
-v2HydrateShiftState();
