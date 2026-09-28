@@ -99,3 +99,46 @@ if(typeof v2OriginalSalariesAdvancesForPayroll==="function"){
   return v2OriginalSalariesAdvancesForPayroll.apply(this,arguments);
  };
 }
+
+
+const v2OriginalSaveFinalSettlement=window.saveFinalSettlement;
+if(typeof v2OriginalSaveFinalSettlement==="function"){
+ window.saveFinalSettlement=async function saveFinalSettlement(employeeId){
+  const result=await v2OriginalSaveFinalSettlement.apply(this,arguments);
+
+  const finalized=(Array.isArray(finalSettlements)?finalSettlements:[]).find(
+   settlement=>
+    String(settlement.employeeId)===String(employeeId)&&
+    settlement.status==="FINALIZED"
+  );
+
+  if(finalized){
+   try{
+    const response=await fetch(
+     `/api/staff-employees/${encodeURIComponent(employeeId)}/final-settlement-deactivate`,
+     {method:"PATCH"}
+    );
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok){
+     throw new Error(data.error||"Unable to deactivate linked POS account.");
+    }
+
+    if(typeof v2FetchStaffEmployees==="function"){
+     await v2FetchStaffEmployees();
+    }
+
+    if(typeof v2LoadStaffAdminAccounts==="function"){
+     try{await v2LoadStaffAdminAccounts();}catch{}
+    }
+   }catch(error){
+    console.error("Final settlement POS account deactivation failed",error);
+    alert(
+     "The final settlement was saved, but the linked POS account could not be deactivated automatically. "+
+     "Please deactivate that staff account manually in Staff Management."
+    );
+   }
+  }
+
+  return result;
+ };
+}
