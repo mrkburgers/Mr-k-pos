@@ -2,7 +2,8 @@ const createSecurityAuthV2=require("./security-auth-v2");
 const pinSecurityV2=require("./security-pin-v2");
 
 module.exports=function registerStaffAdminV2(app,db){
- const ownerOnly=createSecurityAuthV2().requireRole("owner");
+ const securityAuthV2=createSecurityAuthV2();
+ const ownerOnly=securityAuthV2.requireRole("owner");
  const allowedNonOwnerRoles=new Set(["manager","cashier","kitchen"]);
 
  function publicAccount(row){
@@ -111,6 +112,9 @@ module.exports=function registerStaffAdminV2(app,db){
     SET name=?,staff_id=?,role=?,updated_at=CURRENT_TIMESTAMP
     WHERE id=?
    `).run(name,staffId,role,id);
+   if(role!==existing.role){
+    securityAuthV2.invalidateAccountSessions(id);
+   }
    res.json(publicAccount(getAccount(id)));
   }catch(error){
    if(String(error?.code||"").includes("CONSTRAINT")){
@@ -139,6 +143,9 @@ module.exports=function registerStaffAdminV2(app,db){
    SET active=?,updated_at=CURRENT_TIMESTAMP
    WHERE id=?
   `).run(active?1:0,id);
+  if(!active){
+   securityAuthV2.invalidateAccountSessions(id);
+  }
   res.json(publicAccount(getAccount(id)));
  });
 };
