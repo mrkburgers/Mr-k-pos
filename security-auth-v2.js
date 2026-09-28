@@ -27,13 +27,31 @@ module.exports=function createSecurityAuthV2(){
    const key=part.slice(0,separator).trim();
    const value=part.slice(separator+1).trim();
    if(!key)return;
-   try{\n    cookies[key]=decodeURIComponent(value);\n   }catch(error){\n    cookies[key]=value;\n   }
+   try{
+    cookies[key]=decodeURIComponent(value);
+   }catch(error){
+    cookies[key]=value;
+   }
   });
   return cookies;
  }
 
+ function invalidateAccountSessions(accountId){
+  const target=Number(accountId);
+  if(!Number.isFinite(target))return 0;
+  let removed=0;
+  for(const [token,session] of sessions.entries()){
+   if(Number(session?.staff_account_id)===target){
+    sessions.delete(token);
+    removed++;
+   }
+  }
+  return removed;
+ }
+
  function createSession(res,account){
   removeExpiredSessions();
+  invalidateAccountSessions(account?.id);
   const token=crypto.randomBytes(32).toString("hex");
   sessions.set(token,{
    staff_account_id:Number(account?.id),
@@ -96,6 +114,7 @@ module.exports=function createSecurityAuthV2(){
   createSession,
   getSession,
   clearSession,
+  invalidateAccountSessions,
   requireAuth,
   requireRole
  };
