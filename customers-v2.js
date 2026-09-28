@@ -393,24 +393,39 @@
   }
  };
 
+ function v2InjectOwnerCustomersCard(){
+  if(role!=="owner")return;
+  const grid=document.querySelector("#root .grid");
+  if(!grid||document.getElementById("v2CustomersCard"))return;
+
+  const ownerDashboard=String(document.querySelector("#root .badge")?.textContent||"")
+   .toUpperCase()
+   .includes("OWNER DASHBOARD");
+  if(!ownerDashboard)return;
+
+  const card=document.createElement("div");
+  card.id="v2CustomersCard";
+  card.className="card";
+  card.style.cursor="pointer";
+  card.onclick=()=>v2OwnerCustomers();
+  card.innerHTML='<div class="category-icon">👤</div><h3>CUSTOMERS</h3><p class="muted">Customer profiles and delivery history</p>';
+  grid.appendChild(card);
+ }
+
  const v2CustomerPreviousOwnerHome=window.ownerHome;
  if(typeof v2CustomerPreviousOwnerHome==="function"){
   window.ownerHome=function ownerHome(){
    const result=v2CustomerPreviousOwnerHome.apply(this,arguments);
-   if(role!=="owner")return result;
-
-   const grid=document.querySelector("#root .grid");
-   if(grid&&!document.getElementById("v2CustomersCard")){
-    const card=document.createElement("div");
-    card.id="v2CustomersCard";
-    card.className="card";
-    card.style.cursor="pointer";
-    card.onclick=()=>v2OwnerCustomers();
-    card.innerHTML='<div class="category-icon">👤</div><h3>CUSTOMERS</h3><p class="muted">Customer profiles and delivery history</p>';
-    grid.appendChild(card);
-   }
-
+   v2InjectOwnerCustomersCard();
    return result;
   };
  }
+
+ const v2CustomerRoot=document.getElementById("root");
+ if(v2CustomerRoot&&typeof MutationObserver!=="undefined"){
+  const v2CustomerOwnerObserver=new MutationObserver(()=>v2InjectOwnerCustomersCard());
+  v2CustomerOwnerObserver.observe(v2CustomerRoot,{childList:true,subtree:true});
+ }
+
+ setTimeout(v2InjectOwnerCustomersCard,0);
 })();
