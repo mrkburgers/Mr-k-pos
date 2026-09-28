@@ -88,8 +88,60 @@ if(typeof socket!=="undefined"&&socket){
 
 v2InitializeExpenses().catch(error=>{
  console.error("Expense initialization failed",error);
- v2ExpensesReady=true;
 });
+
+async function v2LoadExpensesForPage(){
+ await v2ExpensesSaveQueue;
+ if(!v2ExpensesReady){
+  await v2InitializeExpenses();
+ }else{
+  await v2FetchExpenses();
+ }
+ v2ExpensesReady=true;
+}
+
+function v2ExpensesLoadFailed(){
+ alert("Unable to load expenses from the restaurant server.");
+}
+
+const v2LegacyOwnerExpenses=typeof ownerExpenses==="function"?ownerExpenses:null;
+if(v2LegacyOwnerExpenses){
+ ownerExpenses=async function ownerExpenses(){
+  try{
+   await v2LoadExpensesForPage();
+  }catch(error){
+   console.error("Unable to load expenses page",error);
+   return v2ExpensesLoadFailed();
+  }
+  return v2LegacyOwnerExpenses();
+ };
+}
+
+const v2LegacyExpenseHistoryPage=typeof expenseHistoryPage==="function"?expenseHistoryPage:null;
+if(v2LegacyExpenseHistoryPage){
+ expenseHistoryPage=async function expenseHistoryPage(selectedDate=""){
+  try{
+   await v2LoadExpensesForPage();
+  }catch(error){
+   console.error("Unable to load expense history",error);
+   return v2ExpensesLoadFailed();
+  }
+  return v2LegacyExpenseHistoryPage(selectedDate);
+ };
+}
+
+const v2LegacyExpenseReportsPage=typeof expenseReportsPage==="function"?expenseReportsPage:null;
+if(v2LegacyExpenseReportsPage){
+ expenseReportsPage=async function expenseReportsPage(period="month",value=""){
+  try{
+   await v2LoadExpensesForPage();
+  }catch(error){
+   console.error("Unable to load expense reports",error);
+   return v2ExpensesLoadFailed();
+  }
+  return v2LegacyExpenseReportsPage(period,value);
+ };
+}
 
 function v2HideReceiptMetadataFromScreen(){
  document.querySelectorAll("#root .muted").forEach(element=>{
