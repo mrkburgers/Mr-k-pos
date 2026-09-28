@@ -2,9 +2,9 @@ const createSecurityAuthV2=require("./security-auth-v2");
 const pinSecurityV2=require("./security-pin-v2");
 const registerStaffAdminV2=require("./staff-admin-api-v2");
 
-module.exports=function registerStaffPinV2(app,db){
+module.exports=function registerStaffPinV2(app,io,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
- registerStaffAdminV2(app,db);
+ registerStaffAdminV2(app,io,db);
 
  app.patch("/api/staff/:id/pin",ownerOnly,(req,res)=>{
   const accountId=Number(req.params.id);
