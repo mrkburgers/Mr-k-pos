@@ -4,7 +4,8 @@ const cleanupLegacyBootstrapStaff=require("./staff-bootstrap-cleanup-v2");
 
 module.exports=function registerStaffEmployeesV2(app,db){
  cleanupLegacyBootstrapStaff(db);
- const ownerOnly=createSecurityAuthV2().requireRole("owner");
+ const securityAuthV2=createSecurityAuthV2();
+ const ownerOnly=securityAuthV2.requireRole("owner");
 
  app.get("/staff-employees-v2.js",(req,res)=>{
   res.sendFile(path.join(__dirname,"staff-employees-v2.js"));
@@ -246,6 +247,7 @@ module.exports=function registerStaffEmployeesV2(app,db){
      SET active=0,updated_at=CURRENT_TIMESTAMP
      WHERE id=? AND role<>'owner'
     `).run(Number(employee.staff_account_id));
+    securityAuthV2.invalidateAccountSessions(Number(employee.staff_account_id));
    }
   })();
 
