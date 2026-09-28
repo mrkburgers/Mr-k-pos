@@ -254,8 +254,8 @@
 
  const originalOwnerHome=window.ownerHome;
  if(typeof originalOwnerHome==="function"){
-  window.ownerHome=function ownerHome(){
-   const result=originalOwnerHome();
+  window.ownerHome=async function ownerHome(){
+   const result=await originalOwnerHome();
    const grid=document.querySelector("#root .grid");
    if(grid&&!document.getElementById("v2DeliveryZonesCard")){
     const card=document.createElement("div");
