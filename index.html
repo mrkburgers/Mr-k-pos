@@ -417,9 +417,6 @@ const MRK_BACKUP_KEYS=[
 
  "mrkFinalSettlements",
 
- "mrkOwnerAccount",
-
- "mrkStaffAccounts",
 
  "mrkActiveShift",
 
@@ -1534,62 +1531,30 @@ function createPayrollRecordId(prefix){
  );
 
 }
-let staffAccounts=safeLoad("mrkStaffAccounts",[
-
- {
-
-  name:"Manager",
-
-  staffId:"manager01",
-
-  pin:"9012",
-
-  role:"manager",
-
-  active:true
-
- },
-
- {
-
-  name:"Cashier",
-
-  staffId:"cashier01",
-
-  pin:"1234",
-
-  role:"cashier",
-
-  active:true
-
- },
-
- {
-
-  name:"Kitchen",
-
-  staffId:"kitchen01",
-
-  pin:"5678",
-
-  role:"kitchen",
-
-  active:true
-
+let staffAccounts=safeLoad("mrkStaffAccounts",[]);
+if(!Array.isArray(staffAccounts)){
+ staffAccounts=[];
+}
+staffAccounts.forEach(account=>{
+ if(account&&typeof account==="object"){
+  delete account.pin;
  }
-
-]);
-let ownerAccount=safeLoad("mrkOwnerAccount",{
-
- name:"Owner",
-
- staffId:"owner01",
-
- pin:"1991"
-
 });
 
+let ownerAccount=safeLoad("mrkOwnerAccount",{
+ name:"",
+ staffId:""
+});
+if(!ownerAccount||typeof ownerAccount!=="object"||Array.isArray(ownerAccount)){
+ ownerAccount={name:"",staffId:""};
+}
+delete ownerAccount.pin;
+
 function saveOwnerAccount(){
+
+ if(ownerAccount&&typeof ownerAccount==="object"){
+  delete ownerAccount.pin;
+ }
 
  localStorage.setItem(
 
@@ -1601,6 +1566,14 @@ function saveOwnerAccount(){
 
 }
 function saveStaffAccounts(){
+
+ if(Array.isArray(staffAccounts)){
+  staffAccounts.forEach(account=>{
+   if(account&&typeof account==="object"){
+    delete account.pin;
+   }
+  });
+ }
 
  localStorage.setItem(
 
@@ -1694,103 +1667,7 @@ function migrateStaffAccountsToMembers(){
 migrateStaffAccountsToMembers();
 function login(){
 
- const u=document
-
-  .getElementById("user")
-
-  .value.trim();
-
- const p=document
-
-  .getElementById("pin")
-
-  .value.trim();
-
- if(
-
- u.toLowerCase()===ownerAccount.staffId.toLowerCase() &&
-
- p===ownerAccount.pin
-
-){
-
-   loggedIn=true;
-
-  role="owner";
-
- currentStaffName=ownerAccount.name;
-
- currentStaffId=ownerAccount.staffId;
-
-  getActiveShift();
-
-  getShiftHistory();
-
-  showStorageIntegrityWarning();
-
-  ownerHome();
-
-  return;
-
-}
-
- const staff=staffAccounts.find(
-
-  s=>
-
-   s.staffId.toLowerCase()===u.toLowerCase() &&
-
-   s.pin===p
-
- );
-
- if(!staff){
-
-  alert("Invalid Staff ID or PIN.");
-
-  return;
-
- }
-
- if(!staff.active){
-
-  alert("This staff account is inactive.");
-
-  return;
-
- }
-
- loggedIn=true;
-
- role=staff.role;
-currentStaffName=staff.name;
-
-currentStaffId=staff.staffId;
- if(role==="manager"){
-
-  managerHome();
-
-  return;
-
- }
-
- if(role==="kitchen"){
-
-  kitchenHome();
-
-  return;
-
- }
-
- if(role==="cashier"){
-
-  home();
-
-  return;
-
- }
-
- alert("Invalid staff role.");
+ alert("Secure login module unavailable. Please reload the POS.");
 
 }
 
