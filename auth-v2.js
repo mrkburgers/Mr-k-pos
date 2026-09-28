@@ -15,7 +15,93 @@ async function loadV2BackendStaff(){
  }
 }
 
+async function v2InitialOwnerSetupRequired(){
+ try{
+  const response=await fetch("/api/bootstrap-status",{cache:"no-store"});
+  if(!response.ok)return false;
+  const data=await response.json().catch(()=>({}));
+  return data?.requires_setup===true;
+ }catch(error){
+  return false;
+ }
+}
+
+function v2OwnerSetupScreen(){
+ document.getElementById("root").innerHTML=`
+ <div class="login">
+  <div class="loginbox">
+   <div class="logo">MR K BURGERS<span>FIRST-RUN OWNER SETUP</span></div>
+
+   <p class="muted" style="margin-top:24px">
+    Create the first Owner account for this POS.
+   </p>
+
+   <div class="form" style="margin-top:20px">
+    <label>Owner Name</label>
+    <input id="v2SetupOwnerName" maxlength="120" placeholder="Owner name">
+
+    <label>Staff ID</label>
+    <input id="v2SetupOwnerStaffId" maxlength="120" placeholder="Staff ID">
+
+    <label>8-Digit PIN</label>
+    <input id="v2SetupOwnerPin" type="password" inputmode="numeric" maxlength="8" placeholder="8-digit PIN">
+
+    <label>Confirm PIN</label>
+    <input id="v2SetupOwnerPinConfirm" type="password" inputmode="numeric" maxlength="8" placeholder="Confirm PIN">
+
+    <button class="primary" onclick="v2CreateInitialOwner()">CREATE OWNER ACCOUNT</button>
+   </div>
+  </div>
+ </div>`;
+}
+
+window.v2CreateInitialOwner=async function v2CreateInitialOwner(){
+ const name=String(document.getElementById("v2SetupOwnerName")?.value||"").trim();
+ const staffId=String(document.getElementById("v2SetupOwnerStaffId")?.value||"").trim();
+ const pin=String(document.getElementById("v2SetupOwnerPin")?.value||"").trim();
+ const confirmPin=String(document.getElementById("v2SetupOwnerPinConfirm")?.value||"").trim();
+
+ if(!name||!staffId){
+  alert("Owner Name and Staff ID are required.");
+  return;
+ }
+ if(!/^\\d{8}$/.test(pin)){
+  alert("Owner PIN must be exactly 8 numeric digits.");
+  return;
+ }
+ if(pin!==confirmPin){
+  alert("The two PIN entries do not match.");
+  return;
+ }
+
+ try{
+  const response=await fetch("/api/bootstrap-owner",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    name,
+    staff_id:staffId,
+    pin
+   })
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok){
+   throw new Error(result.error||"Unable to create Owner account.");
+  }
+
+  alert("Owner account created successfully. Please log in.");
+  await loginScreen();
+ }catch(error){
+  alert(error.message||"Unable to create Owner account.");
+ }
+};
+
 window.loginScreen=async function loginScreen(){
+ if(await v2InitialOwnerSetupRequired()){
+  v2OwnerSetupScreen();
+  return;
+ }
+
  await loadV2BackendStaff();
 
  const activeAccounts=v2BackendStaff;
