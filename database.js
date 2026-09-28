@@ -119,23 +119,4 @@ db.prepare(`
   WHERE status = 'COMPLETED' AND completed_at IS NULL
 `).run();
 
-// Temporary bootstrap accounts only. Menu data is intentionally NOT seeded here.
-// Categories, menu items, ingredients, recipes and extras are managed through the POS
-// and must never be recreated automatically when the server restarts.
-const seedStaff = db.prepare(`
-  INSERT OR IGNORE INTO staff_accounts (
-    name,
-    staff_id,
-    pin_hash,
-    role,
-    active
-  )
-  VALUES (?, ?, ?, ?, 1)
-`);
-
-seedStaff.run("Owner", "Tarek", "8e9b669109df89620b94f2387dc53206a82ddc71d658f8f7a2b3a9b417370d3e", "owner");
-seedStaff.run("Manager", "manager01", "8cce10345c5e1de90d277b9869465f5972b828afbbbfd7ef08b1d835eedee993", "manager");
-seedStaff.run("Cashier", "cashier01", "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4", "cashier");
-seedStaff.run("Kitchen", "kitchen01", "f8638b979b2f4f793ddb6dbd197e0ee25a7a6ea32b0ae22f5e3c5d119d839e75", "kitchen");
-
 module.exports = db;
