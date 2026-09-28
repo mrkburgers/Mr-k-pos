@@ -231,4 +231,186 @@
 
   return v2CustomerPreviousFetch(input,options);
  };
+
+ function v2CustomerMoney(value){
+  return Number(value||0).toLocaleString()+" CFA";
+ }
+
+ function v2CustomerDate(value){
+  if(!value)return "—";
+  const text=String(value);
+  const date=new Date(text.includes("T")?text:text.replace(" ","T")+"Z");
+  if(Number.isNaN(date.getTime()))return text;
+  return date.toLocaleString();
+ }
+
+ function v2CustomerStatusClass(status){
+  return String(status||"").toUpperCase()==="COMPLETED"?"ready":"";
+ }
+
+ window.v2OwnerCustomers=async function v2OwnerCustomers(search=""){
+  if(role!=="owner"){
+   alert("Only the owner can access Customer History.");
+   return;
+  }
+
+  clearInterval(timerInterval);
+  document.getElementById("root").innerHTML=`
+   <div class="app">
+    <button class="back" onclick="ownerHome()">← BACK</button>
+    <div class="logo">MR K BURGERS<span>OWNER — CUSTOMERS</span></div>
+    <div class="panel">
+     <span class="badge">👤 CUSTOMER HISTORY</span>
+     <h1>Customers</h1>
+     <div class="form">
+      <label>Search by Name or Phone</label>
+      <input
+       id="v2CustomerHistorySearch"
+       value="${esc(search)}"
+       placeholder="Type customer name or phone number"
+       oninput="v2CustomerHistorySearchChanged(this.value)">
+     </div>
+     <div id="v2CustomerHistoryResults">
+      <p class="muted">Loading customers...</p>
+     </div>
+    </div>
+   </div>`;
+
+  await v2LoadOwnerCustomers(search);
+ };
+
+ let v2CustomerHistorySearchTimer=null;
+ window.v2CustomerHistorySearchChanged=function v2CustomerHistorySearchChanged(value){
+  clearTimeout(v2CustomerHistorySearchTimer);
+  v2CustomerHistorySearchTimer=setTimeout(()=>v2LoadOwnerCustomers(value),250);
+ };
+
+ async function v2LoadOwnerCustomers(search=""){
+  const results=document.getElementById("v2CustomerHistoryResults");
+  if(!results)return;
+
+  try{
+   const response=await fetch(
+    `/api/customers?search=${encodeURIComponent(String(search||"").trim())}`,
+    {cache:"no-store"}
+   );
+   const data=await response.json().catch(()=>[]);
+   if(!response.ok)throw new Error(data.error||"Unable to load customers.");
+
+   const rows=Array.isArray(data)?data:[];
+   results.innerHTML=rows.length?rows.map(entry=>`
+    <div
+     class="card clickable"
+     style="margin-top:12px"
+     onclick="v2OwnerCustomerDetail('${encodeURIComponent(entry.phoneKey||"")}')">
+     <div class="order-top">
+      <div>
+       <h3>${esc(entry.name||"Unnamed Customer")}</h3>
+       <div class="muted">${esc(entry.phone||"")}</div>
+      </div>
+      <strong>${Number(entry.totalOrders||0).toLocaleString()} order${Number(entry.totalOrders||0)===1?"":"s"}</strong>
+     </div>
+     <div class="info-row">
+      <span>Delivery Zone</span>
+      <strong>${esc(entry.deliveryZoneName||"—")}</strong>
+     </div>
+     <div class="info-row">
+      <span>Total Spent</span>
+      <strong>${v2CustomerMoney(entry.totalSpent)}</strong>
+     </div>
+     <div class="info-row">
+      <span>Last Order</span>
+      <strong>${esc(v2CustomerDate(entry.lastOrderAt))}</strong>
+     </div>
+    </div>
+   `).join(""):`<p class="muted" style="margin-top:18px">No customers found.</p>`;
+  }catch(error){
+   console.error("Unable to load Customer History",error);
+   results.innerHTML=`<div class="system-note">${esc(error.message||"Unable to load customers.")}</div>`;
+  }
+ }
+
+ window.v2OwnerCustomerDetail=async function v2OwnerCustomerDetail(encodedPhoneKey){
+  if(role!=="owner"){
+   alert("Only the owner can access Customer History.");
+   return;
+  }
+
+  const phoneKey=decodeURIComponent(String(encodedPhoneKey||""));
+  document.getElementById("root").innerHTML=`
+   <div class="app">
+    <button class="back" onclick="v2OwnerCustomers()">← BACK</button>
+    <div class="logo">MR K BURGERS<span>OWNER — CUSTOMER HISTORY</span></div>
+    <div class="panel"><p class="muted">Loading customer history...</p></div>
+   </div>`;
+
+  try{
+   const response=await fetch(
+    `/api/customers/${encodeURIComponent(phoneKey)}/history`,
+    {cache:"no-store"}
+   );
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok)throw new Error(data.error||"Unable to load customer history.");
+
+   const history=Array.isArray(data.history)?data.history:[];
+   document.querySelector("#root .panel").innerHTML=`
+    <span class="badge">👤 CUSTOMER PROFILE</span>
+    <h1>${esc(data.name||"Unnamed Customer")}</h1>
+
+    <div class="summary">
+     <div class="info-row"><span>Phone</span><strong>${esc(data.phone||"—")}</strong></div>
+     <div class="info-row"><span>Saved Address</span><strong>${esc(data.address||"—")}</strong></div>
+     <div class="info-row"><span>Saved Delivery Zone</span><strong>${esc(data.deliveryZoneName||"—")}</strong></div>
+     <div class="info-row"><span>First Order</span><strong>${esc(v2CustomerDate(data.firstOrderAt))}</strong></div>
+     <div class="info-row"><span>Last Order</span><strong>${esc(v2CustomerDate(data.lastOrderAt))}</strong></div>
+     <div class="info-row"><span>Total Delivery Orders</span><strong>${Number(data.totalOrders||0).toLocaleString()}</strong></div>
+     <div class="info-row"><span>Completed & Paid Orders</span><strong>${Number(data.completedPaidOrders||0).toLocaleString()}</strong></div>
+     <div class="info-row"><span>Total Spent</span><strong>${v2CustomerMoney(data.totalSpent)}</strong></div>
+    </div>
+
+    <h2 style="margin-top:26px">Order History</h2>
+    ${history.length?history.map(order=>`
+     <div class="card" style="margin-top:12px">
+      <div class="order-top">
+       <div>
+        <h3>#${String(Number(order.orderNumber||0)).padStart(3,"0")}</h3>
+        <div class="muted">${esc(v2CustomerDate(order.createdAt))}</div>
+       </div>
+       <span class="status ${v2CustomerStatusClass(order.status)}">${esc(order.status||"—")}</span>
+      </div>
+      <div class="info-row"><span>Amount</span><strong>${v2CustomerMoney(order.total)}</strong></div>
+      <div class="info-row"><span>Payment</span><strong>${esc(order.paymentMethod||"—")}</strong></div>
+      <div class="info-row"><span>Payment Status</span><strong>${esc(order.paymentStatus||"—")}</strong></div>
+      <div class="info-row"><span>Address</span><strong>${esc(order.address||"—")}</strong></div>
+      <div class="info-row"><span>Delivery Zone</span><strong>${esc(order.deliveryZoneName||"—")}</strong></div>
+     </div>
+    `).join(""):`<p class="muted">No delivery order history found.</p>`}
+   `;
+  }catch(error){
+   console.error("Unable to load customer detail",error);
+   document.querySelector("#root .panel").innerHTML=
+    `<div class="system-note">${esc(error.message||"Unable to load customer history.")}</div>`;
+  }
+ };
+
+ const v2CustomerPreviousOwnerHome=window.ownerHome;
+ if(typeof v2CustomerPreviousOwnerHome==="function"){
+  window.ownerHome=function ownerHome(){
+   const result=v2CustomerPreviousOwnerHome.apply(this,arguments);
+   if(role!=="owner")return result;
+
+   const grid=document.querySelector("#root .grid");
+   if(grid&&!document.getElementById("v2CustomersCard")){
+    const card=document.createElement("div");
+    card.id="v2CustomersCard";
+    card.className="card";
+    card.style.cursor="pointer";
+    card.onclick=()=>v2OwnerCustomers();
+    card.innerHTML='<div class="category-icon">👤</div><h3>CUSTOMERS</h3><p class="muted">Customer profiles and delivery history</p>';
+    grid.appendChild(card);
+   }
+
+   return result;
+  };
+ }
 })();
