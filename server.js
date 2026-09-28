@@ -12,6 +12,7 @@ const registerExpensesV2 = require("./expenses-api-v2");
 const registerCombosV2 = require("./combo-api-v2");
 const registerDatabaseBackupV2 = require("./backup-api-v2");
 const registerFinanceReportV2 = require("./finance-report-api-v2");
+const registerCustomersV2 = require("./customers-api-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
 const loginRateV2 = require("./security-login-rate-v2");
 const pinSecurityV2 = require("./security-pin-v2");
@@ -99,6 +100,7 @@ registerExpensesV2(app,io,db);
 registerCombosV2(app,io,db);
 registerDatabaseBackupV2(app,io,db);
 registerFinanceReportV2(app,db);
+registerCustomersV2(app,io,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
