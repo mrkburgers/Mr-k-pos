@@ -812,7 +812,7 @@ function shutdownMrKServer(signal){
   },10000);
   forceTimer.unref();
 
-  server.close(()=>{
+  io.close(()=>{
     try{
       if(db.open)db.close();
     }catch(error){
