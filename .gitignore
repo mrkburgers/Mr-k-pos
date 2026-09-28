@@ -1,3 +1,4 @@
 node_modules/
 mr-k-pos.db
 mr-k-pos.db-*
+.mrk-pos-backups/
