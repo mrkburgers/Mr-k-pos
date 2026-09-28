@@ -102,7 +102,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/expenses-v2.js?v=20260928-expense-sync-2"></script>\n<script src="/auth-v2.js"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/expenses-sync-v2.js?v=20260928-expense-sync-3"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -142,6 +142,9 @@ app.get("/owner-accounts-v2.js", (req, res) => {
 });
 app.get("/expenses-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "expenses-v2.js"));
+});
+app.get("/expenses-sync-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "expenses-sync-v2.js"));
 });
 app.get("/auth-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "auth-v2.js"));
