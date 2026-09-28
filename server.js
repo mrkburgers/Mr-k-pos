@@ -11,6 +11,7 @@ const registerOwnerAccountsV2 = require("./owner-accounts-api-v2");
 const registerExpensesV2 = require("./expenses-api-v2");
 const registerCombosV2 = require("./combo-api-v2");
 const registerDatabaseBackupV2 = require("./backup-api-v2");
+const registerFinanceReportV2 = require("./finance-report-api-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
 const loginRateV2 = require("./security-login-rate-v2");
 const pinSecurityV2 = require("./security-pin-v2");
@@ -97,12 +98,13 @@ registerOwnerAccountsV2(app,io,db);
 registerExpensesV2(app,io,db);
 registerCombosV2(app,io,db);
 registerDatabaseBackupV2(app,io,db);
+registerFinanceReportV2(app,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/expenses-sync-v2.js?v=20260928-expense-sync-3"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/expenses-sync-v2.js?v=20260928-expense-sync-3"></script>\n<script src="/finance-report-v2.js?v=20260928-money-report-1"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -167,6 +169,9 @@ app.get("/delivery-zone-map-v2.js", (req, res) => {
 
 app.get("/backup-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "backup-v2.js"));
+});
+app.get("/finance-report-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "finance-report-v2.js"));
 });
 
 app.get("/api/health", (req, res) => {
