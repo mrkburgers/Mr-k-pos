@@ -1,4 +1,39 @@
+const createSecurityAuthV2=require("./security-auth-v2");
+
 module.exports=function registerOrderLifecycleV2(app,io,db){
+ const securityAuthV2=createSecurityAuthV2();
+ const orderReadAccess=securityAuthV2.requireRole("owner","manager","cashier","kitchen");
+ const cashierOrderAccess=securityAuthV2.requireRole("owner","manager","cashier");
+ const cancelOrderAccess=securityAuthV2.requireRole("owner","manager","cashier");
+
+ function statusRoleAccess(req,res,next){
+  const session=securityAuthV2.getSession(req);
+  if(!session){
+   return res.status(401).json({error:"Authentication required."});
+  }
+
+  const status=String(req.body?.status||"").toUpperCase();
+  const role=String(session.role||"");
+
+  let allowed=false;
+  if(status==="ACCEPTED"||status==="COMPLETED"){
+   allowed=["owner","manager","cashier"].includes(role);
+  }else if(status==="PREPARING"||status==="READY"){
+   allowed=["owner","manager","kitchen"].includes(role);
+  }else if(status==="CANCELLED"){
+   allowed=["owner","manager","cashier"].includes(role);
+  }else{
+   allowed=["owner","manager","cashier","kitchen"].includes(role);
+  }
+
+  if(!allowed){
+   return res.status(403).json({error:"You do not have permission to perform this order action."});
+  }
+
+  req.v2Session=session;
+  next();
+ }
+
  const columns=db.prepare("PRAGMA table_info(orders)").all();
  if(!columns.some(column=>column.name==="ready_at"))db.exec("ALTER TABLE orders ADD COLUMN ready_at TEXT");
  if(!columns.some(column=>column.name==="cancelled_at"))db.exec("ALTER TABLE orders ADD COLUMN cancelled_at TEXT");
@@ -139,13 +174,13 @@ module.exports=function registerOrderLifecycleV2(app,io,db){
   try{result=cancelOrder(orderId,reason,actor);}catch(error){if(error.message==="ORDER_NOT_FOUND")return res.status(404).json({error:"order not found"});if(error.message==="PREPARATION_ALREADY_STARTED")return res.status(409).json({error:"Order cancellation is not allowed after preparation has started."});throw error;}
   io.emit("order-status-changed",{id:orderId,order_number:result.order.order_number,order_uuid:result.order.order_uuid,status:"CANCELLED"});io.emit("order-payment-status-changed",{id:orderId,order_number:result.order.order_number,order_uuid:result.order.order_uuid,payment_status:result.order.payment_status});io.emit("inventory-changed",{reason:"order-cancelled",order_id:orderId});io.emit("shift-changed",{reason:"order-cancelled",order_id:orderId});io.emit("owner-accounts-changed",{reason:"order-refunded",order_id:orderId});res.json({id:orderId,order_number:result.order.order_number,status:"CANCELLED",payment_status:result.order.payment_status,inventory_restored:result.restored,already_cancelled:result.alreadyCancelled});
  }
- app.post("/api/orders/:id/initialize",(req,res)=>{
+ app.post("/api/orders/:id/initialize",cashierOrderAccess,(req,res)=>{
   const orderId=Number(req.params.id),order=db.prepare("SELECT * FROM orders WHERE id=?").get(orderId);if(!order)return res.status(404).json({error:"order not found"});const actor=actorFromBody(req.body);ensureBaselineTimeline(order,actor);
   db.prepare(`UPDATE orders SET customer_address=COALESCE(?,customer_address),table_number=COALESCE(?,table_number),updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(String(req.body?.customer_address||"").trim()||null,String(req.body?.table_number||"").trim()||null,orderId);res.json({ok:true,id:orderId});
  });
- app.get("/api/order-details/:id",(req,res)=>{const details=orderDetails(Number(req.params.id));if(!details)return res.status(404).json({error:"order not found"});res.json(details);});
- app.post("/api/orders/:id/cancel",sendCancellation);
- app.patch("/api/orders/:id/status",(req,res,next)=>{
+ app.get("/api/order-details/:id",orderReadAccess,(req,res)=>{const details=orderDetails(Number(req.params.id));if(!details)return res.status(404).json({error:"order not found"});res.json(details);});
+ app.post("/api/orders/:id/cancel",cancelOrderAccess,sendCancellation);
+ app.patch("/api/orders/:id/status",statusRoleAccess,(req,res,next)=>{
   const orderId=Number(req.params.id),status=String(req.body?.status||""),order=db.prepare("SELECT * FROM orders WHERE id=?").get(orderId);if(!order)return res.status(404).json({error:"order not found"});if(status==="CANCELLED")return sendCancellation(req,res);
   const allowed={NEW:new Set(["NEW","ACCEPTED"]),ACCEPTED:new Set(["ACCEPTED","PREPARING"]),PREPARING:new Set(["PREPARING","READY"]),READY:new Set(["READY","COMPLETED"]),COMPLETED:new Set(["COMPLETED"]),CANCELLED:new Set(["CANCELLED"])};if(!allowed[order.status]||!allowed[order.status].has(status))return res.status(409).json({error:`Invalid order transition from ${order.status} to ${status}.`});
   const actor=actorFromBody(req.body);ensureBaselineTimeline(order,actor);
@@ -156,5 +191,5 @@ module.exports=function registerOrderLifecycleV2(app,io,db){
   else db.prepare("UPDATE orders SET status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").run(status,orderId);
   io.emit("order-status-changed",{id:orderId,order_number:order.order_number,order_uuid:order.order_uuid,status});res.json({id:orderId,order_number:order.order_number,order_uuid:order.order_uuid,status});
  });
- app.patch("/api/orders/:id/payment-status",(req,res,next)=>{const orderId=Number(req.params.id),paymentStatus=String(req.body?.payment_status||"");if(paymentStatus!=="REFUNDED")return next();const order=db.prepare("SELECT * FROM orders WHERE id=?").get(orderId);if(!order)return res.status(404).json({error:"order not found"});if(!["NEW","ACCEPTED"].includes(order.status))return res.status(409).json({error:"Refund is not allowed after preparation has started."});res.status(409).json({error:"Cancel the order to process its refund and inventory restoration together."});});
+ app.patch("/api/orders/:id/payment-status",cashierOrderAccess,(req,res,next)=>{const orderId=Number(req.params.id),paymentStatus=String(req.body?.payment_status||"");if(paymentStatus!=="REFUNDED")return next();const order=db.prepare("SELECT * FROM orders WHERE id=?").get(orderId);if(!order)return res.status(404).json({error:"order not found"});if(!["NEW","ACCEPTED"].includes(order.status))return res.status(409).json({error:"Refund is not allowed after preparation has started."});res.status(409).json({error:"Cancel the order to process its refund and inventory restoration together."});});
 };
