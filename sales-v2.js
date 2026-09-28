@@ -138,4 +138,3 @@ if(typeof socket!=="undefined"&&socket){
  });
 }
 
-v2SyncCompletedSales();
