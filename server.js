@@ -20,6 +20,37 @@ const io = new Server(server);
 app.use(express.json());
 const PORT = 3000;
 const securityAuthV2 = createSecurityAuthV2();
+const orderReadAccess = securityAuthV2.requireRole("owner","manager","cashier","kitchen");
+const orderCashierAccess = securityAuthV2.requireRole("owner","manager","cashier");
+const orderCreateAccess = securityAuthV2.requireRole("cashier");
+
+function fallbackOrderStatusAccess(req,res,next){
+  const session=securityAuthV2.getSession(req);
+  if(!session){
+    return res.status(401).json({error:"Authentication required."});
+  }
+
+  const status=String(req.body?.status||"").toUpperCase();
+  const role=String(session.role||"");
+  let allowed=false;
+
+  if(status==="ACCEPTED"||status==="COMPLETED"){
+    allowed=["owner","manager","cashier"].includes(role);
+  }else if(status==="PREPARING"||status==="READY"){
+    allowed=["owner","manager","kitchen"].includes(role);
+  }else if(status==="CANCELLED"){
+    allowed=["owner","manager","cashier"].includes(role);
+  }else{
+    allowed=["owner","manager","cashier","kitchen"].includes(role);
+  }
+
+  if(!allowed){
+    return res.status(403).json({error:"You do not have permission to perform this order action."});
+  }
+
+  req.v2Session=session;
+  next();
+}
 
 app.use((req,res,next)=>{
   const method=String(req.method||"GET").toUpperCase();
@@ -378,7 +409,7 @@ app.patch("/api/settings/restaurant-status", securityAuthV2.requireRole("owner",
   });
 });
 
-app.post("/api/orders", (req, res) => {
+app.post("/api/orders", orderCreateAccess, (req, res) => {
   const {
     order_uuid,
     order_type,
@@ -496,7 +527,7 @@ app.post("/api/orders", (req, res) => {
   });
 });
 
-app.get("/api/orders", (req, res) => {
+app.get("/api/orders", orderReadAccess, (req, res) => {
   const { status, payment_status } = req.query;
 
   let query = `
@@ -533,7 +564,7 @@ app.get("/api/orders", (req, res) => {
   res.json(orders);
 });
 
-app.get("/api/orders/:id", (req, res) => {
+app.get("/api/orders/:id", orderReadAccess, (req, res) => {
   const orderId = Number(req.params.id);
 
   const order = db.prepare(`
@@ -558,7 +589,7 @@ app.get("/api/orders/:id", (req, res) => {
   res.json(order);
 });
 
-app.patch("/api/orders/:id/status", (req, res) => {
+app.patch("/api/orders/:id/status", fallbackOrderStatusAccess, (req, res) => {
   const orderId = Number(req.params.id);
   const { status } = req.body;
 
@@ -623,7 +654,7 @@ app.patch("/api/orders/:id/status", (req, res) => {
   });
 });
 
-app.patch("/api/orders/:id/payment-status", (req, res) => {
+app.patch("/api/orders/:id/payment-status", orderCashierAccess, (req, res) => {
   const orderId = Number(req.params.id);
   const { payment_status } = req.body;
 
