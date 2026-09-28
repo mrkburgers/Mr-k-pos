@@ -123,6 +123,26 @@ window.login=async function login(){
  }
 };
 
+window.logout=async function logout(){
+ try{
+  await fetch("/api/logout",{method:"POST"});
+ }catch(error){
+  console.error("Server logout failed",error);
+ }
+
+ loggedIn=false;
+ role="";
+ currentStaffName="";
+ currentStaffId="";
+ clearInterval(timerInterval);
+
+ if(typeof loginScreen==="function"){
+  await loginScreen();
+ }else if(typeof render==="function"){
+  render();
+ }
+};
+
 function v2ActorPayload(){
  return {
   actor_name:String(currentStaffName||"").trim(),
