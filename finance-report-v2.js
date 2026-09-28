@@ -224,6 +224,11 @@ if(v2FinanceLegacyExpenseReports){
    const existing=document.getElementById("v2PayrollExpenseReport");
    if(existing)existing.remove();
 
+   [...panel.querySelectorAll(".info-row")].forEach(row=>{
+    const label=String(row.querySelector("span")?.textContent||"").trim().toLowerCase();
+    if(label==="payroll")row.remove();
+   });
+
    const totalRow=[...panel.querySelectorAll(".info-row")].find(row=>
     String(row.querySelector("span")?.textContent||"").trim()==="Total Expenses"
    );
