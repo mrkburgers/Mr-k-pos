@@ -27,7 +27,7 @@ module.exports=function createSecurityAuthV2(){
    const key=part.slice(0,separator).trim();
    const value=part.slice(separator+1).trim();
    if(!key)return;
-   cookies[key]=decodeURIComponent(value);
+   try{\n    cookies[key]=decodeURIComponent(value);\n   }catch(error){\n    cookies[key]=value;\n   }
   });
   return cookies;
  }
