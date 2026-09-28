@@ -21,6 +21,38 @@ app.use(express.json());
 const PORT = 3000;
 const securityAuthV2 = createSecurityAuthV2();
 
+app.use((req,res,next)=>{
+  const method=String(req.method||"GET").toUpperCase();
+  if(!["POST","PUT","PATCH","DELETE"].includes(method)){
+    return next();
+  }
+
+  const session=securityAuthV2.getSession(req);
+  if(!session){
+    return next();
+  }
+
+  const fetchSite=String(req.headers["sec-fetch-site"]||"").toLowerCase();
+  if(fetchSite==="cross-site"){
+    return res.status(403).json({error:"Cross-site request blocked."});
+  }
+
+  const origin=String(req.headers.origin||"").trim();
+  if(origin){
+    try{
+      const originHost=new URL(origin).host.toLowerCase();
+      const requestHost=String(req.headers.host||"").toLowerCase();
+      if(!originHost||!requestHost||originHost!==requestHost){
+        return res.status(403).json({error:"Cross-origin request blocked."});
+      }
+    }catch(error){
+      return res.status(403).json({error:"Invalid request origin."});
+    }
+  }
+
+  next();
+});
+
 registerDeliveryZonesV2(app,io,db);
 registerMenuAdminV2(app,io,db);
 registerShiftV2(app,io,db);
@@ -109,14 +141,10 @@ app.get("/api/health", (req, res) => {
 app.get("/api/staff", (req, res) => {
   const accounts = db.prepare(`
     SELECT
-      id,
       name,
-      staff_id,
-      role,
-      active,
-      created_at,
-      updated_at
+      staff_id
     FROM staff_accounts
+    WHERE active = 1
     ORDER BY
       CASE role
         WHEN 'owner' THEN 1
@@ -129,8 +157,8 @@ app.get("/api/staff", (req, res) => {
   `).all();
 
   res.json(accounts.map(account => ({
-    ...account,
-    active: Boolean(account.active)
+    name:String(account.name||""),
+    staff_id:String(account.staff_id||"")
   })));
 });
 
