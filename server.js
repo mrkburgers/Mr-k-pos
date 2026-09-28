@@ -19,7 +19,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.json());
-const PORT = 3000;
+const configuredPort=Number(process.env.PORT||3000);
+const PORT=Number.isInteger(configuredPort)&&configuredPort>0&&configuredPort<=65535
+  ?configuredPort
+  :3000;
+const HOST=String(process.env.HOST||"0.0.0.0").trim()||"0.0.0.0";
 const securityAuthV2 = createSecurityAuthV2();
 const orderReadAccess = securityAuthV2.requireRole("owner","manager","cashier","kitchen");
 const orderCashierAccess = securityAuthV2.requireRole("owner","manager","cashier");
@@ -794,6 +798,35 @@ app.patch("/api/orders/:id/payment-status", orderPaymentAccess, (req, res) => {
 
 app.listen = undefined;
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Mr K POS V2 server running on port ${PORT}`);
+let shuttingDown=false;
+
+function shutdownMrKServer(signal){
+  if(shuttingDown)return;
+  shuttingDown=true;
+
+  console.log(`Mr K POS V2 shutting down (${signal})...`);
+
+  const forceTimer=setTimeout(()=>{
+    console.error("Forced shutdown after timeout.");
+    process.exit(1);
+  },10000);
+  forceTimer.unref();
+
+  server.close(()=>{
+    try{
+      if(db.open)db.close();
+    }catch(error){
+      console.error("Database close during shutdown failed",error);
+    }
+
+    clearTimeout(forceTimer);
+    process.exit(0);
+  });
+}
+
+process.on("SIGINT",()=>shutdownMrKServer("SIGINT"));
+process.on("SIGTERM",()=>shutdownMrKServer("SIGTERM"));
+
+server.listen(PORT, HOST, () => {
+  console.log(`Mr K POS V2 server running on http://${HOST}:${PORT}`);
 });
