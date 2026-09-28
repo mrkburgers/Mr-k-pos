@@ -170,6 +170,86 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.get("/api/bootstrap-status", (req, res) => {
+  const row = db.prepare("SELECT COUNT(*) AS count FROM staff_accounts").get();
+  res.json({
+    requires_setup: Number(row?.count || 0) === 0
+  });
+});
+
+app.post("/api/bootstrap-owner", (req, res) => {
+  const fetchSite = String(req.headers["sec-fetch-site"] || "").toLowerCase();
+  if (fetchSite === "cross-site") {
+    return res.status(403).json({error:"Cross-site request blocked."});
+  }
+
+  const origin = String(req.headers.origin || "").trim();
+  if (origin) {
+    try {
+      const originHost = new URL(origin).host.toLowerCase();
+      const requestHost = String(req.headers.host || "").toLowerCase();
+      if (!originHost || !requestHost || originHost !== requestHost) {
+        return res.status(403).json({error:"Cross-origin request blocked."});
+      }
+    } catch (error) {
+      return res.status(403).json({error:"Invalid request origin."});
+    }
+  }
+
+  const name = String(req.body?.name || "").trim();
+  const staffId = String(req.body?.staff_id || "").trim();
+  const pin = String(req.body?.pin || "").trim();
+
+  if (!name || name.length > 120) {
+    return res.status(400).json({error:"Owner name is required and must be 120 characters or fewer."});
+  }
+  if (!staffId || staffId.length > 120) {
+    return res.status(400).json({error:"Staff ID is required and must be 120 characters or fewer."});
+  }
+  if (!/^\d{8}$/.test(pin)) {
+    return res.status(400).json({error:"Owner PIN must be exactly 8 numeric digits."});
+  }
+
+  const createOwner = db.transaction(() => {
+    const count = db.prepare("SELECT COUNT(*) AS count FROM staff_accounts").get();
+    if (Number(count?.count || 0) !== 0) {
+      const error = new Error("SETUP_ALREADY_COMPLETED");
+      throw error;
+    }
+
+    const result = db.prepare(`
+      INSERT INTO staff_accounts(name,staff_id,pin_hash,role,active)
+      VALUES(?,?,?,?,1)
+    `).run(name,staffId,pinSecurityV2.hashPin(pin),"owner");
+
+    return db.prepare(`
+      SELECT id,name,staff_id,role,active
+      FROM staff_accounts
+      WHERE id=?
+      LIMIT 1
+    `).get(result.lastInsertRowid);
+  });
+
+  try {
+    const owner = createOwner();
+    res.status(201).json({
+      id: Number(owner.id),
+      name: owner.name,
+      staff_id: owner.staff_id,
+      role: owner.role,
+      active: Boolean(owner.active)
+    });
+  } catch (error) {
+    if (error.message === "SETUP_ALREADY_COMPLETED") {
+      return res.status(409).json({error:"Initial Owner setup has already been completed."});
+    }
+    if (String(error?.code || "").includes("CONSTRAINT")) {
+      return res.status(409).json({error:"That Staff ID is already in use."});
+    }
+    throw error;
+  }
+});
+
 app.get("/api/staff", (req, res) => {
   const accounts = db.prepare(`
     SELECT
