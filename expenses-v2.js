@@ -1,5 +1,6 @@
 let v2ExpensesSaveQueue=Promise.resolve();
 let v2ExpensesReady=false;
+let v2KnownExpenseIds=new Set();
 
 function v2ExpensesSnapshot(){
  return {
@@ -12,6 +13,7 @@ function v2ApplyExpenses(state){
  if(!state||typeof state!=="object")return;
  expenseCategories=Array.isArray(state.categories)?state.categories:[];
  expenses=Array.isArray(state.expenses)?state.expenses:[];
+ v2KnownExpenseIds=new Set(expenses.map(expense=>String(expense?.id||"")).filter(Boolean));
  localStorage.setItem("mrkExpenseCategories",JSON.stringify(expenseCategories));
  localStorage.setItem("mrkExpenses",JSON.stringify(expenses));
 }
@@ -38,30 +40,78 @@ async function v2InitializeExpenses(){
 }
 
 function v2QueueExpensesSave(){
- const snapshot=v2ExpensesSnapshot();
+ const localExpenses=JSON.parse(JSON.stringify(Array.isArray(expenses)?expenses:[]));
+
  v2ExpensesSaveQueue=v2ExpensesSaveQueue
   .then(async()=>{
-   const response=await fetch("/api/expenses/state",{
-    method:"PUT",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(snapshot)
+   let serverState;
+   try{
+    serverState=await v2FetchExpenses();
+   }catch(error){
+    throw new Error("Unable to refresh expenses before save");
+   }
+
+   const serverIds=new Set(
+    (Array.isArray(serverState?.expenses)?serverState.expenses:[])
+     .map(expense=>String(expense?.id||""))
+     .filter(Boolean)
+   );
+
+   const pending=localExpenses.filter(expense=>{
+    const id=String(expense?.id||"");
+    return id&&!serverIds.has(id);
    });
-   if(!response.ok)throw new Error("Unable to save expenses");
-   const state=await response.json();
-   v2ApplyExpenses(state);
+
+   for(const expense of pending.reverse()){
+    const response=await fetch("/api/expenses",{
+     method:"POST",
+     headers:{"Content-Type":"application/json"},
+     body:JSON.stringify(expense)
+    });
+    if(!response.ok)throw new Error("Unable to save expense");
+    const state=await response.json();
+    v2ApplyExpenses(state);
+   }
+
+   if(!pending.length){
+    v2ApplyExpenses(serverState);
+   }
+
+   v2ExpensesReady=true;
   })
   .catch(error=>console.error("Expense sync failed",error));
+
+ return v2ExpensesSaveQueue;
+}
+
+function v2QueueExpenseCategoriesSave(){
+ const categories=JSON.parse(JSON.stringify(Array.isArray(expenseCategories)?expenseCategories:[]));
+
+ v2ExpensesSaveQueue=v2ExpensesSaveQueue
+  .then(async()=>{
+   const response=await fetch("/api/expense-categories/state",{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({categories})
+   });
+   if(!response.ok)throw new Error("Unable to save expense categories");
+   const state=await response.json();
+   v2ApplyExpenses(state);
+   v2ExpensesReady=true;
+  })
+  .catch(error=>console.error("Expense category sync failed",error));
+
  return v2ExpensesSaveQueue;
 }
 
 saveExpenses=function saveExpenses(){
  localStorage.setItem("mrkExpenses",JSON.stringify(expenses));
- if(v2ExpensesReady)v2QueueExpensesSave();
+ v2QueueExpensesSave();
 };
 
 saveExpenseCategories=function saveExpenseCategories(){
  localStorage.setItem("mrkExpenseCategories",JSON.stringify(expenseCategories));
- if(v2ExpensesReady)v2QueueExpensesSave();
+ v2QueueExpenseCategoriesSave();
 };
 
 if(typeof socket!=="undefined"&&socket){
