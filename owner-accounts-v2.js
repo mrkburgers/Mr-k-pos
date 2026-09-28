@@ -203,7 +203,7 @@ if(typeof socket!=="undefined"&&socket){
 let v2StaffPinAccounts=[];
 
 async function v2LoadStaffPinAccounts(){
- const response=await fetch("/api/staff",{cache:"no-store"});
+ const response=await fetch("/api/staff-admin",{cache:"no-store"});
  if(!response.ok)throw new Error("Unable to load staff accounts.");
  v2StaffPinAccounts=await response.json();
  return v2StaffPinAccounts;
