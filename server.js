@@ -14,6 +14,7 @@ const registerDatabaseBackupV2 = require("./backup-api-v2");
 const registerFinanceReportV2 = require("./finance-report-api-v2");
 const registerCustomersV2 = require("./customers-api-v2");
 const registerCustomerAppV2 = require("./customer-app-api-v2");
+const startCustomerAppSyncV2 = require("./customer-app-sync-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
 const loginRateV2 = require("./security-login-rate-v2");
 const pinSecurityV2 = require("./security-pin-v2");
@@ -103,6 +104,7 @@ registerExpensesV2(app,io,db);
 registerCombosV2(app,io,db);
 registerDatabaseBackupV2(app,io,db);
 registerFinanceReportV2(app,db);
+startCustomerAppSyncV2(io,db);
 
 app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
