@@ -5,7 +5,159 @@ const createSecurityAuthV2=require("./security-auth-v2");
 module.exports=function registerCustomerAppV2(app,io,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
 
- async function publishToCloud(version,draftCount){
+ function tableExists(name){
+  return Boolean(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(String(name||"")));
+ }
+
+ function columnExists(table,name){
+  if(!tableExists(table))return false;
+  return db.prepare("PRAGMA table_info("+table+")").all().some(column=>column.name===name);
+ }
+
+ function safeJson(value,fallback=null){
+  if(value===null||value===undefined||value==="")return fallback;
+  try{return typeof value==="string"?JSON.parse(value):value;}
+  catch{return fallback;}
+ }
+
+ function buildCustomerAppSnapshot(){
+  const hasCategoryType=columnExists("menu_categories","category_type");
+  const hasShowOnMenu=columnExists("menu_items","show_on_menu");
+  const hasIngredientQuantity=columnExists("menu_item_ingredients","quantity");
+
+  const categories=db.prepare(`
+   SELECT id,name,icon,active,sort_order${hasCategoryType?",category_type":""}
+   FROM menu_categories
+   ORDER BY sort_order ASC,name ASC
+  `).all().map(row=>({
+   id:String(row.id),
+   name:String(row.name||""),
+   icon:String(row.icon||""),
+   active:Boolean(row.active),
+   sortOrder:Number(row.sort_order||0),
+   categoryType:hasCategoryType?String(row.category_type||"item"):"item"
+  }));
+
+  const ingredients=db.prepare(`
+   SELECT id,name,active
+   FROM menu_ingredients
+   ORDER BY name ASC
+  `).all().map(row=>({
+   id:String(row.id),
+   name:String(row.name||""),
+   active:Boolean(row.active)
+  }));
+
+  const itemIngredients=db.prepare(`
+   SELECT menu_item_id,ingredient_id,removable,sort_order${hasIngredientQuantity?",quantity":""}
+   FROM menu_item_ingredients
+   ORDER BY menu_item_id ASC,sort_order ASC
+  `).all();
+
+  const itemExtras=db.prepare(`
+   SELECT menu_item_id,extra_item_id
+   FROM menu_item_extras
+   ORDER BY menu_item_id ASC,extra_item_id ASC
+  `).all();
+
+  const items=db.prepare(`
+   SELECT id,name,category_id,price,active,sort_order${hasShowOnMenu?",show_on_menu":""}
+   FROM menu_items
+   ORDER BY category_id ASC,sort_order ASC,name ASC
+  `).all().map(row=>({
+   id:String(row.id),
+   name:String(row.name||""),
+   categoryId:String(row.category_id||""),
+   price:Number(row.price||0),
+   active:Boolean(row.active),
+   showOnMenu:hasShowOnMenu?Boolean(row.show_on_menu):true,
+   sortOrder:Number(row.sort_order||0),
+   ingredients:itemIngredients
+    .filter(link=>String(link.menu_item_id)===String(row.id))
+    .map(link=>({
+     ingredientId:String(link.ingredient_id),
+     removable:Boolean(link.removable),
+     quantity:hasIngredientQuantity?Number(link.quantity||1):1,
+     sortOrder:Number(link.sort_order||0)
+    })),
+   extras:itemExtras
+    .filter(link=>String(link.menu_item_id)===String(row.id))
+    .map(link=>String(link.extra_item_id))
+  }));
+
+  let combos=[];
+  if(tableExists("menu_combos")){
+   const components=tableExists("menu_combo_components")
+    ?db.prepare(`
+      SELECT combo_id,menu_item_id,quantity,sort_order
+      FROM menu_combo_components
+      ORDER BY combo_id ASC,sort_order ASC
+     `).all()
+    :[];
+
+   combos=db.prepare(`
+    SELECT id,name,description,category_id,price,active,sort_order
+    FROM menu_combos
+    ORDER BY category_id ASC,sort_order ASC,name ASC
+   `).all().map(row=>({
+    id:String(row.id),
+    name:String(row.name||""),
+    description:String(row.description||""),
+    categoryId:String(row.category_id||""),
+    price:Number(row.price||0),
+    active:Boolean(row.active),
+    sortOrder:Number(row.sort_order||0),
+    components:components
+     .filter(component=>String(component.combo_id)===String(row.id))
+     .map(component=>({
+      menuItemId:String(component.menu_item_id),
+      quantity:Number(component.quantity||1),
+      sortOrder:Number(component.sort_order||0)
+     }))
+   }));
+  }
+
+  let deliveryZones=[];
+  if(tableExists("delivery_zones")){
+   deliveryZones=db.prepare(`
+    SELECT id,name,fee,active,sort_order,boundary_json
+    FROM delivery_zones
+    ORDER BY sort_order ASC,name ASC
+   `).all().map(row=>({
+    id:String(row.id),
+    name:String(row.name||""),
+    fee:Number(row.fee||0),
+    active:Boolean(row.active),
+    sortOrder:Number(row.sort_order||0),
+    boundary:safeJson(row.boundary_json,null)
+   }));
+  }
+
+  const settings=db.prepare(`
+   SELECT restaurant_name,restaurant_status
+   FROM system_settings
+   WHERE id=1
+  `).get()||{};
+
+  return {
+   schemaVersion:1,
+   preparedAt:new Date().toISOString(),
+   restaurant:{
+    id:String(process.env.MRK_RESTAURANT_ID||"mr-k-bamako").trim()||"mr-k-bamako",
+    name:String(settings.restaurant_name||"Mr K Burgers"),
+    status:String(settings.restaurant_status||"OPEN")
+   },
+   menu:{
+    categories,
+    ingredients,
+    items,
+    combos
+   },
+   deliveryZones
+  };
+ }
+
+ async function publishToCloud(version,draftCount,snapshot){
   const cloudUrl=String(process.env.MRK_CUSTOMER_APP_CLOUD_URL||"").trim().replace(/\/+$/,"");
   const token=String(process.env.MRK_POS_SYNC_TOKEN||"").trim();
   const restaurantId=String(process.env.MRK_RESTAURANT_ID||"mr-k-bamako").trim()||"mr-k-bamako";
@@ -15,7 +167,7 @@ module.exports=function registerCustomerAppV2(app,io,db){
   }
 
   const target=new URL(cloudUrl+"/api/pos/publication");
-  const body=JSON.stringify({restaurantId,version,draftCount});
+  const body=JSON.stringify({restaurantId,version,draftCount,snapshot});
   const transport=target.protocol==="https:"?https:http;
 
   return await new Promise((resolve,reject)=>{
@@ -123,23 +275,15 @@ module.exports=function registerCustomerAppV2(app,io,db){
    return res.status(409).json({error:"Turn online ordering OFF before preparing customer app changes."});
   }
 
-  const menuCounts=db.prepare(`
-   SELECT
-    (SELECT COUNT(*) FROM menu_categories WHERE active=1) AS categories,
-    (SELECT COUNT(*) FROM menu_items WHERE active=1) AS items
-  `).get();
+  const snapshot=buildCustomerAppSnapshot();
 
   db.prepare("DELETE FROM customer_app_drafts WHERE kind='POS_SNAPSHOT'").run();
   db.prepare(`
    INSERT INTO customer_app_drafts(kind,label,payload_json)
    VALUES('POS_SNAPSHOT',?,?)
   `).run(
-   "Current POS menu/settings snapshot",
-   JSON.stringify({
-    categories:Number(menuCounts?.categories||0),
-    items:Number(menuCounts?.items||0),
-    preparedAt:new Date().toISOString()
-   })
+   "Current POS customer app snapshot",
+   JSON.stringify(snapshot)
   );
 
   const count=Number(db.prepare("SELECT COUNT(*) AS count FROM customer_app_drafts").get()?.count||0);
@@ -183,9 +327,25 @@ module.exports=function registerCustomerAppV2(app,io,db){
   }
 
   const nextVersion=current.publishedVersion+1;
+  const snapshotDraft=db.prepare(`
+   SELECT payload_json
+   FROM customer_app_drafts
+   WHERE kind='POS_SNAPSHOT'
+   ORDER BY id DESC
+   LIMIT 1
+  `).get();
+
+  if(!snapshotDraft){
+   return res.status(409).json({error:"Prepare a current POS snapshot before publishing."});
+  }
+
+  const snapshot=safeJson(snapshotDraft.payload_json,null);
+  if(!snapshot){
+   return res.status(500).json({error:"The prepared Customer App snapshot is invalid."});
+  }
 
   try{
-   const cloud=await publishToCloud(nextVersion,current.draftChanges);
+   const cloud=await publishToCloud(nextVersion,current.draftChanges,snapshot);
 
    db.transaction(()=>{
     db.prepare("DELETE FROM customer_app_drafts").run();
