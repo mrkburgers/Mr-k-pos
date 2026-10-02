@@ -5,6 +5,20 @@ module.exports=function registerPublishRoute(app,requirePosToken){
   res.json({latestPublication});
  });
 
+ app.get("/api/public/catalog",(req,res)=>{
+  if(!latestPublication){
+   return res.status(503).json({error:"Customer App catalog has not been published yet."});
+  }
+
+  res.json({
+   version:latestPublication.version,
+   publishedAt:latestPublication.publishedAt,
+   restaurant:latestPublication.snapshot.restaurant,
+   menu:latestPublication.snapshot.menu,
+   deliveryZones:latestPublication.snapshot.deliveryZones
+  });
+ });
+
  app.post("/api/pos/publication",requirePosToken,(req,res)=>{
   const restaurantId=String(req.body?.restaurantId||"mr-k-bamako").trim()||"mr-k-bamako";
   const version=Number(req.body?.version);
