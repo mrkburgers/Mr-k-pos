@@ -13,6 +13,7 @@ const registerCombosV2 = require("./combo-api-v2");
 const registerDatabaseBackupV2 = require("./backup-api-v2");
 const registerFinanceReportV2 = require("./finance-report-api-v2");
 const registerCustomersV2 = require("./customers-api-v2");
+const registerCustomerAppV2 = require("./customer-app-api-v2");
 const createSecurityAuthV2 = require("./security-auth-v2");
 const loginRateV2 = require("./security-login-rate-v2");
 const pinSecurityV2 = require("./security-pin-v2");
@@ -93,6 +94,7 @@ app.use((req,res,next)=>{
 });
 
 registerCustomersV2(app,io,db);
+registerCustomerAppV2(app,io,db);
 registerDeliveryZonesV2(app,io,db);
 registerMenuAdminV2(app,io,db);
 registerShiftV2(app,io,db);
@@ -106,7 +108,7 @@ app.get("/", (req, res) => {
   const indexPath = path.join(__dirname, "index.html");
   const html = fs.readFileSync(indexPath, "utf8").replace(
     "</body>",
-    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/expenses-sync-v2.js?v=20260928-expense-sync-3"></script>\n<script src="/finance-report-v2.js?v=20260928-money-report-1"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/customers-v2.js?v=20260928-customers-3"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
+    '<script src="/kitchen-v2.js"></script>\n<script src="/menu-v2.js"></script>\n<script src="/menu-admin-v2.js"></script>\n<script src="/menu-recipe-v2.js"></script>\n<script src="/inventory-legacy-v2.js"></script>\n<script src="/inventory-delivery-v2.js"></script>\n<script src="/cashier-v2.js"></script>\n<script src="/combo-quantity-v2.js"></script>\n<script src="/sales-v2.js"></script>\n<script src="/shift-v2.js"></script>\n<script src="/owner-accounts-v2.js"></script>\n<script src="/staff-employees-v2.js"></script>\n<script src="/payroll-v2.js"></script>\n<script src="/auth-v2.js"></script>\n<script src="/expenses-sync-v2.js?v=20260928-expense-sync-3"></script>\n<script src="/finance-report-v2.js?v=20260928-money-report-1"></script>\n<script src="/combo-checkout-v2.js"></script>\n<script src="/owner-order-filter-v2.js"></script>\n<script src="/delivery-fee-v2.js"></script>\n<script src="/customers-v2.js?v=20260928-customers-3"></script>\n<script src="/customer-app-owner-v2.js?v=20261002-customer-app-1"></script>\n<script src="/shift-delivery-summary-v2.js"></script>\n<script src="/delivery-zone-map-v2.js"></script>\n<script src="/backup-v2.js"></script>\n</body>'
   );
   res.type("html").send(html);
 });
@@ -164,6 +166,9 @@ app.get("/delivery-fee-v2.js", (req, res) => {
 });
 app.get("/customers-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "customers-v2.js"));
+});
+app.get("/customer-app-owner-v2.js", (req, res) => {
+  res.sendFile(path.join(__dirname, "customer-app-owner-v2.js"));
 });
 app.get("/shift-delivery-summary-v2.js", (req, res) => {
   res.sendFile(path.join(__dirname, "shift-delivery-summary-v2.js"));
