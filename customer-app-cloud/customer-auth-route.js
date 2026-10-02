@@ -40,6 +40,10 @@ function registerCustomerAuthRoutes(app,customerDb){
   return crypto.randomBytes(32).toString("base64url");
  }
 
+ function hashSessionToken(token){
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+ }
+
  app.post("/api/customer/auth/request-otp",async(req,res)=>{
   const phoneE164=normalizeMaliPhone(req.body?.phone);
   if(!phoneE164){
@@ -124,8 +128,7 @@ function registerCustomerAuthRoutes(app,customerDb){
    const customer=await customerDb.getOrCreateCustomer(phoneE164);
 
    const sessionToken=generateSessionToken();
-   const tokenSalt=crypto.randomBytes(16).toString("hex");
-   const tokenHash=hashWithSalt(sessionToken,tokenSalt);
+   const tokenHash=hashSessionToken(sessionToken);
    const expiresAt=new Date(Date.now()+SESSION_DAYS*24*60*60*1000).toISOString();
    const session=await customerDb.createSession(customer.id,{tokenHash,expiresAt});
 
