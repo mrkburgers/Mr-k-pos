@@ -1,7 +1,56 @@
+const https=require("https");
+const http=require("http");
 const createSecurityAuthV2=require("./security-auth-v2");
 
 module.exports=function registerCustomerAppV2(app,io,db){
  const ownerOnly=createSecurityAuthV2().requireRole("owner");
+
+ async function publishToCloud(version,draftCount){
+  const cloudUrl=String(process.env.MRK_CUSTOMER_APP_CLOUD_URL||"").trim().replace(/\/+$/,"");
+  const token=String(process.env.MRK_POS_SYNC_TOKEN||"").trim();
+  const restaurantId=String(process.env.MRK_RESTAURANT_ID||"mr-k-bamako").trim()||"mr-k-bamako";
+
+  if(!cloudUrl||!token){
+   throw new Error("Customer App cloud connection is not configured.");
+  }
+
+  const target=new URL(cloudUrl+"/api/pos/publication");
+  const body=JSON.stringify({restaurantId,version,draftCount});
+  const transport=target.protocol==="https:"?https:http;
+
+  return await new Promise((resolve,reject)=>{
+   const req=transport.request({
+    protocol:target.protocol,
+    hostname:target.hostname,
+    port:target.port||undefined,
+    path:target.pathname+target.search,
+    method:"POST",
+    headers:{
+     "Content-Type":"application/json",
+     "Content-Length":Buffer.byteLength(body),
+     "Authorization":"Bearer "+token
+    },
+    timeout:8000
+   },response=>{
+    let responseBody="";
+    response.setEncoding("utf8");
+    response.on("data",chunk=>{responseBody+=chunk;});
+    response.on("end",()=>{
+     let parsed={};
+     try{parsed=responseBody?JSON.parse(responseBody):{};}catch{}
+     if(response.statusCode>=200&&response.statusCode<300){
+      return resolve(parsed);
+     }
+     reject(new Error(parsed.error||("Cloud publish failed with HTTP "+response.statusCode)));
+    });
+   });
+
+   req.on("timeout",()=>req.destroy(new Error("Cloud publish timed out.")));
+   req.on("error",reject);
+   req.write(body);
+   req.end();
+  });
+ }
 
  db.exec(`
   CREATE TABLE IF NOT EXISTS customer_app_state(
@@ -121,7 +170,7 @@ module.exports=function registerCustomerAppV2(app,io,db){
   res.json({ok:true});
  });
 
- app.post("/api/customer-app/publish",ownerOnly,(req,res)=>{
+ app.post("/api/customer-app/publish",ownerOnly,async(req,res)=>{
   const current=stateRow();
   if(current.onlineOrderingEnabled){
    return res.status(409).json({error:"Turn online ordering OFF before publishing customer app changes."});
@@ -134,18 +183,26 @@ module.exports=function registerCustomerAppV2(app,io,db){
   }
 
   const nextVersion=current.publishedVersion+1;
-  db.transaction(()=>{
-   db.prepare("DELETE FROM customer_app_drafts").run();
-   db.prepare(`
-    UPDATE customer_app_state
-    SET draft_changes=0,published_version=?,updated_at=CURRENT_TIMESTAMP
-    WHERE id=1
-   `).run(nextVersion);
-  })();
 
-  const state=stateRow();
-  io.emit("customer-app-state-changed",state);
-  res.json({...state,published:true});
+  try{
+   const cloud=await publishToCloud(nextVersion,current.draftChanges);
+
+   db.transaction(()=>{
+    db.prepare("DELETE FROM customer_app_drafts").run();
+    db.prepare(`
+     UPDATE customer_app_state
+     SET draft_changes=0,published_version=?,last_sync_at=?,updated_at=CURRENT_TIMESTAMP
+     WHERE id=1
+    `).run(nextVersion,cloud.publishedAt||new Date().toISOString());
+   })();
+
+   const state=stateRow();
+   io.emit("customer-app-state-changed",state);
+   res.json({...state,published:true,cloud});
+  }catch(error){
+   console.error("Customer App publish failed:",error.message);
+   res.status(502).json({error:error.message||"Cloud publish failed."});
+  }
  });
 
  app.put("/api/customer-app/online-ordering",ownerOnly,(req,res)=>{
