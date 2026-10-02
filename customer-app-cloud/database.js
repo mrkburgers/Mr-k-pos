@@ -1,4 +1,5 @@
 const {Pool}=require("pg");
+const createCustomerAccountsDb=require("./customer-accounts-db");
 
 const connectionString=String(process.env.DATABASE_URL||"").trim();
 
@@ -13,6 +14,8 @@ const pool=new Pool({
  idleTimeoutMillis:30000,
  connectionTimeoutMillis:8000
 });
+
+const customerAccountsDb=createCustomerAccountsDb(pool);
 
 async function init(){
  await pool.query(`
@@ -31,6 +34,8 @@ async function init(){
   CREATE INDEX IF NOT EXISTS idx_customer_app_publications_latest
   ON customer_app_publications(restaurant_id,version DESC)
  `);
+
+ await customerAccountsDb.init();
 }
 
 async function getLatestPublication(restaurantId){
@@ -91,5 +96,6 @@ module.exports={
  init,
  health,
  getLatestPublication,
- savePublication
+ savePublication,
+ customerAccountsDb
 };
