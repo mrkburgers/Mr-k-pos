@@ -7,12 +7,20 @@ module.exports=function startCustomerAppSyncV2(io,db){
  const restaurantId=String(process.env.MRK_RESTAURANT_ID||"mr-k-bamako").trim()||"mr-k-bamako";
  const intervalMs=30000;
 
- function updateState(cloudStatus,syncStatus,lastSyncAt=null){
-  db.prepare(`
-   UPDATE customer_app_state
-   SET cloud_status=?,sync_status=?,last_sync_at=?,updated_at=CURRENT_TIMESTAMP
-   WHERE id=1
-  `).run(cloudStatus,syncStatus,lastSyncAt);
+ function updateState(cloudStatus,syncStatus,lastSyncAt){
+  if(lastSyncAt===undefined){
+   db.prepare(`
+    UPDATE customer_app_state
+    SET cloud_status=?,sync_status=?,updated_at=CURRENT_TIMESTAMP
+    WHERE id=1
+   `).run(cloudStatus,syncStatus);
+  }else{
+   db.prepare(`
+    UPDATE customer_app_state
+    SET cloud_status=?,sync_status=?,last_sync_at=?,updated_at=CURRENT_TIMESTAMP
+    WHERE id=1
+   `).run(cloudStatus,syncStatus,lastSyncAt);
+  }
   io.emit("customer-app-state-changed",{
    cloudStatus,
    syncStatus,
@@ -67,7 +75,7 @@ module.exports=function startCustomerAppSyncV2(io,db){
    updateState("CONNECTED","SYNCED",now);
   }catch(error){
    console.error("Customer App cloud heartbeat failed:",error.message);
-   updateState("DISCONNECTED","SYNC_ERROR",null);
+   updateState("DISCONNECTED","SYNC_ERROR");
   }
  }
 
