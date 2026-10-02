@@ -4,6 +4,7 @@ const crypto=require("crypto");
 const app=express();
 const registerPublishRoute=require("./publish-route");
 const registerCustomerAuthRoutes=require("./customer-auth-route");
+const registerCustomerProfileRoutes=require("./customer-profile-route");
 const cloudDb=require("./database");
 app.use(express.json({limit:"256kb"}));
 
@@ -62,6 +63,7 @@ app.post("/api/pos/heartbeat",requirePosToken,(req,res)=>{
 
 registerPublishRoute(app,requirePosToken,cloudDb);
 registerCustomerAuthRoutes(app,cloudDb.customerAccountsDb);
+registerCustomerProfileRoutes(app,cloudDb.customerAccountsDb);
 
 cloudDb.init()
  .then(()=>{
