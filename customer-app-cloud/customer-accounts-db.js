@@ -150,6 +150,202 @@ function createCustomerAccountsDb(pool){
   return {id,expiresAt};
  }
 
+ async function getCustomerBySessionTokenHash(tokenHash){
+  const result=await pool.query(`
+   SELECT
+    s.id AS session_id,
+    s.expires_at,
+    c.id,
+    c.phone_e164,
+    c.name,
+    c.created_at,
+    c.updated_at
+   FROM customer_sessions s
+   JOIN customer_accounts c ON c.id=s.customer_id
+   WHERE s.token_hash=$1
+     AND s.revoked_at IS NULL
+     AND s.expires_at>NOW()
+     AND c.deleted_at IS NULL
+   LIMIT 1
+  `,[tokenHash]);
+
+  const row=result.rows[0];
+  if(!row)return null;
+
+  await pool.query(`
+   UPDATE customer_sessions
+   SET last_seen_at=NOW()
+   WHERE id=$1
+  `,[row.session_id]);
+
+  return row;
+ }
+
+ async function updateCustomerName(customerId,name){
+  const result=await pool.query(`
+   UPDATE customer_accounts
+   SET name=$2,updated_at=NOW()
+   WHERE id=$1 AND deleted_at IS NULL
+   RETURNING id,phone_e164,name,created_at,updated_at
+  `,[customerId,name]);
+  return result.rows[0]||null;
+ }
+
+ async function listAddresses(customerId){
+  const result=await pool.query(`
+   SELECT id,label,address_text,latitude,longitude,
+          delivery_zone_id,delivery_zone_name,delivery_fee_snapshot,
+          is_default,created_at,updated_at
+   FROM customer_addresses
+   WHERE customer_id=$1
+   ORDER BY is_default DESC,created_at ASC
+  `,[customerId]);
+  return result.rows;
+ }
+
+ async function addAddress(customerId,address){
+  const id=newId();
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   const countResult=await client.query(
+    "SELECT COUNT(*)::int AS count FROM customer_addresses WHERE customer_id=$1",
+    [customerId]
+   );
+   const makeDefault=Boolean(address.isDefault)||Number(countResult.rows[0]?.count||0)===0;
+   if(makeDefault){
+    await client.query(
+     "UPDATE customer_addresses SET is_default=FALSE,updated_at=NOW() WHERE customer_id=$1",
+     [customerId]
+    );
+   }
+   const result=await client.query(`
+    INSERT INTO customer_addresses(
+     id,customer_id,label,address_text,latitude,longitude,is_default
+    )
+    VALUES($1,$2,$3,$4,$5,$6,$7)
+    RETURNING id,label,address_text,latitude,longitude,
+              delivery_zone_id,delivery_zone_name,delivery_fee_snapshot,
+              is_default,created_at,updated_at
+   `,[
+    id,customerId,address.label,address.addressText,
+    address.latitude,address.longitude,makeDefault
+   ]);
+   await client.query("COMMIT");
+   return result.rows[0];
+  }catch(error){
+   await client.query("ROLLBACK");
+   throw error;
+  }finally{
+   client.release();
+  }
+ }
+
+ async function updateAddress(customerId,addressId,address){
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   if(address.isDefault===true){
+    await client.query(
+     "UPDATE customer_addresses SET is_default=FALSE,updated_at=NOW() WHERE customer_id=$1 AND id<>$2",
+     [customerId,addressId]
+    );
+   }
+   const result=await client.query(`
+    UPDATE customer_addresses
+    SET label=$3,
+        address_text=$4,
+        latitude=$5,
+        longitude=$6,
+        is_default=CASE WHEN $7::boolean THEN TRUE ELSE is_default END,
+        updated_at=NOW()
+    WHERE id=$2 AND customer_id=$1
+    RETURNING id,label,address_text,latitude,longitude,
+              delivery_zone_id,delivery_zone_name,delivery_fee_snapshot,
+              is_default,created_at,updated_at
+   `,[
+    customerId,addressId,address.label,address.addressText,
+    address.latitude,address.longitude,Boolean(address.isDefault)
+   ]);
+   await client.query("COMMIT");
+   return result.rows[0]||null;
+  }catch(error){
+   await client.query("ROLLBACK");
+   throw error;
+  }finally{
+   client.release();
+  }
+ }
+
+ async function deleteAddress(customerId,addressId){
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   const deleted=await client.query(`
+    DELETE FROM customer_addresses
+    WHERE id=$2 AND customer_id=$1
+    RETURNING id,is_default
+   `,[customerId,addressId]);
+   if(!deleted.rows[0]){
+    await client.query("ROLLBACK");
+    return false;
+   }
+   if(deleted.rows[0].is_default){
+    await client.query(`
+     UPDATE customer_addresses
+     SET is_default=TRUE,updated_at=NOW()
+     WHERE id=(
+      SELECT id FROM customer_addresses
+      WHERE customer_id=$1
+      ORDER BY created_at ASC
+      LIMIT 1
+     )
+    `,[customerId]);
+   }
+   await client.query("COMMIT");
+   return true;
+  }catch(error){
+   await client.query("ROLLBACK");
+   throw error;
+  }finally{
+   client.release();
+  }
+ }
+
+ async function setDefaultAddress(customerId,addressId){
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   const exists=await client.query(
+    "SELECT id FROM customer_addresses WHERE id=$2 AND customer_id=$1",
+    [customerId,addressId]
+   );
+   if(!exists.rows[0]){
+    await client.query("ROLLBACK");
+    return null;
+   }
+   await client.query(
+    "UPDATE customer_addresses SET is_default=FALSE,updated_at=NOW() WHERE customer_id=$1",
+    [customerId]
+   );
+   const result=await client.query(`
+    UPDATE customer_addresses
+    SET is_default=TRUE,updated_at=NOW()
+    WHERE id=$2 AND customer_id=$1
+    RETURNING id,label,address_text,latitude,longitude,
+              delivery_zone_id,delivery_zone_name,delivery_fee_snapshot,
+              is_default,created_at,updated_at
+   `,[customerId,addressId]);
+   await client.query("COMMIT");
+   return result.rows[0]||null;
+  }catch(error){
+   await client.query("ROLLBACK");
+   throw error;
+  }finally{
+   client.release();
+  }
+ }
+
  return {
   init,
   newId,
@@ -159,7 +355,14 @@ function createCustomerAccountsDb(pool){
   incrementOtpAttempts,
   consumeOtpChallenge,
   getOrCreateCustomer,
-  createSession
+  createSession,
+  getCustomerBySessionTokenHash,
+  updateCustomerName,
+  listAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress
  };
 }
 
