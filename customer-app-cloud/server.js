@@ -3,6 +3,7 @@ const crypto=require("crypto");
 
 const app=express();
 const registerPublishRoute=require("./publish-route");
+const cloudDb=require("./database");
 app.use(express.json({limit:"256kb"}));
 
 const configuredPort=Number(process.env.PORT||8080);
@@ -58,8 +59,15 @@ app.post("/api/pos/heartbeat",requirePosToken,(req,res)=>{
  });
 });
 
-registerPublishRoute(app,requirePosToken);
+registerPublishRoute(app,requirePosToken,cloudDb);
 
-app.listen(PORT,"0.0.0.0",()=>{
- console.log(`Mr K Customer App Cloud foundation listening on port ${PORT}`);
-});
+cloudDb.init()
+ .then(()=>{
+  app.listen(PORT,"0.0.0.0",()=>{
+   console.log(`Mr K Customer App Cloud foundation listening on port ${PORT}`);
+  });
+ })
+ .catch(error=>{
+  console.error("Customer App cloud database initialization failed:",error);
+  process.exit(1);
+ });
