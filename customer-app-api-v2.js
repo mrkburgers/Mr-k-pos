@@ -17,6 +17,14 @@ module.exports=function registerCustomerAppV2(app,io,db){
 
   INSERT OR IGNORE INTO customer_app_state(id)
   VALUES(1);
+
+  CREATE TABLE IF NOT EXISTS customer_app_drafts(
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   kind TEXT NOT NULL,
+   label TEXT NOT NULL,
+   payload_json TEXT NOT NULL DEFAULT '{}',
+   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
  `);
 
  function stateRow(){
@@ -45,7 +53,99 @@ module.exports=function registerCustomerAppV2(app,io,db){
  }
 
  app.get("/api/customer-app/state",ownerOnly,(req,res)=>{
-  res.json(stateRow());
+  const state=stateRow();
+  const drafts=db.prepare(`
+   SELECT id,kind,label,payload_json,created_at
+   FROM customer_app_drafts
+   ORDER BY id ASC
+  `).all().map(row=>({
+   id:Number(row.id),
+   kind:String(row.kind||""),
+   label:String(row.label||""),
+   payload:JSON.parse(row.payload_json||"{}"),
+   createdAt:row.created_at
+  }));
+  res.json({...state,drafts});
+ });
+
+ app.post("/api/customer-app/drafts/prepare-snapshot",ownerOnly,(req,res)=>{
+  const current=stateRow();
+  if(current.onlineOrderingEnabled){
+   return res.status(409).json({error:"Turn online ordering OFF before preparing customer app changes."});
+  }
+
+  const menuCounts=db.prepare(`
+   SELECT
+    (SELECT COUNT(*) FROM menu_categories WHERE active=1) AS categories,
+    (SELECT COUNT(*) FROM menu_items WHERE active=1) AS items
+  `).get();
+
+  db.prepare("DELETE FROM customer_app_drafts WHERE kind='POS_SNAPSHOT'").run();
+  db.prepare(`
+   INSERT INTO customer_app_drafts(kind,label,payload_json)
+   VALUES('POS_SNAPSHOT',?,?)
+  `).run(
+   "Current POS menu/settings snapshot",
+   JSON.stringify({
+    categories:Number(menuCounts?.categories||0),
+    items:Number(menuCounts?.items||0),
+    preparedAt:new Date().toISOString()
+   })
+  );
+
+  const count=Number(db.prepare("SELECT COUNT(*) AS count FROM customer_app_drafts").get()?.count||0);
+  db.prepare(`
+   UPDATE customer_app_state
+   SET draft_changes=?,updated_at=CURRENT_TIMESTAMP
+   WHERE id=1
+  `).run(count);
+
+  io.emit("customer-app-state-changed",stateRow());
+  res.json({ok:true,draftChanges:count});
+ });
+
+ app.delete("/api/customer-app/drafts",ownerOnly,(req,res)=>{
+  const current=stateRow();
+  if(current.onlineOrderingEnabled){
+   return res.status(409).json({error:"Turn online ordering OFF before discarding customer app changes."});
+  }
+
+  db.prepare("DELETE FROM customer_app_drafts").run();
+  db.prepare(`
+   UPDATE customer_app_state
+   SET draft_changes=0,updated_at=CURRENT_TIMESTAMP
+   WHERE id=1
+  `).run();
+
+  io.emit("customer-app-state-changed",stateRow());
+  res.json({ok:true});
+ });
+
+ app.post("/api/customer-app/publish",ownerOnly,(req,res)=>{
+  const current=stateRow();
+  if(current.onlineOrderingEnabled){
+   return res.status(409).json({error:"Turn online ordering OFF before publishing customer app changes."});
+  }
+  if(current.cloudStatus!=="CONNECTED"||current.syncStatus!=="SYNCED"){
+   return res.status(409).json({error:"Customer App cloud must be connected and synced before publishing."});
+  }
+  if(current.draftChanges<1){
+   return res.status(409).json({error:"There are no draft changes to publish."});
+  }
+
+  const nextVersion=current.publishedVersion+1;
+  db.transaction(()=>{
+   db.prepare("DELETE FROM customer_app_drafts").run();
+   db.prepare(`
+    UPDATE customer_app_state
+    SET draft_changes=0,published_version=?,updated_at=CURRENT_TIMESTAMP
+    WHERE id=1
+   `).run(nextVersion);
+  })();
+
+  const state=stateRow();
+  io.emit("customer-app-state-changed",state);
+  res.json({...state,published:true});
  });
 
  app.put("/api/customer-app/online-ordering",ownerOnly,(req,res)=>{
