@@ -2,6 +2,7 @@ const express=require("express");
 const crypto=require("crypto");
 
 const app=express();
+const registerPublishRoute=require("./publish-route");
 app.use(express.json({limit:"256kb"}));
 
 const configuredPort=Number(process.env.PORT||8080);
@@ -56,6 +57,8 @@ app.post("/api/pos/heartbeat",requirePosToken,(req,res)=>{
   restaurantId
  });
 });
+
+registerPublishRoute(app,requirePosToken);
 
 app.listen(PORT,"0.0.0.0",()=>{
  console.log(`Mr K Customer App Cloud foundation listening on port ${PORT}`);
