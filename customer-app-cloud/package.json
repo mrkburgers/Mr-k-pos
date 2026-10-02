@@ -1,0 +1,13 @@
+{
+  "name": "mr-k-customer-app-cloud",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mr K Customer App cloud backend foundation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
